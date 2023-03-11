@@ -12,7 +12,8 @@ library(readxl)
 # then use future_walk() instead of walk()
 
 # read file with parameters
-DIDparams <- read_excel("DIDreportParameters.xls")
+DIDparams <- read_excel("DIDreportParameters.xls") %>%
+  mutate(across(everything(), ~ gsub(" ","",.x)))
 
 walk(1:nrow(DIDparams), function(i) {
   this <- DIDparams[i,]

@@ -1,0 +1,327 @@
+---
+title: "Data i dialog"
+subtitle: "Kommunrapport"
+title-block-banner: "#009ca6"
+title-block-banner-color: "#FFFFFF"
+author: 
+  name: Magnus Johansson
+  affiliation: RISE Research Institutes of Sweden
+  affiliation-url: https://www.ri.se/sv/vad-vi-gor/expertiser/kategoriskt-baserade-matningar
+  orcid: 0000-0003-1669-592X
+date: last-modified
+params:
+  fokusKommun: "Södertälje"
+  jmfKommun: "Stockholm"
+  years: 2016
+format: 
+  html:
+    toc: true
+    toc-depth: 4
+    toc-title: "Innehållsförteckning"
+    embed-resources: true
+    standalone: true
+    page-layout: full
+    logo: rise_logo_quarto.png
+    mainfont: 'Lato'
+    monofont: 'Roboto Mono'
+    code-overflow: wrap
+    code-tools: false
+    code-fold: false
+    number-sections: true
+    fig-dpi: 150
+    layout-align: left
+    linestretch: 1.6
+    theme: materia
+    link-external-newwindow: true
+execute:
+  echo: false
+  warning: false
+  message: false
+  cache: false
+---
+
+## `r params$fokusKommun` {.unnumbered}
+
+```{r}
+
+# which municipality to focus this report on?
+fokusKommun <- params$fokusKommun
+
+# which municipalities should be included in comparisons?
+jmfKommun <- c(fokusKommun,params$jmfKommun)
+
+# years of interest
+years <- params$years
+
+# setup -------------------------------------------------------------------
+library(ggeffects)
+library(ggplot2)
+library(tidyverse)
+library(shiny)
+library(arrow)
+library(xlsx)
+
+library(ggdist) # for shadeable density slabs
+library(gghalves) # for half-half geoms
+library(ggpp) # for position_dodge2nudge %>% 
+library(colorspace) # for lightening color palettes
+library(extrafont) # for Lato, RISE font
+library(stringr)
+library(EnvStats)
+library(bslib)
+library(formattable)
+library(thematic)
+library(catR)
+library(Hmisc)
+
+library(geomtextpath)
+library(readxl)
+library(rlang)
+library(visNetwork)
+library(networkD3)
+library(RColorBrewer)
+library(vctrs)
+library(ggiraph)
+library(gt)
+library(gtExtras)
+library(RISEkbmRasch)
+
+### some commands exist in multiple packages, here we define preferred ones that are frequently used
+select <- dplyr::select
+count <- dplyr::count
+recode <- car::recode
+rename <- dplyr::rename
+
+### text sizes
+ax.size <- 10
+title.size <- 12
+legend.size <- 10
+stript.size <- 10
+årtal <- c(2006,2008,2010,2012,2014,2016,2018,2020,2022)
+
+
+### set up color palette based on RISE guidelines
+RISEprimGreen <- "#009ca6"
+RISEprimRed <- "#e83c63"
+RISEprimYellow <- "#ffe500"
+RISEprimGreenMid <- "#8dc8c7"
+RISEprimRedMid <- "#f5a9ab"
+RISEprimYellowMid <- "#ffee8d"
+RISEprimGreenLight <- "#ebf5f0"
+RISEprimRedLight <- "#fde8df"
+RISEprimYellowLight <- "#fff7dd"
+RISEcompPurple <- "#482d55"
+RISEcompGreenDark <- "#0e4e65"
+RISEgrey1 <- "#f0f0f0"
+RISEgrey2 <- "#c8c8c8"
+RISEgrey3 <- "#828282"
+RISEgrey4 <- "#555555"
+
+### colors specifically for DID application
+DIDcolorsOriginal <- c('#D55E00','#F0E442','#009E73','#999999')
+DIDcolors <- lighten(DIDcolorsOriginal, amount = 0.1, space = "HLS")
+DIDred <- "#D55E00"
+DIDorange <- "#E69F00"
+DIDgreen <- "#009E73"
+DIDyellow <- "#F0E442"
+
+RISEpalette1 <- colorRampPalette(colors = c("#009ca6", "#e83c63", "#ffe500"))(6)
+#scales::show_col(RISEpalette1)
+
+RISEpalette2 <- colorRampPalette(colors = c("#009ca6", "#482d55", "#e83c63", "#ffe500"))(8)
+#scales::show_col(RISEpalette2)
+
+# distance between panels in faceted ggplots
+pandist <- 0.6
+
+rfactors <- c('Utagerande','Närsamhälle','Föräldraskap','Psykiska/ psykosomatiska besvär','Vantrivsel i skolan')
+pfactors <- c('Välbefinnande','Positiv skolanknytning')
+
+```
+
+```{r}
+# read data
+
+# Import data -------------------------------------------------------------
+
+## Stockholmsenkäten --------------------------------------
+df <- read_parquet("../DIDapp/data/2023-01-23_ScoredRev.parquet")
+df <- df %>%
+ rename(Kommun = DIDkommun)
+
+df <- df %>% 
+  filter(Kommun %in% jmfKommun)
+
+# remove data from before 2006 for Södertälje, due to lack of comparisons
+df <- df %>% 
+  filter(!ar < 2006)
+
+# define demographic variables of interest
+demogr.vars<-read.csv("../DIDapp/data/SthlmsEnk_demographicVariables.csv")
+demogr.vars <- demogr.vars$demogr.vars
+
+# final set of items based on psychometric analyses
+itemlabels.final <- read_excel("../DIDapp/data/SthlmsEnk_allItemInfo_2022-12-06.xls") %>% 
+  select(itemnr,item,Index)
+
+# list of all items included in analyses (even those discarded)
+allitems <- read.csv("../DIDapp/data/SthlmsEnk_allitems.csv")
+
+# list of item responses for Psykiska/ psykosomatiska besvär, for use in the "persona" visualization
+itemresponses <- read.xlsx("../DIDapp/data/SthlmsEnk_04psfRespCats.xls", sheetName = "04psf")
+
+# create vector with all index names
+sthlm.index <- itemlabels.final %>% 
+  distinct(Index) %>% 
+  pull()
+
+## Skolinspektionen --------------------------------------------------------
+
+# read data from processed file with Rasch based scores
+#df.si <- read_parquet("../../DIDapp/data/SkolinspÅk5Scored.parquet")
+# this data is also based on higher score = higher risk
+
+# some functions are based on the SthlmsEnkät labeling of year as "ar"
+# we add a duplicate year variable
+# df.si <- df.si %>% 
+#   mutate(ar = as.numeric(as.character(År)),
+#          ar = vec_cast(ar, double()))
+# 
+# # read item info
+# si.items <- read_csv("../../DIDapp/data/SkolinspFinalItems.csv")
+# note that all SI items have merged the top 3 response categories (top = highest risk)
+
+# Cutoff values SthlmsEnk -------------------------------------------------------------
+
+# percentiles based on 2006-2020 data for all of Stockholm Stad (~ 110k responses)
+# each year's 70th and 90th percentile value was used to calculate an average (not weighted in any way)
+# see script "file 04 Distributions and risk limits.R" in https://github.com/pgmj/sthlmsenk/tree/main/OtherScripts
+#rslimits <- read.csv("../../DIDapp/data/SthlmsEnk_rslimitsNoRev2022-12-06.csv")
+rslimits <- read_csv("../DIDapp/data/2023-01-17_rslimitsRisk.csv")
+
+# read cutoffs for protective factors
+#rslimits.prot <- read_csv("data/2022-12-16_protective.csv")
+rslimits.prot <- read_csv("../DIDapp/data/2023-01-17_rslimitsProt.csv")
+
+rslimits <- cbind(rslimits,rslimits.prot)
+rslimits <- rslimits %>% 
+  relocate(SkolaPositiv, .after = SkolaNegativ)
+
+# for Skolinspektionen ÅK5
+#rslimits.si <- read_csv("../../DIDapp/data/SkolinspRSlimitsNoRev.csv")
+#rslimits$`Positiv skolanknytning åk 5` <- rslimits.si$`Positiv skolanknytning`
+
+```
+```{r}
+source("setupDIDreport.R")
+```
+
+## Demografi
+
+För att se exakta antal i figurerna går det att använda muspekaren på respektive punkt.
+
+::: panel-tabset
+### Fördelat på kön
+```{r}
+responsesGender <- df %>% 
+  filter(Kommun == fokusKommun,
+         !Kön == "<NA>") %>% 
+  rename(År = ar,
+         Årskurs = ARSKURS) %>% 
+  group_by(År,Kön) %>% 
+  reframe(Antal = n()) %>% 
+  ggplot(aes(x = År, y = Antal, color = Kön)) + 
+  geom_line(linewidth = 1) +
+  geom_point_interactive(aes(tooltip = Antal),
+                         size = 2.5) +
+  scale_color_brewer(type = "qual", palette = "Dark2") +
+  scale_x_continuous(guide = guide_axis(n.dodge = 1), breaks = årtal) +
+  scale_y_continuous(limits = c(0,NA)) +
+  labs(title = "Antal respondenter per år",
+       subtitle = "Fördelat på kön") +
+  theme_minimal() +
+  theme_rise() +
+  theme(text = element_text(family = "Lato"))
+
+girafe(ggobj = responsesGender)
+
+```
+### Fördelat på årskurs
+```{r}
+responsesARSKURS <- df %>% 
+  filter(Kommun == fokusKommun,
+         !Kön == "<NA>") %>% 
+  rename(År = ar,
+         Årskurs = ARSKURS) %>% 
+  group_by(År,Årskurs) %>% 
+  reframe(Antal = n()) %>% 
+  ggplot(aes(x = År, y = Antal, color = Årskurs)) + 
+  geom_line(linewidth = 1) +
+  geom_point_interactive(aes(tooltip = Antal),
+                         size = 2.5) +
+  #scale_color_brewer(type = "qual", palette = "Dark2") +
+  scale_x_continuous(guide = guide_axis(n.dodge = 1), breaks = årtal) +
+  scale_y_continuous(limits = c(0,NA)) +
+  labs(title = "Antal respondenter per år",
+       subtitle = "Fördelat på årskurs") +
+  theme_minimal() +
+  theme_rise() +
+  theme(text = element_text(family = "Lato"))
+
+girafe(ggobj = responsesARSKURS)
+
+```
+### Otillräckliga svar
+Det krävs svar på minst 5 frågor inom ett index för att ett indexvärde ska beräknas. Här redovisas hur stor andel av de som svarat på Stockholmsenkäten som har 0-4 frågor besvarade inom varje index.
+```{r}
+otillr <- df.risk %>%
+  filter(is.na(riskLevel)) %>%
+  filter(Kommun == fokusKommun) %>%
+  ggplot(aes(x = År, y = Andel, group = Index, color = Index)) +
+  geom_line(linewidth = 0.8) +
+  geom_point_interactive(aes(tooltip = Andel),
+                         size = 2.5) +
+  ylab("Andel i %") +
+  theme_minimal() +
+  theme_rise() +
+  theme(text = element_text(family = "Lato"))
+
+girafe(ggobj = otillr)
+
+```
+### Tabeller
+```{r}
+#| layout-ncol: 2
+#| include: true
+#| 
+
+df %>% 
+  filter(Kommun == fokusKommun,
+         !Kön == "<NA>") %>% 
+  rename(År = ar,
+         Årskurs = ARSKURS) %>% 
+  group_by(År,Kön) %>% 
+  reframe(`Antal respondenter` = n()) %>% 
+  gt(.,
+   groupname_col = "År") %>% 
+  gt_theme_espn() %>% 
+  tab_options(table.font.name = "Lato",
+              heading.align = "left") %>% 
+  cols_align(align = "right")
+
+df %>% 
+  filter(Kommun == fokusKommun,
+         !Kön == "<NA>") %>% 
+  rename(År = ar,
+         Årskurs = ARSKURS) %>% 
+  group_by(År,Kön,Årskurs) %>% 
+  reframe(`Antal respondenter` = n()) %>% 
+  gt(.,
+   groupname_col = c("År","Årskurs")) %>% 
+  gt_theme_espn() %>% 
+  tab_options(table.font.name = "Lato",
+              heading.align = "left") %>% 
+  cols_align(align = "right",
+             columns = "Kön")
+```
+:::

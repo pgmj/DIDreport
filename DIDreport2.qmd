@@ -179,7 +179,8 @@ girafe(ggobj = responsesGender)
 ```{r}
 responsesARSKURS <- df %>% 
   filter(Kommun == fokusKommun,
-         !Kön == "<NA>") %>% 
+         !Kön == "<NA>",
+         !is.na(ARSKURS)) %>% 
   rename(År = ar,
          Årskurs = ARSKURS) %>% 
   group_by(År,Årskurs) %>% 
@@ -549,8 +550,202 @@ DIDmedelSDg(sums.indexGG, "Psykiska/ psykosomatiska besvär") +
   cols_align(align = "right")
   
 ```
-:::
 
+#### ANDTS antal
+```{r}
+#| fig-height: 6
+plotFaktor = "Senaste4v"
+df %>%
+  filter(Kön %in% c("Pojke", "Flicka"),
+         !is.na(ARSKURS)) %>%
+  select(Senaste4v, ar, Kön, ARSKURS) %>%
+  mutate(Senaste4v = recode(Senaste4v,"7:10=6")) %>% 
+  mutate(Senaste4v = factor(Senaste4v,
+         levels = rev(c(0:6))
+         )
+         ) %>% 
+  #levels = c("Tre gånger eller fler","Två gånger","En gång","Ej använt","Svar saknas"))) %>% 
+  group_by(ar, Kön, ARSKURS) %>%
+  count(Senaste4v, .drop = FALSE) %>%
+  mutate(Andel = (100 * n / sum(n)) %>% round(digits = 1)) %>%
+  ggplot(aes(x = ar, y = Andel)) +
+  geom_area(aes(fill = Senaste4v),
+            position = "stack",
+            alpha = 0.85
+  ) +
+  #scale_fill_manual(values = c("#D55E00", "orange", "#F0E442", "#009E73", "lightgrey")) +
+  scale_fill_viridis_d() +
+  scale_y_continuous(breaks = c(0, 20, 40, 60, 80, 100)) +
+  scale_x_continuous(breaks = årtal, guide = guide_axis(n.dodge = 2)) +
+  xlab("Årtal") +
+  ylab("Andel i %") +
+  labs(
+    title = paste0("Användning senaste 4 veckorna, oviktat index"),
+    subtitle = "Antal substanser",
+    fill='Antal substanser'
+  ) +
+  theme_minimal() +
+  theme_rise() +
+  facet_grid(ARSKURS ~ Kön)
+```
+#### Separerade på respektive substans
+
+```{r}
+# for FNY12020r and F14r (e-cig and smoking)
+
+# ta fram ett indexvärde för bruk under senaste 4v
+senaste4v <- c("F14r","F18r","F36new","F49new","FNY12020r")
+df <- df %>% 
+  mutate(Senaste4v = rowSums(df %>% select(all_of(senaste4v)), na.rm = T))
+
+itemlabelsPlotFaktor <- cbind(senaste4v,
+                              c("Rökning","Snus","Alkohol","Narkotika (inkl. cannabis)","E-cigaretter")) %>% 
+  as.data.frame() %>% 
+  rename(itemnr = senaste4v,
+         item = V2)
+  
+
+andtsUseShare <- function(andts) {
+  plotFaktor <- andts
+  plotFaktorName <- itemlabelsPlotFaktor %>% 
+    filter(itemnr == plotFaktor) %>% 
+    pull(item)
+  
+  df %>%
+    filter(Kön %in% c("Pojke", "Flicka"),
+           !is.na(ARSKURS),
+           Kommun == fokusKommun) %>%
+    select(all_of(senaste4v), ar, Kön, ARSKURS) %>%
+    mutate(
+      bruk4v = case_when(
+        .data[[plotFaktor]] == 0 ~ "Ej använt",
+        .data[[plotFaktor]] == 1 ~ "Ibland men inte varje dag",
+        .data[[plotFaktor]] == 2 ~ "Dagligen",
+        TRUE ~ "Svar saknas"
+      )
+    ) %>% 
+    mutate(bruk4v = factor(bruk4v, levels = c("Dagligen","Ibland men inte varje dag","Ej använt","Svar saknas"))) %>% 
+    group_by(ar, Kön, ARSKURS) %>%
+    count(bruk4v, .drop = FALSE) %>%
+    mutate(Andel = (100 * n / sum(n)) %>% round(digits = 1)) %>%
+    ggplot(aes(x = ar, y = Andel)) +
+    geom_area(aes(fill = bruk4v),
+      position = "stack",
+      alpha = 0.9
+    ) +
+    scale_fill_manual(values = DIDcolorsRYGG) +
+    scale_y_continuous(breaks = c(0, 20, 40, 60, 80, 100)) +
+    scale_x_continuous(breaks = årtal, guide = guide_axis(n.dodge = 2)) +
+    xlab("Årtal") +
+    ylab("Andel i %") +
+    theme_minimal() +
+    theme_rise() +
+    labs(
+      title = paste0(plotFaktorName),
+      subtitle = fokusKommun
+    ) +
+    facet_grid(ARSKURS ~ Kön)
+}
+```
+
+```{r}
+andtsUseShare("F14r")
+andtsUseShare("F18r")
+```
+
+```{r}
+# for f36r and F49r
+andtsUseShare2 <- function(andts) {
+  plotFaktor <- andts
+  plotFaktorName <- itemlabelsPlotFaktor %>% 
+    filter(itemnr == plotFaktor) %>% 
+    pull(item)
+  
+  df %>%
+    filter(Kön %in% c("Pojke", "Flicka"),
+           !is.na(ARSKURS),
+           Kommun == fokusKommun) %>%
+    select(all_of(senaste4v), ar, Kön, ARSKURS) %>%
+    mutate(
+      bruk4v = case_when(
+        .data[[plotFaktor]] == 0 ~ "Ej använt",
+        .data[[plotFaktor]] == 1 ~ "En gång",
+        .data[[plotFaktor]] == 2 ~ "Två gånger",
+        .data[[plotFaktor]] == 3 ~ "Tre gånger eller fler",
+        TRUE ~ "Svar saknas"
+      )
+    ) %>% 
+    mutate(bruk4v = factor(bruk4v, levels = c("Tre gånger eller fler","Två gånger","En gång","Ej använt","Svar saknas"))) %>% 
+    group_by(ar, Kön, ARSKURS) %>%
+    count(bruk4v, .drop = FALSE) %>%
+    mutate(Andel = (100 * n / sum(n)) %>% round(digits = 1)) %>%
+    ggplot(aes(x = ar, y = Andel)) +
+    geom_area(aes(fill = bruk4v),
+      position = "stack",
+      alpha = 0.85
+    ) +
+    scale_fill_manual(values = c("#D55E00", "orange", "#F0E442", "#009E73", "lightgrey")) +
+    scale_y_continuous(breaks = c(0, 20, 40, 60, 80, 100)) +
+    scale_x_continuous(breaks = årtal, guide = guide_axis(n.dodge = 2)) +
+    xlab("Årtal") +
+    ylab("Andel i %") +
+    theme_minimal() +
+    theme_rise() +
+    labs(
+      title = paste0(plotFaktorName, ", användning senaste 4 veckorna"),
+      subtitle = fokusKommun
+    ) +
+    facet_grid(ARSKURS ~ Kön)
+}
+```
+
+```{r}
+andtsUseShare2("F36new")
+andtsUseShare2("F49new")
+```
+#### Debutålder substansanvändning
+```{r}
+itemsANDTSdebut <- c("F16","F20","F37","F44","F51")
+
+df %>%
+  filter(ARSKURS == "Gy 2",
+         Kön %in% c("Pojke","Flicka")) %>%
+  mutate(across(itemsANDTSdebut, ~ recode(.x, "0=11;1=12;2=13;3=14;4=15;5=16;6=17;7=18"))) %>% 
+  select(all_of(c(itemsANDTSdebut,"ARSKURS","ar","Kön"))) %>%
+  pivot_longer(itemsANDTSdebut) %>%
+  rename(Item = name,
+         Ålder = value,
+         Årskurs = ARSKURS) %>%
+  filter(!is.na(Ålder)) %>% 
+  mutate(År = factor(ar)) %>% #group_by(År,Årskurs) %>% count(Kön)
+  group_by(År,Kön,Item) %>% 
+  summarise(
+    Medelvärde = mean(Ålder),
+    SD = sd(Ålder)
+  ) %>% 
+  ggplot(aes(x = År, y = Medelvärde, group = Item, color = Item)) +
+  geom_point(size = 3) +
+  geom_line(linewidth = 1.1) +
+  geom_ribbon(aes(ymin = Medelvärde - SD, ymax = Medelvärde + SD, fill = Item, color = NULL), alpha = 0.05) +
+  #scale_color_viridis_d(begin = 0.1) +
+  scale_x_discrete(breaks = årtal,
+                   guide = guide_axis(n.dodge = 2)) +
+  labs(title = "Genomsnittslig debutålder per substans över tid",
+       subtitle = fokusKommun,
+       caption = "F16 = rökning, F20 = snus, F37 = alkohol, F44 sniffning, F51 = narkotika"
+       ) +
+  facet_grid(~Kön) +
+  scale_color_brewer(type = "qual", palette = "Dark2") +
+  theme_minimal() +
+  theme_rise()
+```
+
+#### Utsatt för brott
+```{r}
+
+```
+
+:::
 
 ### Skyddsfaktorer
 
@@ -562,6 +757,7 @@ DIDmedelSDg(sums.index,"Välbefinnande") +
 DIDmedelSDg(sums.indexGG, "Välbefinnande") + 
   facet_grid(Årskurs~Kön)
 ```
+
 
 
 ## Familj
@@ -608,15 +804,7 @@ ggplot(df.kolada,aes(x = År, y = Andel, group = Kommun, color = Kommun)) +
              scales = "free",
              labeller = labeller(KPI = label_wrap_gen(25))) +
   theme_minimal() +
-  theme_rise() +
-    theme(text = element_text(family = "Lato"),
-      axis.text.x = element_text(size = ax.size),
-      axis.text.y = element_text(size = ax.size),
-      title = element_text(size = title.size),
-      legend.text = element_text(size = legend.size),
-      strip.text.x = element_text(size = 13),
-      panel.spacing = unit(pandist, "cm", data = NULL)
-    )
+  theme_rise()
 ```
 
 #### Grundskola

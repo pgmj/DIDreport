@@ -233,6 +233,40 @@ stapelDemografi("Vilken högsta utbildning har din mamma/pappa?")
 stapelDemografi("Vad bor du i för typ av bostad?")
 ```
 
+### Jämfört med andra
+
+```{r}
+responsesKommuner <- df %>% 
+  filter(Kommun %in% jmfKommun,
+         !Kön == "<NA>") %>% 
+  rename(År = ar,
+         Årskurs = ARSKURS) %>% 
+  group_by(År,Kommun) %>% 
+  reframe(Antal = n()) %>% 
+  ggplot(aes(x = År, y = Antal, group = Kommun, color = Kommun)) + 
+  geom_line(linewidth = 1) +
+  geom_point_interactive(aes(tooltip = Antal),
+                         size = 2.5) +
+  scale_color_brewer(type = "qual", palette = "Dark2") +
+  scale_x_continuous(guide = guide_axis(n.dodge = 1), breaks = årtal) +
+  scale_y_continuous(limits = c(0,2000)) +
+  labs(title = "Antal respondenter per år",
+       subtitle = "Fördelat på kommun") +
+  theme_minimal() +
+  theme_rise() +
+    theme(text = element_text(family = "Lato"),
+      axis.text.x = element_text(size = ax.size),
+      axis.text.y = element_text(size = ax.size),
+      title = element_text(size = title.size),
+      legend.text = element_text(size = legend.size),
+      strip.text.x = element_text(size = 13),
+      panel.spacing = unit(pandist, "cm", data = NULL)
+    )
+
+girafe(ggobj = responsesKommuner)
+
+```
+
 ### Tabeller
 ```{r}
 #| layout-ncol: 2
@@ -372,44 +406,60 @@ DIDstapel(df.risk, "2016")
 ::: panel-tabset
 #### 2022
 ```{r}
-DIDstapel(df.risk.gender, "2022") +
+df.risk.gender %>% 
+  filter(!is.na(Kön)) %>% 
+  DIDstapel("2022") +
   facet_wrap(~Kön)
 ```
 
 ```{r}
-DIDstapel(df.risk.gender.arskurs, "2022") +
+df.risk.gender.arskurs %>% 
+  filter(!is.na(Årskurs)) %>% 
+  DIDstapel("2022") +
   facet_grid(Årskurs~Kön)
 ```
 
 #### 2020
 ```{r}
-DIDstapel(df.risk.gender, "2020") +
+df.risk.gender %>% 
+  filter(!is.na(Kön)) %>% 
+  DIDstapel("2020") +
   facet_wrap(~Kön)
 ```
 
 ```{r}
-DIDstapel(df.risk.gender.arskurs, "2020") +
+df.risk.gender.arskurs %>% 
+  filter(!is.na(Årskurs)) %>% 
+  DIDstapel("2020") +
   facet_grid(Årskurs~Kön)
 ```
 
 #### 2018
 ```{r}
-DIDstapel(df.risk.gender, "2018") +
+df.risk.gender %>% 
+  filter(!is.na(Kön)) %>% 
+  DIDstapel("2018") +
   facet_wrap(~Kön)
 ```
 
 ```{r}
-DIDstapel(df.risk.gender.arskurs, "2018") +
+df.risk.gender.arskurs %>% 
+  filter(!is.na(Årskurs)) %>% 
+  DIDstapel("2018") +
   facet_grid(Årskurs~Kön)
 ```
 #### 2016
 ```{r}
-DIDstapel(df.risk.gender, "2016") +
+df.risk.gender %>% 
+  filter(!is.na(Kön)) %>% 
+  DIDstapel("2016") +
   facet_wrap(~Kön)
 ```
 
 ```{r}
-DIDstapel(df.risk.gender.arskurs, "2016") +
+df.risk.gender.arskurs %>% 
+  filter(!is.na(Årskurs)) %>% 
+  DIDstapel("2016") +
   facet_grid(Årskurs~Kön)
 ```
 :::
@@ -437,7 +487,6 @@ DIDmedelSDg(sums.indexGG, "Psykiska/ psykosomatiska besvär") +
 ```
 #### Tabell
 ```{r}
-#| include: false
 ### Tabell psykiska/psykosomatiska besvär åk 9
 
   plotFaktor <- "Psykiska/ psykosomatiska besvär"
@@ -531,6 +580,121 @@ DIDmedelSDg(sums.indexGG, "Föräldraskap") +
 
 ## Skola
 
+### KOLADA
+
+::: panel-tabset
+#### Förskola
+```{r}
+
+df.kolada <- KOLADA %>% 
+  filter(Kön == "Alla") %>% 
+  filter(Kommun %in% jmfKommun) %>% 
+  filter(KPI %in% c("Barn 3-5 år inskrivna i förskola, andel (%)",
+                    "Heltidstjänster i förskolan med förskollärarexamen, lägeskommun, andel (%)")
+  )
+
+ggplot(df.kolada,aes(x = År, y = Andel, group = Kommun, color = Kommun)) +
+  geom_line(alpha = 0.5, 
+            linewidth = 0.8) +
+  geom_point(alpha = 0.5, 
+             size = 2) +
+  geom_line(data = filter(df.kolada, Kommun == fokusKommun), alpha = 1) +
+  geom_point(data = filter(df.kolada, Kommun == fokusKommun), alpha = 1) +
+  scale_x_continuous(guide = guide_axis(n.dodge = 2)) +
+  scale_y_continuous(limits = c(0, 100)) +
+  scale_color_brewer(type = "qual", palette = "Dark2") +
+  facet_wrap(~KPI,
+             ncol = 4,
+             scales = "free",
+             labeller = labeller(KPI = label_wrap_gen(25))) +
+  theme_minimal() +
+  theme_rise() +
+    theme(text = element_text(family = "Lato"),
+      axis.text.x = element_text(size = ax.size),
+      axis.text.y = element_text(size = ax.size),
+      title = element_text(size = title.size),
+      legend.text = element_text(size = legend.size),
+      strip.text.x = element_text(size = 13),
+      panel.spacing = unit(pandist, "cm", data = NULL)
+    )
+```
+
+#### Grundskola
+```{r}
+#| fig-height: 8
+df.kolada <- KOLADA %>% 
+  filter(Kön == "Alla") %>% 
+  filter(Kommun %in% jmfKommun) %>% 
+  filter(KPI %in% c("Lärare med pedagogisk högskoleexamen i grundskola åk 1-9, lägeskommun, andel (%)",
+                    "Lärare (heltidstjänster) med lärarlegitimation och behörighet i minst ett ämne i grundskola åk 1-9, lägeskommun, andel (%)",
+                    "Elever i åk 9 som är behöriga till yrkesprogram, hemkommun, andel (%)")
+  )
+
+ggplot(df.kolada,aes(x = År, y = Andel, group = Kommun, color = Kommun)) +
+  geom_line(alpha = 0.5, linewidth = 0.8) +
+  geom_point(alpha = 0.5, size = 2) +
+  geom_line(data = filter(df.kolada, Kommun == fokusKommun), alpha = 1) +
+  geom_point(data = filter(df.kolada, Kommun == fokusKommun), alpha = 1) +
+  scale_x_continuous(guide = guide_axis(n.dodge = 2)) +
+  scale_y_continuous(limits = c(0, 100)) +
+  scale_color_brewer(type = "qual", palette = "Dark2") +
+  ylab("Andel i %") +
+  xlab("") +
+  facet_wrap(~KPI,
+             ncol = 2,
+             nrow = 2,
+             scales = "free",
+             labeller = labeller(KPI = label_wrap_gen(22))) +
+  theme_minimal() +
+  theme_rise() +
+    theme(text = element_text(family = "Lato"),
+      axis.text.x = element_text(size = ax.size),
+      axis.text.y = element_text(size = ax.size),
+      title = element_text(size = title.size),
+      legend.text = element_text(size = legend.size),
+      strip.text.x = element_text(size = 13),
+      panel.spacing = unit(pandist, "cm", data = NULL)
+    )
+```
+#### Gymnasie
+```{r}
+#| fig-height: 8
+df.kolada <- KOLADA %>% 
+  filter(Kön == "Alla") %>% 
+  filter(Kommun %in% jmfKommun) %>% 
+  filter(KPI %in% c("Lärare med pedagogisk högskoleexamen i gymnasieskola, lägeskommun, andel (%)",
+                    "Gymnasieelever som uppnått grundläggande behörighet till universitet och högskola inom 4 år, hemkommun, andel (%)",
+                    "Gymnasieelever med indraget studiestöd pga. ogiltig frånvaro, hemkommun, andel (%)")
+  )
+
+ggplot(df.kolada,aes(x = År, y = Andel, group = Kommun, color = Kommun)) +
+  geom_line(alpha = 0.5, linewidth = 0.5) +
+  geom_point(alpha = 0.5, size = 1.2) +
+  geom_line(data = filter(df.kolada, Kommun == fokusKommun), alpha = 1) +
+  geom_point(data = filter(df.kolada, Kommun == fokusKommun), alpha = 1) +
+  scale_x_continuous(guide = guide_axis(n.dodge = 2)) +
+  scale_y_continuous(limits = c(0, 100)) +
+  scale_color_brewer(type = "qual", palette = "Dark2") +
+  ylab("Andel i %") +
+  xlab("") +
+  facet_wrap(~KPI,
+             ncol = 2,
+             nrow = 2,
+             scales = "free",
+             labeller = labeller(KPI = label_wrap_gen(22))) +
+  theme_minimal() +
+  theme_rise() +
+    theme(text = element_text(family = "Lato"),
+      axis.text.x = element_text(size = ax.size),
+      axis.text.y = element_text(size = ax.size),
+      title = element_text(size = title.size),
+      legend.text = element_text(size = legend.size),
+      strip.text.x = element_text(size = 13),
+      panel.spacing = unit(pandist, "cm", data = NULL)
+    )
+```
+:::
+
 ### Riskfaktorer
 
 ```{r}
@@ -544,10 +708,9 @@ DIDmedelSDg(sums.indexGG, "Vantrivsel i skolan") +
 ### Skyddsfaktorer
 
 ::: panel-tabset
-
 #### Åk 9 & Gy 2
 ```{r}
-
+#| include: false
 plotFaktor <- "Positiv skolanknytning"
 
 df.plot <- df %>%
@@ -601,6 +764,11 @@ df.plot %>%
   theme_minimal() +
   theme_rise()
 ```
+```{r}
+DIDmedelSDg(sums.indexGG, "Positiv skolanknytning") + 
+  facet_grid(Årskurs~Kön)
+```
+
 
 #### Åk 5
 
@@ -635,168 +803,7 @@ DIDmedelSDg(sums.indexGG, "Närsamhälle") +
 
 
 
-## KOLADA
-```{r}
-KOLADA <- read_parquet("../../data/2023-01-10_koladaData.parquet")
 
-# which KPI's to remove?
-removed.kpi <- c("N17473","N15613","N15643","N17620")
-# set which are available in app
-kpiChoices <- KOLADA %>% 
-  filter(!kpi %in% removed.kpi) %>% 
-  arrange(kpi) %>% 
-  distinct(KPI) %>% 
-  pull()
-
-```
-
-
-::: panel-tabset
-### Förskola
-```{r}
-
-df.kolada <- KOLADA %>% 
-  filter(Kön == "Alla") %>% 
-  filter(Kommun %in% jmfKommun) %>% 
-  filter(KPI %in% c("Barn 3-5 år inskrivna i förskola, andel (%)",
-                    "Heltidstjänster i förskolan med förskollärarexamen, lägeskommun, andel (%)")
-  )
-
-ggplot(df.kolada,aes(x = År, y = Andel, group = Kommun, color = Kommun)) +
-  geom_line(alpha = 0.5, 
-            linewidth = 0.8) +
-  geom_point(alpha = 0.5, 
-             size = 2) +
-  geom_line(data = filter(df.kolada, Kommun == fokusKommun), alpha = 1) +
-  geom_point(data = filter(df.kolada, Kommun == fokusKommun), alpha = 1) +
-  scale_x_continuous(guide = guide_axis(n.dodge = 2)) +
-  scale_y_continuous(limits = c(0, 100)) +
-  scale_color_brewer(type = "qual", palette = "Dark2") +
-  facet_wrap(~KPI,
-             ncol = 4,
-             scales = "free",
-             labeller = labeller(KPI = label_wrap_gen(25))) +
-  theme_minimal() +
-  theme_rise() +
-    theme(text = element_text(family = "Lato"),
-      axis.text.x = element_text(size = ax.size),
-      axis.text.y = element_text(size = ax.size),
-      title = element_text(size = title.size),
-      legend.text = element_text(size = legend.size),
-      strip.text.x = element_text(size = 13),
-      panel.spacing = unit(pandist, "cm", data = NULL)
-    )
-```
-### Grundskola
-```{r}
-#| fig-height: 8
-df.kolada <- KOLADA %>% 
-  filter(Kön == "Alla") %>% 
-  filter(Kommun %in% jmfKommun) %>% 
-  filter(KPI %in% c("Lärare med pedagogisk högskoleexamen i grundskola åk 1-9, lägeskommun, andel (%)",
-                    "Lärare (heltidstjänster) med lärarlegitimation och behörighet i minst ett ämne i grundskola åk 1-9, lägeskommun, andel (%)",
-                    "Elever i åk 9 som är behöriga till yrkesprogram, hemkommun, andel (%)")
-  )
-
-ggplot(df.kolada,aes(x = År, y = Andel, group = Kommun, color = Kommun)) +
-  geom_line(alpha = 0.5, linewidth = 0.8) +
-  geom_point(alpha = 0.5, size = 2) +
-  geom_line(data = filter(df.kolada, Kommun == fokusKommun), alpha = 1) +
-  geom_point(data = filter(df.kolada, Kommun == fokusKommun), alpha = 1) +
-  scale_x_continuous(guide = guide_axis(n.dodge = 2)) +
-  scale_y_continuous(limits = c(0, 100)) +
-  scale_color_brewer(type = "qual", palette = "Dark2") +
-  ylab("Andel i %") +
-  xlab("") +
-  facet_wrap(~KPI,
-             ncol = 2,
-             nrow = 2,
-             scales = "free",
-             labeller = labeller(KPI = label_wrap_gen(22))) +
-  theme_minimal() +
-  theme_rise() +
-    theme(text = element_text(family = "Lato"),
-      axis.text.x = element_text(size = ax.size),
-      axis.text.y = element_text(size = ax.size),
-      title = element_text(size = title.size),
-      legend.text = element_text(size = legend.size),
-      strip.text.x = element_text(size = 13),
-      panel.spacing = unit(pandist, "cm", data = NULL)
-    )
-```
-### Gymnasie
-```{r}
-#| fig-height: 8
-df.kolada <- KOLADA %>% 
-  filter(Kön == "Alla") %>% 
-  filter(Kommun %in% jmfKommun) %>% 
-  filter(KPI %in% c("Lärare med pedagogisk högskoleexamen i gymnasieskola, lägeskommun, andel (%)",
-                    "Gymnasieelever som uppnått grundläggande behörighet till universitet och högskola inom 4 år, hemkommun, andel (%)",
-                    "Gymnasieelever med indraget studiestöd pga. ogiltig frånvaro, hemkommun, andel (%)")
-  )
-
-ggplot(df.kolada,aes(x = År, y = Andel, group = Kommun, color = Kommun)) +
-  geom_line(alpha = 0.5, linewidth = 0.5) +
-  geom_point(alpha = 0.5, size = 1.2) +
-  geom_line(data = filter(df.kolada, Kommun == fokusKommun), alpha = 1) +
-  geom_point(data = filter(df.kolada, Kommun == fokusKommun), alpha = 1) +
-  scale_x_continuous(guide = guide_axis(n.dodge = 2)) +
-  scale_y_continuous(limits = c(0, 100)) +
-  scale_color_brewer(type = "qual", palette = "Dark2") +
-  ylab("Andel i %") +
-  xlab("") +
-  facet_wrap(~KPI,
-             ncol = 2,
-             nrow = 2,
-             scales = "free",
-             labeller = labeller(KPI = label_wrap_gen(22))) +
-  theme_minimal() +
-  theme_rise() +
-    theme(text = element_text(family = "Lato"),
-      axis.text.x = element_text(size = ax.size),
-      axis.text.y = element_text(size = ax.size),
-      title = element_text(size = title.size),
-      legend.text = element_text(size = legend.size),
-      strip.text.x = element_text(size = 13),
-      panel.spacing = unit(pandist, "cm", data = NULL)
-    )
-```
-:::
-
-## Jämförelser med andra kommuner
-
-### Antal svar över tid
-```{r}
-responsesKommuner <- df %>% 
-  filter(Kommun %in% jmfKommun,
-         !Kön == "<NA>") %>% 
-  rename(År = ar,
-         Årskurs = ARSKURS) %>% 
-  group_by(År,Kommun) %>% 
-  reframe(Antal = n()) %>% 
-  ggplot(aes(x = År, y = Antal, group = Kommun, color = Kommun)) + 
-  geom_line(linewidth = 1) +
-  geom_point_interactive(aes(tooltip = Antal),
-                         size = 2.5) +
-  scale_color_brewer(type = "qual", palette = "Dark2") +
-  scale_x_continuous(guide = guide_axis(n.dodge = 1), breaks = årtal) +
-  scale_y_continuous(limits = c(0,2000)) +
-  labs(title = "Antal respondenter per år",
-       subtitle = "Fördelat på kommun") +
-  theme_minimal() +
-  theme_rise() +
-    theme(text = element_text(family = "Lato"),
-      axis.text.x = element_text(size = ax.size),
-      axis.text.y = element_text(size = ax.size),
-      title = element_text(size = title.size),
-      legend.text = element_text(size = legend.size),
-      strip.text.x = element_text(size = 13),
-      panel.spacing = unit(pandist, "cm", data = NULL)
-    )
-
-girafe(ggobj = responsesKommuner)
-
-```
 
 
 ### Riskfaktorer
@@ -821,79 +828,3 @@ DIDradarPlot("2018")
 DIDradarPlot("2016")
 ```
 :::
-
-### Medelvärden över tid
-
-::: panel-tabset
-#### Utagerande
-```{r}
-DIDmedelSD("Utagerande")
-```
-#### Psykiska/psykosomatiska besvär
-```{r}
-DIDmedelSD("Psykiska/ psykosomatiska besvär")
-```
-#### Föräldraskap
-```{r}
-DIDmedelSD("Föräldraskap")
-```
-#### Vantrivsel i skolan
-```{r}
-DIDmedelSD("Vantrivsel i skolan")
-```
-#### Närsamhälle
-```{r}
-DIDmedelSD("Närsamhälle")
-```
-:::
-
-### Medelvärden över tid uppdelat på kön
-
-::: panel-tabset
-#### Utagerande
-```{r}
-DIDmedelSDg("Utagerande")
-```
-#### Psykiska/psykosomatiska besvär
-```{r}
-DIDmedelSDg("Psykiska/ psykosomatiska besvär")
-```
-#### Föräldraskap
-```{r}
-DIDmedelSDg("Föräldraskap")
-```
-#### Vantrivsel i skolan
-```{r}
-DIDmedelSDg("Vantrivsel i skolan")
-```
-#### Närsamhälle
-```{r}
-DIDmedelSDg("Närsamhälle")
-```
-:::
-
-### Högrisk över tid
-
-::: panel-tabset
-#### Utagerande
-```{r}
-DIDline90("Utagerande")
-```
-#### Psykiska/psykosomatiska besvär
-```{r}
-DIDline90("Psykiska/ psykosomatiska besvär")
-```
-#### Föräldraskap
-```{r}
-DIDline90("Föräldraskap")
-```
-#### Vantrivsel i skolan
-```{r}
-DIDline90("Vantrivsel i skolan")
-```
-#### Närsamhälle
-```{r}
-DIDline90("Närsamhälle")
-```
-:::
-

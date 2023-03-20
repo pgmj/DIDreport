@@ -385,3 +385,19 @@ for (i in rsfaktorer) {
   df.r1 <- as.data.frame(riskCalcGG(df, i))
   df.risk.gender.arskurs <- rbind(df.risk.gender.arskurs, df.r1)
 }
+
+
+# KOLADA ------------------------------------------------------------------
+
+KOLADA <- read_parquet("../data/2023-01-10_koladaData.parquet")
+
+# which KPI's to remove?
+removed.kpi <- c("N17473","N15613","N15643","N17620")
+# set which are available in app
+kpiChoices <- KOLADA %>%
+  filter(!kpi %in% removed.kpi) %>%
+  arrange(kpi) %>%
+  distinct(KPI) %>%
+  pull()
+
+

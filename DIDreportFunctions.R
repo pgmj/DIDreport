@@ -1,16 +1,66 @@
+#DIDcolors <- c("lightgrey","#009E73", "#F0E442", "#D55E00")
+DIDcolorsGGYR <- c("lightgrey","#509B8E", "#E2C578", "#DB7358")
+DIDcolorsRYGG <- c("#DB7358", "#E2C578", "#509B8E", "lightgrey")
+#DIDtestColors <- c("#509B8E","#E2C578","#DB7358")
+
+### text sizes
+ax.size <- 10
+title.size <- 12
+legend.size <- 10
+stript.size <- 10
+
+theme_rise <- function(fontfamily = "Lato", axissize = 13, titlesize = 15,
+                       margins = 12, axisface = "plain", stripsize = 12,
+                       panelDist = 0.6, legendSize = 11, legendTsize = 12) {
+  theme(
+    text = element_text(family = fontfamily),
+    axis.title.x = element_text(
+      margin = margin(t = margins),
+      size = axissize
+    ),
+    axis.title.y = element_text(
+      margin = margin(r = margins),
+      size = axissize
+    ),
+    plot.title = element_text(
+      face = "bold",
+      size = titlesize
+    ),
+    axis.title = element_text(
+      face = axisface
+    ),
+    plot.caption = element_text(
+      face = "italic"
+    ),
+    legend.text = element_text(family = fontfamily, size = legendSize),
+    legend.title = element_text(family = fontfamily, size = legendTsize),
+    strip.text = element_text(size = stripsize),
+    panel.spacing = unit(panelDist, "cm", data = NULL)
+  ) +
+    # these rows are for geom_text() and geom_text_repel() to match font family
+    update_geom_defaults("text", list(family = fontfamily)) +
+    update_geom_defaults("text_repel", list(family = fontfamily)) +
+    update_geom_defaults("textpath", list(family = fontfamily)) +
+    update_geom_defaults("texthline", list(family = fontfamily))
+
+}
+
+
+# Överblick ---------------------------------------------------------------
+
+
 DIDsnirkel <- function(årtal) {
-  year <- årtal
   df.risk %>%
-    #filter(!riskLevel == "NA") %>%
     filter(Kommun == fokusKommun) %>%
-    filter(År == year) %>%
+    filter(År == {{ årtal }} ) %>%
     filter(!Index %in% c("Välbefinnande", "Positiv skolanknytning")) %>%
     mutate(riskLevel = car::recode(riskLevel,"NA='För få svar';
+                                   '<NA>'='För få svar';
                                    'Medelhög risk'='Något förhöjd risk';
                                    'Hög risk'='Förhöjd risk'")) %>%
     mutate(Risknivå = factor(riskLevel, levels = c("För få svar", "Låg risk", "Något förhöjd risk", "Förhöjd risk"))) %>%
     ggplot(aes(x = Index, y = Andel, fill = Risknivå)) +
-    geom_col() +
+    geom_col(alpha = 0.9) +
     geom_textpath(aes(label = Index, group = Index),
                   text_only = T,
                   position = "stack",
@@ -18,8 +68,7 @@ DIDsnirkel <- function(årtal) {
                   size = 4
     ) +
     coord_polar(theta = "y") +
-    scale_fill_manual(values = lighten(c("lightgrey","#009E73", "#F0E442", "#D55E00"),
-                                       amount = 0.1, space = "HLS")) +
+    scale_fill_manual(values = DIDcolorsGGYR) +
     theme_bw() +
     scale_x_discrete(
       expand = expansion(add = c(3, 0)),
@@ -28,10 +77,9 @@ DIDsnirkel <- function(årtal) {
     ) +
     scale_y_continuous(
       breaks = seq(0, 90, 10),
-      labels = paste0(seq(0, 90, 10), "%"),
-      limits = c(0, 100)
+      labels = paste0(seq(0, 90, 10), "%")
     ) +
-    labs(title = paste0(fokusKommun, " - ", year)) +
+    labs(title = paste0(fokusKommun, " - ", årtal)) +
     geom_texthline(
       yintercept = 10, color = "black",
       linetype = 2, size = 2.5, alpha = 0.6,
@@ -44,25 +92,24 @@ DIDsnirkel <- function(årtal) {
       label = "Något förhöjd risk",
       hjust = 0.15
     ) +
-    theme(
-      axis.text.x = element_text(size = ax.size),
-      axis.text.y = element_text(size = ax.size),
-      title = element_text(size = title.size),
-      legend.text = element_text(size = legend.size),
-      strip.text.x = element_text(size = stript.size),
-      panel.spacing = unit(pandist, "cm", data = NULL)
-    ) +
+    # theme(
+    #   axis.text.x = element_text(size = ax.size),
+    #   axis.text.y = element_text(size = ax.size),
+    #   title = element_text(size = title.size),
+    #   legend.text = element_text(size = legend.size),
+    #   strip.text.x = element_text(size = stript.size),
+    #   panel.spacing = unit(pandist, "cm", data = NULL)
+    # ) +
     xlab("") +
     ylab("") +
     theme_minimal() +
-    theme_rise() +
-    theme(text = element_text(family = "Lato"))
+    theme_rise()
+#    theme(text = element_text(family = "Lato"))
 }
 
-DIDstapel <- function(årtal) {
+DIDstapel <- function(data,årtal) {
   year <- årtal
-  df.risk %>%
-    #filter(!riskLevel == "NA") %>%
+  data %>%
     filter(Kommun == fokusKommun) %>%
     filter(År == year) %>%
     filter(!Index %in% c("Välbefinnande", "Positiv skolanknytning")) %>%
@@ -71,26 +118,23 @@ DIDstapel <- function(årtal) {
                                    'Hög risk'='Förhöjd risk'")) %>%
     mutate(Risknivå = factor(riskLevel, levels = c("För få svar", "Låg risk", "Något förhöjd risk", "Förhöjd risk"))) %>%
     ggplot(aes(x = Index, y = Andel, fill = Risknivå)) +
-    geom_col() +
+    geom_col(alpha = 0.9) +
     geom_textpath(aes(label = Index, group = Index),
                   text_only = T,
                   position = "stack",
                   hjust = 0,
                   size = 4
     ) +
-    #coord_polar(theta = "y") +
-    scale_fill_manual(values = lighten(c("lightgrey","#009E73", "#F0E442", "#D55E00"),
-                                       amount = 0.1, space = "HLS")) +
+    scale_fill_manual(values = DIDcolorsGGYR) +
     theme_bw() +
     scale_x_discrete(
-      #expand = expansion(add = c(3, 0)),
       limits = rev,
       labels = NULL
     ) +
     scale_y_continuous(
-      breaks = seq(0, 90, 10),
-      labels = paste0(seq(0, 90, 10), "%"),
-      limits = c(0, 100)
+      breaks = seq(0, 100, 20),
+      minor_breaks = seq(0, 100, 10),
+      labels = paste0(seq(0, 100, 20), "%"),
     ) +
     labs(title = paste0(fokusKommun, " - ", year)) +
     geom_texthline(
@@ -105,19 +149,10 @@ DIDstapel <- function(årtal) {
       label = "Något förhöjd risk",
       hjust = 0.15
     ) +
-    theme(
-      axis.text.x = element_text(size = ax.size),
-      axis.text.y = element_text(size = ax.size),
-      title = element_text(size = title.size),
-      legend.text = element_text(size = legend.size),
-      strip.text.x = element_text(size = stript.size),
-      panel.spacing = unit(pandist, "cm", data = NULL)
-    ) +
     xlab("") +
     ylab("") +
     theme_minimal() +
-    theme_rise() +
-    theme(text = element_text(family = "Lato"))
+    theme_rise()
 }
 
 DIDareaPlot <- function(faktor) {
@@ -127,19 +162,19 @@ DIDareaPlot <- function(faktor) {
     mutate(
       Risknivå = case_when(
         .data[[plotFaktor]] < rslimits |>
-          select(plotFaktor) |>
+          select(all_of(plotFaktor)) |>
           slice(1) |>
           pull() ~ "Låg risk",
         .data[[plotFaktor]] >= rslimits |>
-          select(plotFaktor) |>
+          select(all_of(plotFaktor)) |>
           slice(1) |>
           pull() &
           .data[[plotFaktor]] < rslimits |>
-          select(plotFaktor) |>
+          select(all_of(plotFaktor)) |>
           slice(2) |>
           pull() ~ "Något förhöjd risk",
         .data[[plotFaktor]] >= rslimits |>
-          select(plotFaktor) |>
+          select(all_of(plotFaktor)) |>
           slice(2) |>
           pull() ~ "Förhöjd risk",
         TRUE ~ "Otillräckliga svar"
@@ -148,7 +183,6 @@ DIDareaPlot <- function(faktor) {
 
   df.plot %>%
     filter(Kön %in% c("Pojke", "Flicka")) %>%
-    # filter(ar %in% input$years0) %>% # allow selection of span of years?
     mutate(Risknivå = factor(Risknivå, levels = c("Förhöjd risk", "Något förhöjd risk", "Låg risk", "Otillräckliga svar"))) %>%
     group_by(ar, Kön) %>%
     count(Risknivå, .drop = FALSE) %>%
@@ -156,9 +190,9 @@ DIDareaPlot <- function(faktor) {
     ggplot(aes(x = ar, y = Andel)) +
     geom_area(aes(fill = Risknivå),
               position = "stack",
-              alpha = 0.85
+              alpha = 0.9
     ) +
-    scale_fill_manual(values = c("#D55E00", "#F0E442", "#009E73", "lightgrey")) +
+    scale_fill_manual(values = DIDcolorsRYGG) +
     #scale_color_manual(values = c("#D55E00", "#F0E442", "#009E73", "lightgrey")) +
     geom_hline(yintercept = 90, color = "black", linetype = 2, linewidth = 0.66) +
     geom_hline(yintercept = 75, color = RISEprimRed, linetype = 2, linewidth = 0.66) +
@@ -176,15 +210,15 @@ DIDareaPlot <- function(faktor) {
     ) +
     facet_wrap(~Kön) +
     theme_minimal() +
-    theme_rise() +
-    theme(text = element_text(family = "Lato"),
-          axis.text.x = element_text(size = ax.size),
-          axis.text.y = element_text(size = ax.size),
-          title = element_text(size = title.size),
-          legend.text = element_text(size = legend.size),
-          strip.text.x = element_text(size = 13),
-          panel.spacing = unit(pandist, "cm", data = NULL)
-    )
+    theme_rise()
+    # theme(text = element_text(family = "Lato"),
+    #       axis.text.x = element_text(size = ax.size),
+    #       axis.text.y = element_text(size = ax.size),
+    #       title = element_text(size = title.size),
+    #       legend.text = element_text(size = legend.size),
+    #       strip.text.x = element_text(size = 13),
+    #       panel.spacing = unit(pandist, "cm", data = NULL)
+    # )
 }
 
 DIDareaPlot2 <- function(faktor) {
@@ -194,19 +228,19 @@ DIDareaPlot2 <- function(faktor) {
     mutate(
       Risknivå = case_when(
         .data[[plotFaktor]] < rslimits |>
-          select(plotFaktor) |>
+          select(all_of(plotFaktor)) |>
           slice(1) |>
           pull() ~ "Låg risk",
         .data[[plotFaktor]] >= rslimits |>
-          select(plotFaktor) |>
+          select(all_of(plotFaktor)) |>
           slice(1) |>
           pull() &
           .data[[plotFaktor]] < rslimits |>
-          select(plotFaktor) |>
+          select(all_of(plotFaktor)) |>
           slice(2) |>
           pull() ~ "Något förhöjd risk",
         .data[[plotFaktor]] >= rslimits |>
-          select(plotFaktor) |>
+          select(all_of(plotFaktor)) |>
           slice(2) |>
           pull() ~ "Förhöjd risk",
         TRUE ~ "Otillräckliga svar"
@@ -215,7 +249,7 @@ DIDareaPlot2 <- function(faktor) {
 
   df.plot %>%
     filter(Kön %in% c("Pojke", "Flicka")) %>%
-    # filter(ar %in% input$years0) %>% # allow selection of span of years?
+    filter(!is.na(ARSKURS)) %>%
     mutate(Risknivå = factor(Risknivå, levels = c("Förhöjd risk", "Något förhöjd risk", "Låg risk", "Otillräckliga svar"))) %>%
     group_by(ar, Kön, ARSKURS) %>%
     count(Risknivå, .drop = FALSE) %>%
@@ -223,9 +257,9 @@ DIDareaPlot2 <- function(faktor) {
     ggplot(aes(x = ar, y = Andel)) +
     geom_area(aes(fill = Risknivå),
               position = "stack",
-              alpha = 0.85
+              alpha = 0.9
     ) +
-    scale_fill_manual(values = c("#D55E00", "#F0E442", "#009E73", "lightgrey")) +
+    scale_fill_manual(values = DIDcolorsRYGG) +
     #scale_color_manual(values = c("#D55E00", "#F0E442", "#009E73", "lightgrey")) +
     geom_hline(yintercept = 90, color = "black", linetype = 2, linewidth = 0.66) +
     geom_hline(yintercept = 75, color = RISEprimRed, linetype = 2, linewidth = 0.66) +
@@ -235,7 +269,7 @@ DIDareaPlot2 <- function(faktor) {
     ylab("Andel i %") +
     labs(
       title = paste0(plotFaktor, " - ", fokusKommun),
-      subtitle = "Uppdelat på kön",
+      subtitle = "Uppdelat på kön och årskurs",
       caption = str_wrap("Svart streckad linje = referensvärde för 10% med högst risk.
       Röd linje = referensvärde för 25% med högst risk",
                          width = 60
@@ -243,15 +277,7 @@ DIDareaPlot2 <- function(faktor) {
     ) +
     facet_grid(ARSKURS~Kön) +
     theme_minimal() +
-    theme_rise() +
-    theme(text = element_text(family = "Lato"),
-          axis.text.x = element_text(size = ax.size),
-          axis.text.y = element_text(size = ax.size),
-          title = element_text(size = title.size),
-          legend.text = element_text(size = legend.size),
-          strip.text = element_text(size = 11),
-          panel.spacing = unit(pandist, "cm", data = NULL)
-    )
+    theme_rise()
 }
 
 
@@ -296,6 +322,10 @@ DIDradarPlot <- function(årtal) {
     )
 }
 
+
+# Mean ~ Time -------------------------------------------------------------
+
+
 DIDmedelSD <- function(faktor, xlim = c(-3,3)) {
   plotFaktor <- faktor
   df.plot <- sums.index %>%
@@ -332,9 +362,9 @@ DIDmedelSD <- function(faktor, xlim = c(-3,3)) {
     )
 }
 
-DIDmedelSDg <- function(faktor, xlim = c(-3,3)) {
+DIDmedelSDg <- function(data,faktor, xlim = c(-3,3)) {
   plotFaktor <- faktor
-  df.plot <- sums.index %>%
+  df.plot <- data %>%
     filter(Faktor == plotFaktor) %>%
     filter(Kommun %in% jmfKommun) %>%
     filter(Kön %in% c("Flicka", "Pojke")) %>%
@@ -342,33 +372,32 @@ DIDmedelSDg <- function(faktor, xlim = c(-3,3)) {
     mutate(År = as.factor(År))
 
   ggplot(df.plot, aes(x = År, y = Medel, group = Kommun, color = Kommun, fill = Kommun)) + # make plot, with area color
-    geom_line(linewidth = 0.9,
-              alpha = 0.7) +
-    geom_point(size = 2.5, alpha = 0.7) +
-    geom_line(data = filter(df.plot, Kommun == fokusKommun), alpha = 1) +
-    geom_point(data = filter(df.plot, Kommun == fokusKommun), alpha = 1) +
+    geom_line(linewidth = 1,
+              alpha = 0.6,
+              linetype = 2) +
+    geom_point(size = 2.5, alpha = 0.6) +
+    geom_line(data = filter(df.plot, Kommun == fokusKommun),
+              alpha = 0.9, linewidth = 1.2,) +
+    geom_point(data = filter(df.plot, Kommun == fokusKommun),
+               alpha = 0.9, size = 3) +
     geom_ribbon(aes(ymin = sd.lo, ymax = sd.hi),
-                alpha = 0.1, linetype = 0
+                alpha = 0.05, linetype = 0
     ) +
     scale_y_continuous(limits = xlim) +
     scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
+    scale_color_brewer(type = "qual", palette = "Dark2", aesthetics = c("color","fill")) +
     labs(title = "Medelvärde över tid", subtitle = "Skuggat fält indikerar en standardavvikelse (~ 68%)") +
     xlab("Årtal") +
     ylab(paste0(plotFaktor)) +
     theme_minimal() +
-    theme_rise() +
-    facet_wrap(~Kön) +
-    theme_minimal() +
-    theme_rise() +
-    theme(text = element_text(family = "Lato"),
-          axis.text.x = element_text(size = ax.size),
-          axis.text.y = element_text(size = ax.size),
-          title = element_text(size = title.size),
-          legend.text = element_text(size = legend.size),
-          strip.text.x = element_text(size = 13),
-          panel.spacing = unit(pandist, "cm", data = NULL)
-    )
+    theme_rise()
 }
+
+set_girafe_defaults(
+  fonts = list(sans = "Lato",
+               serif = "Lato",
+               mono = "Lato"))
+init_girafe_defaults()
 
 DIDline90 <- function(faktor){
   plotFaktor <- faktor
@@ -379,25 +408,69 @@ DIDline90 <- function(faktor){
     filter(!År < 2006) %>%
     mutate(År = as.factor(År))
 
-  ggplot(df.plot, aes(x = År, y = n.90, group = Kön, color = Kön, tooltip = n, data_id = n)) + # make plot, with area color
-    geom_line(linewidth = 0.9) +
-    geom_point(size = 2) +
+  didline90 <- ggplot(df.plot, aes(x = År, y = n.90, group = Kön, color = Kön, tooltip = n)) + # make plot, with area color
+    geom_line(linewidth = 1) +
+    #geom_point(size = 3) +
+    geom_point_interactive(size = 3) +
     scale_y_continuous(limits = c(0, 30)) +
     scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
     scale_color_brewer(type = "qual", palette = "Dark2") +
-    #geom_hline(yintercept = 10, color = RISEprimRed, linetype = 2, linewidth = 0.4) +
+    geom_hline(yintercept = 10, color = "darkgrey", linetype = 2, linewidth = 0.4, alpha = 0.7) +
     ggtitle("Procent över percentil 90, per år") +
     xlab("") +
     ylab(paste0(plotFaktor)) +
     facet_wrap(~Kommun, labeller = labeller(Kommun = label_wrap_gen(12))) +
-    theme_minimal(base_family = "Lato") +
-    theme_rise() +
-    theme(
-      axis.text.x = element_text(size = ax.size),
-      axis.text.y = element_text(size = ax.size),
-      title = element_text(size = title.size),
-      legend.text = element_text(size = legend.size),
-      strip.text.x = element_text(size = stript.size+1),
-      panel.spacing = unit(pandist, "cm", data = NULL)
-    )
+    theme_minimal() +
+    theme_rise()
+
+  girafe(ggobj = didline90)
 }
+
+
+# Demografi ---------------------------------------------------------------
+
+
+# rename demographic variables for use in selectInput() later
+df <- df %>%
+  mutate(F5 = factor(F5, levels = c("Mindre än 5 år","5-9 år", "10 år eller mer", "Hela mitt liv"))) %>%
+  rename(`Hur länge har du bott i Sverige?` = F5,
+         `Vilken högsta utbildning har din mamma/pappa?` = f6ab,
+         `Vad bor du i för typ av bostad?` = F7)
+
+stapelDemografi <- function(demografi) {
+  demogr <- demografi
+  df %>%
+    select(demogr,ar,Kommun) %>%
+    filter(Kommun %in% fokusKommun) %>%
+    group_by(ar,Kommun) %>%
+    pivot_longer(demogr) %>%
+    count(name, value) %>%
+    mutate(percent = (100 * n / sum(n)) %>% round(digits = 3)) %>%
+    mutate(proportion = (n/sum(n) %>% round(digits = 3))) %>%
+    mutate(sem = sqrt(proportion*(1-proportion)/sum(n))) %>%
+    mutate(lower.95ci = proportion - sem*1.96,
+           upper.95ci = proportion + sem*1.96
+    ) %>%
+    rename(Svarsalternativ = value,
+           'Antal svar' = n,
+           Procent = percent) %>%
+    mutate(Svarsalternativ = car::recode(Svarsalternativ,"NA='Svar saknas'")) %>%
+    mutate(Procent = round(Procent,1)) %>%
+    mutate(procentText = sprintf("%1.1f%%", Procent)) %>%
+    mutate(År = factor(ar)) %>%
+    ggplot(aes(x = Svarsalternativ, y = Procent, fill = År, group = År)) +
+    geom_bar(position=position_dodge(), stat = 'identity') +
+    geom_text(aes(label = .data$'Antal svar'),
+              position = position_dodge(width = 0.9),
+              hjust = -0.22, vjust = 0.5, angle = 90, size = 2.7,
+              color = "darkgrey") +
+    scale_fill_viridis_d(begin = 0.3, end = 0.9, option = 7) +
+    scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
+    theme_minimal() +
+    theme_rise() +
+    labs(title = str_wrap(paste0(demogr)),
+         subtitle = fokusKommun,
+         caption = "Siffrorna ovanför staplarna anger antalet respondenter i varje svarskategori.")
+}
+
+

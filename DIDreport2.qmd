@@ -1,6 +1,6 @@
 ---
 title: "Data i dialog"
-subtitle: "Kommunrapport"
+subtitle: "Kommunrapport v2"
 title-block-banner: "#009ca6"
 title-block-banner-color: "#FFFFFF"
 author: 
@@ -10,9 +10,9 @@ author:
   orcid: 0000-0003-1669-592X
 date: last-modified
 params:
-  fokusKommun: "Södertälje"
+  fokusKommun: "Vallentuna"
   jmfKommun: "Stockholm"
-  years: 2016
+  years: 2020
 format: 
   html:
     toc: true
@@ -38,6 +38,8 @@ execute:
   warning: false
   message: false
   cache: true
+editor_options: 
+  chunk_output_type: console
 ---
 
 ## `r params$fokusKommun` {.unnumbered}
@@ -54,10 +56,9 @@ fokusKommun <- params$fokusKommun
 jmfKommun <- c(fokusKommun,params$jmfKommun)
 
 # years of interest
-years <- params$years
+yearsIn <- params$years
 
 # setup -------------------------------------------------------------------
-library(ggeffects)
 library(ggplot2)
 library(tidyverse)
 library(shiny)
@@ -65,10 +66,7 @@ library(arrow)
 library(xlsx)
 
 library(ggdist) # for shadeable density slabs
-library(gghalves) # for half-half geoms
-library(ggpp) # for position_dodge2nudge %>% 
-library(colorspace) # for lightening color palettes
-library(extrafont) # for Lato, RISE font
+library(ggpp) # for position_dodge2nudge
 library(stringr)
 library(EnvStats)
 library(bslib)
@@ -76,6 +74,7 @@ library(formattable)
 library(thematic)
 library(catR)
 library(Hmisc)
+library(colorspace) # for modifying color palettes
 
 library(geomtextpath)
 library(readxl)
@@ -95,11 +94,6 @@ count <- dplyr::count
 recode <- car::recode
 rename <- dplyr::rename
 
-### text sizes
-ax.size <- 10
-title.size <- 12
-legend.size <- 10
-stript.size <- 10
 årtal <- c(2006,2008,2010,2012,2014,2016,2018,2020,2022)
 
 
@@ -145,79 +139,6 @@ pfactors <- c('Välbefinnande','Positiv skolanknytning')
 ```
 
 ```{r}
-# read data
-
-# Import data -------------------------------------------------------------
-
-## Stockholmsenkäten --------------------------------------
-df <- read_parquet("../DIDapp/data/2023-01-23_ScoredRev.parquet")
-df <- df %>%
- rename(Kommun = DIDkommun)
-
-df <- df %>% 
-  filter(Kommun %in% jmfKommun)
-
-# remove data from before 2006 for Södertälje, due to lack of comparisons
-df <- df %>% 
-  filter(!ar < 2006)
-
-# define demographic variables of interest
-demogr.vars<-read.csv("../DIDapp/data/SthlmsEnk_demographicVariables.csv")
-demogr.vars <- demogr.vars$demogr.vars
-
-# final set of items based on psychometric analyses
-itemlabels.final <- read_excel("../DIDapp/data/SthlmsEnk_allItemInfo_2022-12-06.xls") %>% 
-  select(itemnr,item,Index)
-
-# list of all items included in analyses (even those discarded)
-allitems <- read.csv("../DIDapp/data/SthlmsEnk_allitems.csv")
-
-# list of item responses for Psykiska/ psykosomatiska besvär, for use in the "persona" visualization
-itemresponses <- read.xlsx("../DIDapp/data/SthlmsEnk_04psfRespCats.xls", sheetName = "04psf")
-
-# create vector with all index names
-sthlm.index <- itemlabels.final %>% 
-  distinct(Index) %>% 
-  pull()
-
-## Skolinspektionen --------------------------------------------------------
-
-# read data from processed file with Rasch based scores
-#df.si <- read_parquet("../../DIDapp/data/SkolinspÅk5Scored.parquet")
-# this data is also based on higher score = higher risk
-
-# some functions are based on the SthlmsEnkät labeling of year as "ar"
-# we add a duplicate year variable
-# df.si <- df.si %>% 
-#   mutate(ar = as.numeric(as.character(År)),
-#          ar = vec_cast(ar, double()))
-# 
-# # read item info
-# si.items <- read_csv("../../DIDapp/data/SkolinspFinalItems.csv")
-# note that all SI items have merged the top 3 response categories (top = highest risk)
-
-# Cutoff values SthlmsEnk -------------------------------------------------------------
-
-# percentiles based on 2006-2020 data for all of Stockholm Stad (~ 110k responses)
-# each year's 70th and 90th percentile value was used to calculate an average (not weighted in any way)
-# see script "file 04 Distributions and risk limits.R" in https://github.com/pgmj/sthlmsenk/tree/main/OtherScripts
-#rslimits <- read.csv("../../DIDapp/data/SthlmsEnk_rslimitsNoRev2022-12-06.csv")
-rslimits <- read_csv("../DIDapp/data/2023-01-17_rslimitsRisk.csv")
-
-# read cutoffs for protective factors
-#rslimits.prot <- read_csv("data/2022-12-16_protective.csv")
-rslimits.prot <- read_csv("../DIDapp/data/2023-01-17_rslimitsProt.csv")
-
-rslimits <- cbind(rslimits,rslimits.prot)
-rslimits <- rslimits %>% 
-  relocate(SkolaPositiv, .after = SkolaNegativ)
-
-# for Skolinspektionen ÅK5
-#rslimits.si <- read_csv("../../DIDapp/data/SkolinspRSlimitsNoRev.csv")
-#rslimits$`Positiv skolanknytning åk 5` <- rslimits.si$`Positiv skolanknytning`
-
-```
-```{r}
 # preprocess data
 source("setupDIDreport.R")
 # import functions to create figures and tables
@@ -241,7 +162,7 @@ responsesGender <- df %>%
   ggplot(aes(x = År, y = Antal, color = Kön)) + 
   geom_line(linewidth = 1) +
   geom_point_interactive(aes(tooltip = Antal),
-                         size = 2.5) +
+                         size = 3) +
   scale_color_brewer(type = "qual", palette = "Dark2") +
   scale_x_continuous(guide = guide_axis(n.dodge = 1), breaks = årtal) +
   scale_y_continuous(limits = c(0,NA)) +
@@ -266,7 +187,7 @@ responsesARSKURS <- df %>%
   ggplot(aes(x = År, y = Antal, color = Årskurs)) + 
   geom_line(linewidth = 1) +
   geom_point_interactive(aes(tooltip = Antal),
-                         size = 2.5) +
+                         size = 3) +
   #scale_color_brewer(type = "qual", palette = "Dark2") +
   scale_x_continuous(guide = guide_axis(n.dodge = 1), breaks = årtal) +
   scale_y_continuous(limits = c(0,NA)) +
@@ -290,6 +211,7 @@ otillr <- df.risk %>%
   geom_point_interactive(aes(tooltip = Andel),
                          size = 2.5) +
   ylab("Andel i %") +
+  scale_color_brewer(type = "qual", palette = "Dark2") +
   theme_minimal() +
   theme_rise() +
   theme(text = element_text(family = "Lato"))
@@ -297,6 +219,20 @@ otillr <- df.risk %>%
 girafe(ggobj = otillr)
 
 ```
+### Vistelsetid
+```{r}
+stapelDemografi("Hur länge har du bott i Sverige?")
+```
+### Utbildningsnivå föräldrar
+```{r}
+stapelDemografi("Vilken högsta utbildning har din mamma/pappa?")
+```
+
+### Boendetyp
+```{r}
+stapelDemografi("Vad bor du i för typ av bostad?")
+```
+
 ### Tabeller
 ```{r}
 #| layout-ncol: 2
@@ -334,47 +270,43 @@ df %>%
 ```
 :::
 
-## Samtliga riskfaktorer, per år
+## Överblick 
 
-:::: column-page-inset-left
+### Snirkel
+
 ::: panel-tabset
-### 2022
+#### 2022
 ```{r}
-DIDsnirkel("2022")
+DIDsnirkel(2022)
 ```
-### 2020
+#### 2020
 ```{r}
-DIDsnirkel("2020")
+DIDsnirkel(2020)
 ```
-### 2018
+#### 2018
 ```{r}
-DIDsnirkel("2018")
+DIDsnirkel(2018)
 ```
-### 2016
+#### 2016
 ```{r}
-DIDsnirkel("2016")
+DIDsnirkel(2016)
 ```
-### 2014
-```{r}
-#DIDsnirkel("2014")
-```
-### Samlade
+#### Samlade
 ```{r}
 
 # snirkelplot
-#years <- c(2012,2014,2016,2018,2020,2022)
+years <- c(2016,2018,2020,2022)
 
 df.risk %>%
-  #filter(!riskLevel == "NA") %>%
   filter(Kommun == fokusKommun) %>%
   filter(År %in% years) %>%
   filter(!Index %in% c("Välbefinnande", "Positiv skolanknytning")) %>%
     mutate(riskLevel = car::recode(riskLevel,"NA='För få svar';
                                    'Medelhög risk'='Något förhöjd risk';
                                    'Hög risk'='Förhöjd risk'")) %>% 
-    mutate(Risknivå = factor(riskLevel, levels = c("För få svar", "Låg risk", "Något förhöjd risk", "Förhöjd risk"))) %>% # remove NA?
+    mutate(Risknivå = factor(riskLevel, levels = c("För få svar", "Låg risk", "Något förhöjd risk", "Förhöjd risk"))) %>% 
     ggplot(aes(x = Index, y = Andel, fill = Risknivå)) +
-    geom_col() +
+    geom_col(alpha = 0.95) +
     geom_textpath(aes(label = Index, group = Index),
                   text_only = T,
                   position = "stack",
@@ -382,8 +314,7 @@ df.risk %>%
                   size = 2
     ) +
     coord_polar(theta = "y") +
-    scale_fill_manual(values = lighten(c("lightgrey","#009E73", "#F0E442", "#D55E00"),
-                                       amount = 0.1, space = "HLS")) +
+    scale_fill_manual(values = DIDcolorsGGYR) +
   theme_bw() +
   scale_x_discrete(
     expand = expansion(add = c(3, 0)),
@@ -393,7 +324,6 @@ df.risk %>%
   scale_y_continuous(
     breaks = seq(0, 90, 10),
     labels = paste0(seq(0, 90, 10), "%"),
-    limits = c(0, 100)
   ) +
   labs(title = paste0(fokusKommun)) +
   geom_texthline(
@@ -408,96 +338,104 @@ df.risk %>%
     label = "Medelhög risk",
     hjust = 0.15
   ) +
-  theme(
-    axis.text.x = element_text(size = ax.size-3, family = "sans"),
-    axis.text.y = element_text(size = ax.size-3, family = "sans"),
-    title = element_text(size = title.size),
-    legend.text = element_text(size = legend.size),
-    strip.text.x = element_text(size = stript.size),
-    panel.spacing = unit(pandist, "cm", data = NULL)
-  ) +
   xlab("") +
   ylab("") +
   facet_wrap(~År) +
   theme_minimal() +
-  theme_rise() +
-  theme(text = element_text(family = "Lato"))
+  theme_rise()
 ```
 :::
-::::
 
-## Samtliga riskfaktorer, per år (stapel)
+### Stapel
 
-:::: column-page-inset-left
 ::: panel-tabset
-### 2022
+#### 2022
 ```{r}
-DIDstapel("2022")
+DIDstapel(df.risk, "2022")
 ```
-### 2020
+#### 2020
 ```{r}
-DIDstapel("2020")
+DIDstapel(df.risk, "2020")
 ```
-### 2018
+#### 2018
 ```{r}
-DIDstapel("2018")
+DIDstapel(df.risk, "2018")
 ```
-### 2016
+#### 2016
 ```{r}
-DIDstapel("2016")
+DIDstapel(df.risk, "2016")
 ```
 :::
-::::
-## Riskfaktorer över tid, uppdelat på kön
+
+### Stapel uppdelat
 
 ::: panel-tabset
-### Utagerande
+#### 2022
+```{r}
+DIDstapel(df.risk.gender, "2022") +
+  facet_wrap(~Kön)
+```
+
+```{r}
+DIDstapel(df.risk.gender.arskurs, "2022") +
+  facet_grid(Årskurs~Kön)
+```
+
+#### 2020
+```{r}
+DIDstapel(df.risk.gender, "2020") +
+  facet_wrap(~Kön)
+```
+
+```{r}
+DIDstapel(df.risk.gender.arskurs, "2020") +
+  facet_grid(Årskurs~Kön)
+```
+
+#### 2018
+```{r}
+DIDstapel(df.risk.gender, "2018") +
+  facet_wrap(~Kön)
+```
+
+```{r}
+DIDstapel(df.risk.gender.arskurs, "2018") +
+  facet_grid(Årskurs~Kön)
+```
+#### 2016
+```{r}
+DIDstapel(df.risk.gender, "2016") +
+  facet_wrap(~Kön)
+```
+
+```{r}
+DIDstapel(df.risk.gender.arskurs, "2016") +
+  facet_grid(Årskurs~Kön)
+```
+:::
+
+## Individnivå
+
+### Riskfaktorer
+
+::: panel-tabset
+#### Utagerande
 ```{r}
 DIDareaPlot("Utagerande")
+DIDareaPlot2("Utagerande")
+DIDline90("Utagerande")
+DIDmedelSDg(sums.indexGG, "Utagerande") +
+  facet_grid(Årskurs~Kön)
 ```
-### Psykiska/psykosomatiska besvär
+#### Psykiska/psykosomatiska besvär
 ```{r}
 DIDareaPlot("Psykiska/ psykosomatiska besvär")
-```
-### Föräldraskap
-```{r}
-DIDareaPlot("Föräldraskap")
-```
-### Vantrivsel i skolan
-```{r}
-DIDareaPlot("Vantrivsel i skolan")
-```
-### Närsamhälle
-```{r}
-DIDareaPlot("Närsamhälle")
-```
-:::
-
-## Riskfaktorer över tid, uppdelat på årskurs
-
-::: panel-tabset
-### Utagerande
-```{r}
-DIDareaPlot2("Utagerande")
-```
-### Psykiska/psykosomatiska besvär
-```{r}
 DIDareaPlot2("Psykiska/ psykosomatiska besvär")
+DIDline90("Psykiska/ psykosomatiska besvär")
+DIDmedelSDg(sums.indexGG, "Psykiska/ psykosomatiska besvär") +
+  facet_grid(Årskurs~Kön)
 ```
-### Föräldraskap
-```{r}
-DIDareaPlot2("Föräldraskap")
-```
-### Vantrivsel i skolan
-```{r}
-DIDareaPlot2("Vantrivsel i skolan")
-```
-### Närsamhälle
-```{r}
-DIDareaPlot2("Närsamhälle")
-```
-:::
-
+#### Tabell
 ```{r}
 #| include: false
 ### Tabell psykiska/psykosomatiska besvär åk 9
@@ -508,19 +446,19 @@ DIDareaPlot2("Närsamhälle")
     mutate(
       Risknivå = case_when(
         .data[[plotFaktor]] < rslimits |>
-          select(plotFaktor) |>
+          select(all_of(plotFaktor)) |>
           slice(1) |>
           pull() ~ "Låg risk",
         .data[[plotFaktor]] >= rslimits |>
-          select(plotFaktor) |>
+          select(all_of(plotFaktor)) |>
           slice(1) |>
           pull() &
           .data[[plotFaktor]] < rslimits |>
-            select(plotFaktor) |>
+            select(all_of(plotFaktor)) |>
             slice(2) |>
             pull() ~ "Något förhöjd risk",
         .data[[plotFaktor]] >= rslimits |>
-          select(plotFaktor) |>
+          select(all_of(plotFaktor)) |>
           slice(2) |>
           pull() ~ "Förhöjd risk",
         TRUE ~ "Otillräckliga svar"
@@ -546,7 +484,7 @@ DIDareaPlot2("Närsamhälle")
   
     df.plot %>%
     filter(Kön %in% c("Pojke", "Flicka")) %>%
-    filter(ar %in% c(2010,2016,2020,2022)) %>% # allow selection of span of years?
+    filter(ar %in% c(2016,2018,2020,2022)) %>% # allow selection of span of years?
     filter(ARSKURS == "Åk 9") %>% 
     mutate(Risknivå = factor(Risknivå, levels = c("Förhöjd risk", "Något förhöjd risk", "Låg risk", "Otillräckliga svar"))) %>%
     group_by(ar, Kön) %>%
@@ -562,297 +500,140 @@ DIDareaPlot2("Närsamhälle")
   cols_align(align = "right")
   
 ```
-
-
-
-## Välbefinnande
-
-::: panel-tabset
-### Medelvärden
-```{r}
-
-```
-
-
-### Grupperat
-```{r}
-
-plotFaktor <- "Välbefinnande"
-
-df.plot <- df %>%
-      filter(Kommun == fokusKommun) %>%
-      mutate(
-        Risknivå = case_when(
-          .data[[plotFaktor]] < rslimits.prot |>
-            select(plotFaktor) |>
-            slice(1) |>
-            pull() ~ "20% lägst",
-          .data[[plotFaktor]] >= rslimits.prot |>
-            select(plotFaktor) |>
-            slice(1) |>
-            pull() &
-            .data[[plotFaktor]] < rslimits.prot |>
-            select(plotFaktor) |>
-            slice(2) |>
-            pull() ~ "Normal nivå",
-          .data[[plotFaktor]] >= rslimits.prot |>
-            select(plotFaktor) |>
-            slice(2) |>
-            pull() ~ "20% högst",
-          TRUE ~ "Otillräckliga svar"
-        )
-      )
-    
-    df.plot %>%
-      filter(Kön %in% c("Flicka","Pojke")) %>%
-      #filter(!Risknivå == "Otillräckliga svar") %>% 
-      group_by(ar, Kön) %>%
-      count(Risknivå) %>%
-      mutate(Andel = (100 * n / sum(n)) %>% round(digits = 1)) %>%
-      mutate(Grupp = factor(Risknivå, levels = c("20% högst", "Normal nivå", 
-                                                    "20% lägst","Otillräckliga svar"))) %>%
-      ungroup() %>% 
-      ggplot(aes(x = ar, y = Andel)) +
-      geom_area(aes(color = Grupp, fill = Grupp), position = "stack") +
-      scale_fill_manual(values = c("#00C18D","#F1E755","#F36B00","lightgrey")) +
-      scale_color_manual(values = c("#00C18D","#F1E755","#F36B00","lightgrey")) +
-      #geom_hline(yintercept = 80, color = "black", linetype = 2, linewidth = 0.66) +
-      #geom_hline(yintercept = 20, color = RISEprimRed, linetype = 2, linewidth = 0.66) +
-      scale_y_continuous(breaks = c(0, 20, 40, 60, 80, 100)) +
-      #scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
-      xlab("Årtal") +
-      ylab("Andel i %") +
-      labs(
-        title = paste0(plotFaktor, " - ", fokusKommun),
-        subtitle = "Uppdelat på kön",
-        caption = str_wrap("Grönt fält = Andel som överstiger referensvärde för 20% med högst välbefinnande.\nRött fält indikerar andel som understiger referensvärde för 20% med lägst välbefinnande.")
-      ) +
-      facet_wrap(~Kön) +
-  theme_minimal() +
-  theme_rise() +
-    theme(text = element_text(family = "Lato"),
-      axis.text.x = element_text(size = ax.size),
-      axis.text.y = element_text(size = ax.size),
-      title = element_text(size = title.size),
-      legend.text = element_text(size = legend.size),
-      strip.text.x = element_text(size = 13),
-      panel.spacing = unit(pandist, "cm", data = NULL)
-    )
-```
-### Kontinuerlig skala
-```{r}
-
-plotFaktor <- "Välbefinnande"
-
-df.plot <- df %>%
-      filter(Kommun == fokusKommun) %>%
-      select(plotFaktor, Kommun, ar) %>%
-      rename(RSfaktor = plotFaktor,
-             År = ar)
-
-    ggplot(df.plot, aes(x = RSfaktor, y = factor(År), fill = År)) + # make plot, with fill color by year
-      stat_slab(aes(fill_ramp = after_stat(level), fill = År),
-        side = "right", show.legend = F,
-        scale = 0.6, # defines the height that a slab can reach
-        position = position_dodge(width = .6), # distance between elements for dodging
-        .width = c(.50, .90, 1)
-      ) + 
-      stat_summary(
-        fun.data = "mean_cl_normal",
-        show.legend = F,
-        size = .4,
-        position = position_dodge2nudge(x = .05, width = .8)
-      ) +
-      xlab("") +
-      ylab("") +
-      labs(
-        title = paste0(plotFaktor),
-        caption = str_wrap("Pricken visar medelvärde. Fältet i mitten visar 50% av respondenterna, medan nästa fält visar 90% av respondenterna.")
-      ) +
-  theme_minimal() +
-  theme_rise() +
-    theme(text = element_text(family = "Lato"),
-      axis.text.x = element_text(size = ax.size),
-      axis.text.y = element_text(size = ax.size),
-      title = element_text(size = title.size),
-      legend.text = element_text(size = legend.size),
-      strip.text.x = element_text(size = 13),
-      panel.spacing = unit(pandist, "cm", data = NULL)
-    )
-```
-### Box- & violinplots
-```{r}
-df.plot <- df %>%
-      #filter(ar == input$year2) %>% # filter the year selected
-      # filter(Kön %in% input$gender) %>%  # and gender(s) selected
-      filter(Kommun == fokusKommun,
-             !Kön == "<NA>") %>%
-      select(plotFaktor, Kommun, ar, Kön) %>%
-      rename(RSfaktor = plotFaktor,
-             År = ar)
-ggplot(df.plot, aes(y = RSfaktor, x = factor(År))) +
-  geom_violin(alpha = 1, aes(fill = Kön)) +
-  geom_boxplot(alpha = 0.4, width = 0.6, outlier.shape = NA, notch = TRUE) +
-  scale_fill_brewer(type = "qual", palette = "Dark2") +
-  xlab("Årtal") +
-  ylab("Välbefinnande") +
-  theme_minimal() +
-  theme_rise() +
-    theme(text = element_text(family = "Lato"),
-      axis.text.x = element_text(size = ax.size),
-      axis.text.y = element_text(size = ax.size),
-      title = element_text(size = title.size),
-      legend.text = element_text(size = legend.size),
-      strip.text.x = element_text(size = 13),
-      panel.spacing = unit(pandist, "cm", data = NULL)
-    )
-```
 :::
 
 
+### Skyddsfaktorer
 
-## Positiv skolanknytning över tid
+### Välbefinnande
+```{r}
+DIDmedelSDg(sums.index,"Välbefinnande") + 
+  facet_wrap(~Kön)
+
+DIDmedelSDg(sums.indexGG, "Välbefinnande") + 
+  facet_grid(Årskurs~Kön)
+```
+
+
+## Familj
+
+### Riskfaktorer
+
+```{r}
+DIDareaPlot("Föräldraskap")
+DIDareaPlot2("Föräldraskap")
+DIDline90("Föräldraskap")
+DIDmedelSDg(sums.indexGG, "Föräldraskap") +
+  facet_grid(Årskurs~Kön)
+```
+
+### Skyddsfaktorer
+
+## Skola
+
+### Riskfaktorer
+
+```{r}
+DIDareaPlot("Vantrivsel i skolan")
+DIDareaPlot2("Vantrivsel i skolan")
+DIDline90("Vantrivsel i skolan")
+DIDmedelSDg(sums.indexGG, "Vantrivsel i skolan") +
+  facet_grid(Årskurs~Kön)
+```
+
+### Skyddsfaktorer
 
 ::: panel-tabset
-### Grupperat
+
+#### Åk 9 & Gy 2
 ```{r}
 
 plotFaktor <- "Positiv skolanknytning"
 
 df.plot <- df %>%
-      filter(Kommun == fokusKommun) %>%
-      mutate(
-        Risknivå = case_when(
-          .data[[plotFaktor]] < rslimits.prot |>
-            select(plotFaktor) |>
-            slice(1) |>
-            pull() ~ "Lågt skydd",
-          .data[[plotFaktor]] >= rslimits.prot |>
-            select(plotFaktor) |>
-            slice(1) |>
-            pull() &
-            .data[[plotFaktor]] < rslimits.prot |>
-            select(plotFaktor) |>
-            slice(2) |>
-            pull() ~ "Neutral",
-          .data[[plotFaktor]] >= rslimits.prot |>
-            select(plotFaktor) |>
-            slice(2) |>
-            pull() ~ "Högt skydd",
-          TRUE ~ "Otillräckliga svar"
-        )
-      )
-    
-    df.plot %>%
-      filter(Kön %in% c("Flicka","Pojke")) %>%
-      #filter(!Risknivå == "Otillräckliga svar") %>% 
-      group_by(ar, Kön) %>%
-      count(Risknivå) %>%
-      mutate(Andel = (100 * n / sum(n)) %>% round(digits = 1)) %>%
-      mutate(Grupp = factor(Risknivå, levels = c("Högt skydd", "Neutral", 
-                                                    "Lågt skydd","Otillräckliga svar"))) %>%
-      ungroup() %>% 
-      ggplot(aes(x = ar, y = Andel)) +
-      geom_area(aes(color = Grupp, fill = Grupp), position = "stack") +
-      scale_fill_manual(values = c("#00C18D","#F1E755","#F36B00","lightgrey")) +
-      scale_color_manual(values = c("#00C18D","#F1E755","#F36B00","lightgrey")) +
-      #geom_hline(yintercept = 80, color = "black", linetype = 2, linewidth = 0.66) +
-      #geom_hline(yintercept = 20, color = RISEprimRed, linetype = 2, linewidth = 0.66) +
-      scale_y_continuous(breaks = c(0, 20, 40, 60, 80, 100)) +
-      #scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
-      xlab("Årtal") +
-      ylab("Andel i %") +
-      labs(
-        title = paste0(plotFaktor, " - ", fokusKommun),
-        subtitle = "Uppdelat på kön",
-        caption = str_wrap("Grönt fält indikerar andel som överstiger referensvärde för 20% med högst skydd.\nRött fält  indikerar andel som understiger referensvärde för 20% med lägst skydd.")
-      ) +
-      facet_wrap(~Kön) +
-  theme_minimal() +
-  theme_rise() +
-    theme(text = element_text(family = "Lato"),
-      axis.text.x = element_text(size = ax.size),
-      axis.text.y = element_text(size = ax.size),
-      title = element_text(size = title.size),
-      legend.text = element_text(size = legend.size),
-      strip.text.x = element_text(size = 13),
-      panel.spacing = unit(pandist, "cm", data = NULL)
+  filter(Kommun == fokusKommun) %>%
+  mutate(
+    Risknivå = case_when(
+      .data[[plotFaktor]] < rslimits.prot |>
+        select(plotFaktor) |>
+        slice(1) |>
+        pull() ~ "Lågt skydd",
+      .data[[plotFaktor]] >= rslimits.prot |>
+        select(plotFaktor) |>
+        slice(1) |>
+        pull() &
+        .data[[plotFaktor]] < rslimits.prot |>
+        select(plotFaktor) |>
+        slice(2) |>
+        pull() ~ "Neutral",
+      .data[[plotFaktor]] >= rslimits.prot |>
+        select(plotFaktor) |>
+        slice(2) |>
+        pull() ~ "Högt skydd",
+      TRUE ~ "Otillräckliga svar"
     )
-```
-### Kontinuerlig skala
-```{r}
+  )
 
-plotFaktor <- "Positiv skolanknytning"
-
-df.plot <- df %>%
-      filter(Kommun == fokusKommun) %>%
-      select(plotFaktor, Kommun, ar) %>%
-      rename(RSfaktor = plotFaktor,
-             År = ar)
-
-    ggplot(df.plot, aes(x = RSfaktor, y = factor(År), fill = År)) + # make plot, with fill color by year
-      stat_slab(aes(fill_ramp = after_stat(level), fill = År),
-        side = "right", show.legend = F,
-        scale = 0.6, # defines the height that a slab can reach
-        position = position_dodge(width = .6), # distance between elements for dodging
-        .width = c(.50, .90, 1)
-      ) + 
-      stat_summary(
-        fun.data = "mean_cl_normal",
-        show.legend = F,
-        size = .4,
-        position = position_dodge2nudge(x = .05, width = .8)
-      ) +
-      theme(
-        axis.text.x = element_text(size = ax.size, family = "sans"),
-        axis.text.y = element_text(size = ax.size, family = "sans"),
-        title = element_text(size = title.size),
-      ) +
-      xlab("") +
-      ylab("") +
-      labs(
-        title = paste0(plotFaktor),
-        caption = str_wrap("Pricken visar medelvärde. Fältet i mitten visar 50% av respondenterna, medan nästa fält visar 90% av respondenterna.")
-      ) +
-  theme_minimal() +
-  theme_rise() +
-    theme(text = element_text(family = "Lato"),
-      axis.text.x = element_text(size = ax.size),
-      axis.text.y = element_text(size = ax.size),
-      title = element_text(size = title.size),
-      legend.text = element_text(size = legend.size),
-      strip.text.x = element_text(size = 13),
-      panel.spacing = unit(pandist, "cm", data = NULL)
-    )
-```
-### Box- & violinplots
-```{r}
-df.plot <- df %>%
-      #filter(ar == input$year2) %>% # filter the year selected
-      # filter(Kön %in% input$gender) %>%  # and gender(s) selected
-      filter(Kommun == fokusKommun,
-             !Kön == "<NA>") %>%
-      select(plotFaktor, Kommun, ar, Kön) %>%
-      rename(RSfaktor = plotFaktor,
-             År = ar)
-ggplot(df.plot, aes(y = RSfaktor, x = factor(År))) +
-  geom_violin(alpha = 1, aes(fill = Kön)) +
-  geom_boxplot(alpha = 0.4, width = 0.6, outlier.shape = NA, notch = TRUE) +
-  scale_fill_brewer(type = "qual", palette = "Dark2") +
+df.plot %>%
+  filter(Kön %in% c("Flicka","Pojke")) %>%
+  group_by(ar, Kön) %>%
+  count(Risknivå) %>%
+  mutate(Andel = (100 * n / sum(n)) %>% round(digits = 1)) %>%
+  mutate(Grupp = factor(Risknivå, levels = c("Högt skydd", "Neutral", 
+                                             "Lågt skydd","Otillräckliga svar"))) %>%
+  ungroup() %>% 
+  ggplot(aes(x = ar, y = Andel)) +
+  geom_area(aes(color = Grupp, fill = Grupp), position = "stack") +
+  scale_fill_manual(values = c("#00C18D","#F1E755","#F36B00","lightgrey")) +
+  scale_color_manual(values = c("#00C18D","#F1E755","#F36B00","lightgrey")) +
+  #geom_hline(yintercept = 80, color = "black", linetype = 2, linewidth = 0.66) +
+  #geom_hline(yintercept = 20, color = RISEprimRed, linetype = 2, linewidth = 0.66) +
+  scale_y_continuous(breaks = c(0, 20, 40, 60, 80, 100)) +
+  #scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
   xlab("Årtal") +
-  ylab("Välbefinnande") +
+  ylab("Andel i %") +
+  labs(
+    title = paste0(plotFaktor, " - ", fokusKommun),
+    subtitle = "Uppdelat på kön",
+    caption = str_wrap("Grönt fält indikerar andel som överstiger referensvärde för 20% med högst skydd.\nRött fält  indikerar andel som understiger referensvärde för 20% med lägst skydd.")
+  ) +
+  facet_wrap(~Kön) +
   theme_minimal() +
-  theme_rise() +
-    theme(text = element_text(family = "Lato"),
-      axis.text.x = element_text(size = ax.size),
-      axis.text.y = element_text(size = ax.size),
-      title = element_text(size = title.size),
-      legend.text = element_text(size = legend.size),
-      strip.text.x = element_text(size = 13),
-      panel.spacing = unit(pandist, "cm", data = NULL)
-    )
+  theme_rise()
+```
+
+#### Åk 5
+
+Just nu finns det bara data från Skolinspektionen för Stockholm, Vallentuna och Vaxholm.
+```{r}
+DIDmedelSDg(sums.si, "SkolaPositivSI") +
+  facet_wrap(~Kön) +
+  ylab("Positiv skolanknytning åk 5")
+
 ```
 :::
+
+## Närsamhälle
+
+### Riskfaktorer
+
+```{r}
+DIDareaPlot("Närsamhälle")
+DIDareaPlot2("Närsamhälle")
+DIDline90("Närsamhälle")
+DIDmedelSDg(sums.indexGG, "Närsamhälle") +
+  facet_grid(Årskurs~Kön)
+```
+
+### Skyddsfaktorer
+
+## Kamrater och fritid
+
+### Riskfaktorer
+
+### Skyddsfaktorer
+
+
 
 ## KOLADA
 ```{r}

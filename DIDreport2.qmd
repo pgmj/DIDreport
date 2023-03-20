@@ -551,7 +551,7 @@ DIDmedelSDg(sums.indexGG, "Psykiska/ psykosomatiska besvär") +
   
 ```
 
-#### ANDTS antal
+#### ANDT antal
 ```{r}
 #| fig-height: 6
 plotFaktor = "Senaste4v"
@@ -588,7 +588,7 @@ df %>%
   theme_rise() +
   facet_grid(ARSKURS ~ Kön)
 ```
-#### Separerade på respektive substans
+#### ANDT separat
 
 ```{r}
 # for FNY12020r and F14r (e-cig and smoking)
@@ -703,7 +703,7 @@ andtsUseShare2 <- function(andts) {
 andtsUseShare2("F36new")
 andtsUseShare2("F49new")
 ```
-#### Debutålder substansanvändning
+#### Debutålder ANDT
 ```{r}
 itemsANDTSdebut <- c("F16","F20","F37","F44","F51")
 
@@ -742,6 +742,60 @@ df %>%
 
 #### Utsatt för brott
 ```{r}
+utsatt.items <- c("f78aa","f78ba","f78ca","f78da","f78ea")
+
+utsattBrott <- df %>% 
+  filter(Kommun == fokusKommun,
+         !is.na(Kön),
+         !is.na(ARSKURS)) %>% 
+  rename(År = ar,
+         Årskurs = ARSKURS) %>% 
+  select(all_of(c(utsatt.items,"År","Kön","Årskurs"))) %>% 
+  group_by(År,Årskurs,Kön) %>% 
+  reframe(Antal = n()) %>% 
+  ggplot(aes(x = År, y = Antal, color = Kön)) + 
+  geom_line(linewidth = 1) +
+  geom_point_interactive(aes(tooltip = Antal),
+                         size = 3) +
+  scale_color_brewer(type = "qual", palette = "Dark2") +
+  scale_x_continuous(guide = guide_axis(n.dodge = 1), breaks = årtal) +
+  scale_y_continuous(limits = c(0,NA)) +
+  labs(title = "Antal respondenter per år",
+       subtitle = "Utsatt för någon typ av brott") +
+  theme_minimal() +
+  theme_rise() +
+  facet_wrap(~Årskurs)
+
+girafe(ggobj = utsattBrott)
+
+```
+
+```{r}
+#| include: false
+utsattBrott <- df %>% 
+  filter(Kommun == fokusKommun,
+         !is.na(Kön),
+         !is.na(ARSKURS)) %>% 
+  rename(År = ar,
+         Årskurs = ARSKURS) %>% 
+  select(all_of(c(utsatt.items,"År","Kön","Årskurs"))) %>% 
+  group_by(År,Årskurs,Kön) %>% 
+  summarise(Antal = n()) %>% 
+  mutate(Andel = Antal * 100 / sum(Antal)) %>% 
+  ggplot(aes(x = År, y = Antal, color = Kön)) + 
+  geom_line(linewidth = 1) +
+  geom_point_interactive(aes(tooltip = Antal),
+                         size = 3) +
+  scale_color_brewer(type = "qual", palette = "Dark2") +
+  scale_x_continuous(guide = guide_axis(n.dodge = 1), breaks = årtal) +
+  scale_y_continuous(limits = c(0,NA)) +
+  labs(title = "Andel respondenter per år",
+       subtitle = "Utsatt för någon typ av brott") +
+  theme_minimal() +
+  theme_rise() +
+  facet_wrap(~Årskurs)
+
+girafe(ggobj = utsattBrott)
 
 ```
 
@@ -834,15 +888,7 @@ ggplot(df.kolada,aes(x = År, y = Andel, group = Kommun, color = Kommun)) +
              scales = "free",
              labeller = labeller(KPI = label_wrap_gen(22))) +
   theme_minimal() +
-  theme_rise() +
-    theme(text = element_text(family = "Lato"),
-      axis.text.x = element_text(size = ax.size),
-      axis.text.y = element_text(size = ax.size),
-      title = element_text(size = title.size),
-      legend.text = element_text(size = legend.size),
-      strip.text.x = element_text(size = 13),
-      panel.spacing = unit(pandist, "cm", data = NULL)
-    )
+  theme_rise()
 ```
 #### Gymnasie
 ```{r}
@@ -871,15 +917,7 @@ ggplot(df.kolada,aes(x = År, y = Andel, group = Kommun, color = Kommun)) +
              scales = "free",
              labeller = labeller(KPI = label_wrap_gen(22))) +
   theme_minimal() +
-  theme_rise() +
-    theme(text = element_text(family = "Lato"),
-      axis.text.x = element_text(size = ax.size),
-      axis.text.y = element_text(size = ax.size),
-      title = element_text(size = title.size),
-      legend.text = element_text(size = legend.size),
-      strip.text.x = element_text(size = 13),
-      panel.spacing = unit(pandist, "cm", data = NULL)
-    )
+  theme_rise()
 ```
 :::
 

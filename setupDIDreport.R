@@ -386,6 +386,14 @@ for (i in rsfaktorer) {
   df.risk.gender.arskurs <- rbind(df.risk.gender.arskurs, df.r1)
 }
 
+# rename demographic variables for use in selectInput() later
+df <- df %>%
+  mutate(F5 = factor(F5, levels = c("Mindre än 5 år","5-9 år", "10 år eller mer", "Hela mitt liv"))) %>%
+  rename(`Hur länge har du bott i Sverige?` = F5,
+         `Vilken högsta utbildning har din mamma/pappa?` = f6ab,
+         `Vad bor du i för typ av bostad?` = F7)
+
+
 
 # KOLADA ------------------------------------------------------------------
 

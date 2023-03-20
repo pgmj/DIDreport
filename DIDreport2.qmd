@@ -250,7 +250,7 @@ responsesKommuner <- df %>%
                          size = 2.5) +
   scale_color_brewer(type = "qual", palette = "Dark2") +
   scale_x_continuous(guide = guide_axis(n.dodge = 1), breaks = årtal) +
-  scale_y_continuous(limits = c(0,2000)) +
+  #scale_y_continuous(limits = c(0,2000)) +
   labs(title = "Antal respondenter per år",
        subtitle = "Fördelat på kommun") +
   theme_minimal() +
@@ -402,7 +402,7 @@ DIDstapel(df.risk, "2016")
 ```
 :::
 
-### Stapel uppdelat
+### Stapeldiagram, kön
 
 ::: panel-tabset
 #### 2022
@@ -413,13 +413,6 @@ df.risk.gender %>%
   facet_wrap(~Kön)
 ```
 
-```{r}
-df.risk.gender.arskurs %>% 
-  filter(!is.na(Årskurs)) %>% 
-  DIDstapel("2022") +
-  facet_grid(Årskurs~Kön)
-```
-
 #### 2020
 ```{r}
 df.risk.gender %>% 
@@ -428,12 +421,6 @@ df.risk.gender %>%
   facet_wrap(~Kön)
 ```
 
-```{r}
-df.risk.gender.arskurs %>% 
-  filter(!is.na(Årskurs)) %>% 
-  DIDstapel("2020") +
-  facet_grid(Årskurs~Kön)
-```
 
 #### 2018
 ```{r}
@@ -443,12 +430,7 @@ df.risk.gender %>%
   facet_wrap(~Kön)
 ```
 
-```{r}
-df.risk.gender.arskurs %>% 
-  filter(!is.na(Årskurs)) %>% 
-  DIDstapel("2018") +
-  facet_grid(Årskurs~Kön)
-```
+
 #### 2016
 ```{r}
 df.risk.gender %>% 
@@ -457,11 +439,61 @@ df.risk.gender %>%
   facet_wrap(~Kön)
 ```
 
+:::
+
+### Stapel kön/årskurs
+
+::: panel-tabset
+#### 2022
 ```{r}
 df.risk.gender.arskurs %>% 
   filter(!is.na(Årskurs)) %>% 
-  DIDstapel("2016") +
+  DIDstapel("2022", tpathsize = 2.7) +
   facet_grid(Årskurs~Kön)
+```
+#### 2020
+```{r}
+df.risk.gender.arskurs %>% 
+  filter(!is.na(Årskurs)) %>% 
+  DIDstapel("2020", tpathsize = 2.7) +
+  facet_grid(Årskurs~Kön)
+```
+#### 2018
+```{r}
+df.risk.gender.arskurs %>% 
+  filter(!is.na(Årskurs)) %>% 
+  DIDstapel("2018", tpathsize = 2.7) +
+  facet_grid(Årskurs~Kön)
+```
+#### 2016
+```{r}
+df.risk.gender.arskurs %>% 
+  filter(!is.na(Årskurs)) %>% 
+  DIDstapel("2016", tpathsize = 2.7) +
+  facet_grid(Årskurs~Kön)
+```
+:::
+
+### Spindeldiagram
+
+::: panel-tabset
+#### 2022
+
+Vi saknar data för Stockholm gällande 2022.
+```{r}
+DIDradarPlot("2022")
+```
+#### 2020
+```{r}
+DIDradarPlot("2020")
+```
+#### 2018
+```{r}
+DIDradarPlot("2018")
+```
+#### 2016
+```{r}
+DIDradarPlot("2016")
 ```
 :::
 
@@ -550,8 +582,81 @@ DIDmedelSDg(sums.indexGG, "Psykiska/ psykosomatiska besvär") +
   cols_align(align = "right")
   
 ```
+#### Utsatt för brott
+```{r}
+utsatt.items <- c("f78aa","f78ba","f78ca","f78da","f78ea")
 
-#### ANDT antal
+utsattBrott <- df %>% 
+  filter(Kommun == fokusKommun,
+         !is.na(Kön),
+         !is.na(ARSKURS)) %>% 
+  rename(År = ar,
+         Årskurs = ARSKURS) %>% 
+  mutate(Utsatt = f78aa + f78ba + f78ca + f78da + f78ea) %>%
+  mutate(Utsatt1 = case_when(Utsatt > 0 ~ "Utsatt för brott")) %>% 
+  select(all_of(c("Utsatt1","År","Kön","Årskurs"))) %>% 
+  group_by(År,Årskurs,Kön) %>% 
+  summarise(Antal = n()) %>% 
+  #mutate(Andel = Antal * 100 / sum(Antal)) %>% 
+  ggplot(aes(x = År, y = Antal, color = Kön)) + 
+  geom_line(linewidth = 1) +
+  geom_point_interactive(aes(tooltip = Antal),
+                         size = 3) +
+  scale_color_manual(values = RISEpalette1[c(1,5)]) +
+  scale_x_continuous(guide = guide_axis(n.dodge = 1), breaks = årtal) +
+  scale_y_continuous(limits = c(0,NA)) +
+  labs(title = "Andel respondenter per år",
+       subtitle = "Utsatt för någon typ av brott") +
+  theme_minimal() +
+  theme_rise() +
+  facet_wrap(~Årskurs)
+
+girafe(ggobj = utsattBrott)
+
+```
+#### Utsatt för specifikt brott
+```{r}
+df %>%
+  filter(Kommun == fokusKommun,
+         !is.na(Kön)) %>% 
+  select(all_of(c(utsatt.items,"ARSKURS","ar","Kön"))) %>%
+  pivot_longer(utsatt.items) %>%
+  rename(Item = name,
+         Utsatt = value,
+         Årskurs = ARSKURS) %>%
+  mutate(År = factor(ar)) %>% 
+  select(!ar) %>% 
+  group_by(År,Årskurs,Kön,Item) %>% 
+  count(Utsatt) %>% 
+  filter(Utsatt == 1) %>% 
+  ggplot(aes(x = År, y = n, group = Item, color = Item)) +
+  geom_point(size = 3) +
+  geom_line(linewidth = 1.1) +
+  scale_x_discrete(breaks = årtal,
+                   guide = guide_axis(n.dodge = 1)) +
+  labs(title = "Utsatthet för olika typer av brott",
+       subtitle = fokusKommun
+       ) +
+  facet_grid(Årskurs~Kön) +
+  scale_color_brewer(type = "qual", palette = "Dark2",
+                     name="Typ av brott",
+                         breaks=utsatt.items,
+                         labels=c("Hotad", "Rånad", "Bestulen","Misshandlad","Tvingad till sex")) +
+  theme_minimal() +
+  theme_rise() +
+  ylab("Antal individer")
+```
+#### Begått brott
+```{r}
+
+```
+
+:::
+
+#### ANDTS
+
+::: panel-tabset
+##### Antal substanser
 ```{r}
 #| fig-height: 6
 plotFaktor = "Senaste4v"
@@ -588,7 +693,7 @@ df %>%
   theme_rise() +
   facet_grid(ARSKURS ~ Kön)
 ```
-#### ANDT separat
+##### Rökning
 
 ```{r}
 # for FNY12020r and F14r (e-cig and smoking)
@@ -633,7 +738,7 @@ andtsUseShare <- function(andts) {
       position = "stack",
       alpha = 0.9
     ) +
-    scale_fill_manual(values = DIDcolorsRYGG) +
+    scale_fill_viridis_d() +
     scale_y_continuous(breaks = c(0, 20, 40, 60, 80, 100)) +
     scale_x_continuous(breaks = årtal, guide = guide_axis(n.dodge = 2)) +
     xlab("Årtal") +
@@ -650,6 +755,10 @@ andtsUseShare <- function(andts) {
 
 ```{r}
 andtsUseShare("F14r")
+```
+
+##### Snus
+```{r}
 andtsUseShare("F18r")
 ```
 
@@ -684,7 +793,7 @@ andtsUseShare2 <- function(andts) {
       position = "stack",
       alpha = 0.85
     ) +
-    scale_fill_manual(values = c("#D55E00", "orange", "#F0E442", "#009E73", "lightgrey")) +
+    scale_fill_viridis_d() +
     scale_y_continuous(breaks = c(0, 20, 40, 60, 80, 100)) +
     scale_x_continuous(breaks = årtal, guide = guide_axis(n.dodge = 2)) +
     xlab("Årtal") +
@@ -699,136 +808,222 @@ andtsUseShare2 <- function(andts) {
 }
 ```
 
+##### Alkohol
+
 ```{r}
 andtsUseShare2("F36new")
+```
+
+##### Narkotika (inkl. cannabis)
+```{r}
 andtsUseShare2("F49new")
 ```
-#### Debutålder ANDT
+##### Debutålder ANDT
 ```{r}
 itemsANDTSdebut <- c("F16","F20","F37","F44","F51")
 
 df %>%
-  filter(ARSKURS == "Gy 2",
-         Kön %in% c("Pojke","Flicka")) %>%
-  mutate(across(itemsANDTSdebut, ~ recode(.x, "0=11;1=12;2=13;3=14;4=15;5=16;6=17;7=18"))) %>% 
-  select(all_of(c(itemsANDTSdebut,"ARSKURS","ar","Kön"))) %>%
+  filter(
+    ARSKURS == "Gy 2",
+    Kön %in% c("Pojke", "Flicka")
+  ) %>%
+  mutate(across(itemsANDTSdebut, ~ recode(.x, "0=11;1=12;2=13;3=14;4=15;5=16;6=17;7=18"))) %>%
+  select(all_of(c(itemsANDTSdebut, "ARSKURS", "ar", "Kön"))) %>%
   pivot_longer(itemsANDTSdebut) %>%
-  rename(Item = name,
-         Ålder = value,
-         Årskurs = ARSKURS) %>%
-  filter(!is.na(Ålder)) %>% 
-  mutate(År = factor(ar)) %>% #group_by(År,Årskurs) %>% count(Kön)
-  group_by(År,Kön,Item) %>% 
+  rename(
+    Item = name,
+    Ålder = value,
+    Årskurs = ARSKURS
+  ) %>%
+  filter(!is.na(Ålder)) %>%
+  mutate(År = factor(ar)) %>%
+  group_by(År, Kön, Item) %>%
   summarise(
     Medelvärde = mean(Ålder),
     SD = sd(Ålder)
-  ) %>% 
+  ) %>%
   ggplot(aes(x = År, y = Medelvärde, group = Item, color = Item)) +
   geom_point(size = 3) +
   geom_line(linewidth = 1.1) +
   geom_ribbon(aes(ymin = Medelvärde - SD, ymax = Medelvärde + SD, fill = Item, color = NULL), alpha = 0.05) +
-  #scale_color_viridis_d(begin = 0.1) +
-  scale_x_discrete(breaks = årtal,
-                   guide = guide_axis(n.dodge = 2)) +
-  labs(title = "Genomsnittslig debutålder per substans över tid",
-       subtitle = fokusKommun,
-       caption = "F16 = rökning, F20 = snus, F37 = alkohol, F44 sniffning, F51 = narkotika"
-       ) +
+  # scale_color_viridis_d(begin = 0.1) +
+  scale_x_discrete(
+    breaks = årtal,
+    guide = guide_axis(n.dodge = 2)
+  ) +
+  labs(
+    title = "Genomsnittslig debutålder per substans över tid",
+    subtitle = fokusKommun,
+    caption = "Skuggat fält indikerar standardavvikelse."
+  ) +
   facet_grid(~Kön) +
-  scale_color_brewer(type = "qual", palette = "Dark2") +
+  scale_color_brewer(
+    type = "qual", palette = "Dark2",
+    name = "Typ av substans",
+    breaks = itemsANDTSdebut,
+    labels = c("rökning", "snus", "alkohol", "sniffning", "narkotika"),
+    aesthetics = c("fill", "color")
+  ) +
+  ylab("Medelvärde debutålder") +
   theme_minimal() +
   theme_rise()
 ```
-
-#### Utsatt för brott
-```{r}
-utsatt.items <- c("f78aa","f78ba","f78ca","f78da","f78ea")
-
-utsattBrott <- df %>% 
-  filter(Kommun == fokusKommun,
-         !is.na(Kön),
-         !is.na(ARSKURS)) %>% 
-  rename(År = ar,
-         Årskurs = ARSKURS) %>% 
-  select(all_of(c(utsatt.items,"År","Kön","Årskurs"))) %>% 
-  group_by(År,Årskurs,Kön) %>% 
-  reframe(Antal = n()) %>% 
-  ggplot(aes(x = År, y = Antal, color = Kön)) + 
-  geom_line(linewidth = 1) +
-  geom_point_interactive(aes(tooltip = Antal),
-                         size = 3) +
-  scale_color_brewer(type = "qual", palette = "Dark2") +
-  scale_x_continuous(guide = guide_axis(n.dodge = 1), breaks = årtal) +
-  scale_y_continuous(limits = c(0,NA)) +
-  labs(title = "Antal respondenter per år",
-       subtitle = "Utsatt för någon typ av brott") +
-  theme_minimal() +
-  theme_rise() +
-  facet_wrap(~Årskurs)
-
-girafe(ggobj = utsattBrott)
-
-```
-
-```{r}
-#| include: false
-utsattBrott <- df %>% 
-  filter(Kommun == fokusKommun,
-         !is.na(Kön),
-         !is.na(ARSKURS)) %>% 
-  rename(År = ar,
-         Årskurs = ARSKURS) %>% 
-  select(all_of(c(utsatt.items,"År","Kön","Årskurs"))) %>% 
-  group_by(År,Årskurs,Kön) %>% 
-  summarise(Antal = n()) %>% 
-  mutate(Andel = Antal * 100 / sum(Antal)) %>% 
-  ggplot(aes(x = År, y = Antal, color = Kön)) + 
-  geom_line(linewidth = 1) +
-  geom_point_interactive(aes(tooltip = Antal),
-                         size = 3) +
-  scale_color_brewer(type = "qual", palette = "Dark2") +
-  scale_x_continuous(guide = guide_axis(n.dodge = 1), breaks = årtal) +
-  scale_y_continuous(limits = c(0,NA)) +
-  labs(title = "Andel respondenter per år",
-       subtitle = "Utsatt för någon typ av brott") +
-  theme_minimal() +
-  theme_rise() +
-  facet_wrap(~Årskurs)
-
-girafe(ggobj = utsattBrott)
-
-```
-
 :::
 
 ### Skyddsfaktorer
 
 ### Välbefinnande
+
+::: panel-tabset
+#### Kön
 ```{r}
 DIDmedelSDg(sums.index,"Välbefinnande") + 
   facet_wrap(~Kön)
+```
 
+#### Kön/Årskurs
+```{r}
 DIDmedelSDg(sums.indexGG, "Välbefinnande") + 
   facet_grid(Årskurs~Kön)
 ```
-
+:::
 
 
 ## Familj
 
 ### Riskfaktorer
 
+::: panel-tabset
+#### Kön
 ```{r}
 DIDareaPlot("Föräldraskap")
+```
+
+#### Kön/Årskurs
+```{r}
 DIDareaPlot2("Föräldraskap")
+```
+
+#### Riskgrupp
+```{r}
 DIDline90("Föräldraskap")
+```
+
+#### Medelvärden
+```{r}
 DIDmedelSDg(sums.indexGG, "Föräldraskap") +
   facet_grid(Årskurs~Kön)
 ```
+:::
 
 ### Skyddsfaktorer
 
 ## Skola
+
+### Riskfaktorer åk 9 & gy 2
+
+::: panel-tabset
+#### Kön
+```{r}
+DIDareaPlot("Vantrivsel i skolan")
+```
+
+#### Kön/Årskurs
+```{r}
+DIDareaPlot2("Vantrivsel i skolan")
+```
+
+#### Riskgrupp
+```{r}
+DIDline90("Vantrivsel i skolan")
+```
+
+#### Medelvärden
+```{r}
+DIDmedelSDg(sums.indexGG, "Vantrivsel i skolan") +
+  facet_grid(Årskurs~Kön)
+```
+:::
+
+
+### Skyddsfaktorer
+
+::: panel-tabset
+#### Åk 9 & Gy 2 grupperat
+```{r}
+#| include: false
+plotFaktor <- "Positiv skolanknytning"
+
+df.plot <- df %>%
+  filter(Kommun == fokusKommun) %>%
+  mutate(
+    Risknivå = case_when(
+      .data[[plotFaktor]] < rslimits.prot |>
+        select(plotFaktor) |>
+        slice(1) |>
+        pull() ~ "Lågt skydd",
+      .data[[plotFaktor]] >= rslimits.prot |>
+        select(plotFaktor) |>
+        slice(1) |>
+        pull() &
+        .data[[plotFaktor]] < rslimits.prot |>
+        select(plotFaktor) |>
+        slice(2) |>
+        pull() ~ "Neutral",
+      .data[[plotFaktor]] >= rslimits.prot |>
+        select(plotFaktor) |>
+        slice(2) |>
+        pull() ~ "Högt skydd",
+      TRUE ~ "Otillräckliga svar"
+    )
+  )
+
+df.plot %>%
+  filter(Kön %in% c("Flicka","Pojke")) %>%
+  group_by(ar, Kön) %>%
+  count(Risknivå) %>%
+  mutate(Andel = (100 * n / sum(n)) %>% round(digits = 1)) %>%
+  mutate(Grupp = factor(Risknivå, levels = c("Högt skydd", "Neutral", 
+                                             "Lågt skydd","Otillräckliga svar"))) %>%
+  ungroup() %>% 
+  ggplot(aes(x = ar, y = Andel)) +
+  geom_area(aes(color = Grupp, fill = Grupp), position = "stack") +
+  scale_fill_manual(values = c("#00C18D","#F1E755","#F36B00","lightgrey")) +
+  scale_color_manual(values = c("#00C18D","#F1E755","#F36B00","lightgrey")) +
+  #geom_hline(yintercept = 80, color = "black", linetype = 2, linewidth = 0.66) +
+  #geom_hline(yintercept = 20, color = RISEprimRed, linetype = 2, linewidth = 0.66) +
+  scale_y_continuous(breaks = c(0, 20, 40, 60, 80, 100)) +
+  #scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
+  xlab("Årtal") +
+  ylab("Andel i %") +
+  labs(
+    title = paste0(plotFaktor, " - ", fokusKommun),
+    subtitle = "Uppdelat på kön",
+    caption = str_wrap("Grönt fält indikerar andel som överstiger referensvärde för 20% med högst skydd.\nRött fält  indikerar andel som understiger referensvärde för 20% med lägst skydd.")
+  ) +
+  facet_wrap(~Kön) +
+  theme_minimal() +
+  theme_rise()
+```
+
+#### Åk 9 & Gy 2 medelvärden
+
+```{r}
+DIDmedelSDg(sums.indexGG, "Positiv skolanknytning") + 
+  facet_grid(Årskurs~Kön)
+```
+#### Åk 5
+
+Just nu finns det bara data från Skolinspektionen för Stockholm, Vallentuna och Vaxholm.
+```{r}
+DIDmedelSDg(sums.si, "SkolaPositivSI") +
+  facet_wrap(~Kön) +
+  ylab("Positiv skolanknytning åk 5") +
+  scale_color_manual(values = RISEpalette1, aesthetics = c("fill","color")) +
+  scale_y_continuous(limits = c(-2,3))
+
+```
+:::
 
 ### KOLADA
 
@@ -921,103 +1116,33 @@ ggplot(df.kolada,aes(x = År, y = Andel, group = Kommun, color = Kommun)) +
 ```
 :::
 
-### Riskfaktorer
-
-```{r}
-DIDareaPlot("Vantrivsel i skolan")
-DIDareaPlot2("Vantrivsel i skolan")
-DIDline90("Vantrivsel i skolan")
-DIDmedelSDg(sums.indexGG, "Vantrivsel i skolan") +
-  facet_grid(Årskurs~Kön)
-```
-
-### Skyddsfaktorer
-
-::: panel-tabset
-#### Åk 9 & Gy 2
-```{r}
-#| include: false
-plotFaktor <- "Positiv skolanknytning"
-
-df.plot <- df %>%
-  filter(Kommun == fokusKommun) %>%
-  mutate(
-    Risknivå = case_when(
-      .data[[plotFaktor]] < rslimits.prot |>
-        select(plotFaktor) |>
-        slice(1) |>
-        pull() ~ "Lågt skydd",
-      .data[[plotFaktor]] >= rslimits.prot |>
-        select(plotFaktor) |>
-        slice(1) |>
-        pull() &
-        .data[[plotFaktor]] < rslimits.prot |>
-        select(plotFaktor) |>
-        slice(2) |>
-        pull() ~ "Neutral",
-      .data[[plotFaktor]] >= rslimits.prot |>
-        select(plotFaktor) |>
-        slice(2) |>
-        pull() ~ "Högt skydd",
-      TRUE ~ "Otillräckliga svar"
-    )
-  )
-
-df.plot %>%
-  filter(Kön %in% c("Flicka","Pojke")) %>%
-  group_by(ar, Kön) %>%
-  count(Risknivå) %>%
-  mutate(Andel = (100 * n / sum(n)) %>% round(digits = 1)) %>%
-  mutate(Grupp = factor(Risknivå, levels = c("Högt skydd", "Neutral", 
-                                             "Lågt skydd","Otillräckliga svar"))) %>%
-  ungroup() %>% 
-  ggplot(aes(x = ar, y = Andel)) +
-  geom_area(aes(color = Grupp, fill = Grupp), position = "stack") +
-  scale_fill_manual(values = c("#00C18D","#F1E755","#F36B00","lightgrey")) +
-  scale_color_manual(values = c("#00C18D","#F1E755","#F36B00","lightgrey")) +
-  #geom_hline(yintercept = 80, color = "black", linetype = 2, linewidth = 0.66) +
-  #geom_hline(yintercept = 20, color = RISEprimRed, linetype = 2, linewidth = 0.66) +
-  scale_y_continuous(breaks = c(0, 20, 40, 60, 80, 100)) +
-  #scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
-  xlab("Årtal") +
-  ylab("Andel i %") +
-  labs(
-    title = paste0(plotFaktor, " - ", fokusKommun),
-    subtitle = "Uppdelat på kön",
-    caption = str_wrap("Grönt fält indikerar andel som överstiger referensvärde för 20% med högst skydd.\nRött fält  indikerar andel som understiger referensvärde för 20% med lägst skydd.")
-  ) +
-  facet_wrap(~Kön) +
-  theme_minimal() +
-  theme_rise()
-```
-```{r}
-DIDmedelSDg(sums.indexGG, "Positiv skolanknytning") + 
-  facet_grid(Årskurs~Kön)
-```
-
-
-#### Åk 5
-
-Just nu finns det bara data från Skolinspektionen för Stockholm, Vallentuna och Vaxholm.
-```{r}
-DIDmedelSDg(sums.si, "SkolaPositivSI") +
-  facet_wrap(~Kön) +
-  ylab("Positiv skolanknytning åk 5")
-
-```
-:::
 
 ## Närsamhälle
 
 ### Riskfaktorer
 
+::: panel-tabset
+#### Kön
 ```{r}
 DIDareaPlot("Närsamhälle")
+```
+
+#### Kön/Årskurs
+```{r}
 DIDareaPlot2("Närsamhälle")
+```
+
+#### Riskgrupp
+```{r}
 DIDline90("Närsamhälle")
+```
+
+#### Medelvärden
+```{r}
 DIDmedelSDg(sums.indexGG, "Närsamhälle") +
   facet_grid(Årskurs~Kön)
 ```
+:::
 
 ### Skyddsfaktorer
 
@@ -1027,30 +1152,3 @@ DIDmedelSDg(sums.indexGG, "Närsamhälle") +
 
 ### Skyddsfaktorer
 
-
-
-
-
-
-### Riskfaktorer
-
-::: panel-tabset
-#### 2022
-
-Vi saknar data för Stockholm gällande 2022.
-```{r}
-DIDradarPlot("2022")
-```
-#### 2020
-```{r}
-DIDradarPlot("2020")
-```
-#### 2018
-```{r}
-DIDradarPlot("2018")
-```
-#### 2016
-```{r}
-DIDradarPlot("2016")
-```
-:::

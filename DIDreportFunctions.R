@@ -107,7 +107,7 @@ DIDsnirkel <- function(årtal) {
 #    theme(text = element_text(family = "Lato"))
 }
 
-DIDstapel <- function(data,årtal) {
+DIDstapel <- function(data,årtal, tpathsize = 4) {
   year <- årtal
   data %>%
     filter(Kommun == fokusKommun) %>%
@@ -123,7 +123,7 @@ DIDstapel <- function(data,årtal) {
                   text_only = T,
                   position = "stack",
                   hjust = 0,
-                  size = 4
+                  size = tpathsize
     ) +
     scale_fill_manual(values = DIDcolorsGGYR) +
     theme_bw() +
@@ -292,11 +292,12 @@ DIDradarPlot <- function(årtal) {
   ggplot(df.plot, aes(x = Faktor, y = Medel, group = Kommun, color = Kommun, fill = Kommun)) + # make plot, with area color
     geom_line(
       linewidth = 0.9,
-      alpha = 0.7
+      alpha = 0.6,
+      linetype = 3
     ) +
-    geom_point(size = 2.5, alpha = 0.7) +
-    geom_line(data = filter(df.plot, Kommun == fokusKommun), alpha = 1) +
-    geom_point(data = filter(df.plot, Kommun == fokusKommun), alpha = 1) +
+    geom_point(size = 2.5, alpha = 0.6) +
+    geom_line(data = filter(df.plot, Kommun == fokusKommun), alpha = 0.9) +
+    geom_point(data = filter(df.plot, Kommun == fokusKommun), alpha = 0.9) +
     scale_color_brewer(type = "qual", palette = "Dark2") +
     see::coord_radar(theta = "x", start = 3, clip = "off") +
     scale_y_continuous(limits = c(-3, NA), expand = c(0, 0, 0, 0)) +
@@ -307,19 +308,8 @@ DIDradarPlot <- function(årtal) {
       y = "", x = ""
     ) +
     facet_wrap(~Kön) +
-    theme_rise() +
-    theme(text = element_text(family = "Lato"),
-          axis.text.x = element_text(size = ax.size),
-          axis.text.y = element_blank(),
-          title = element_text(size = title.size),
-          legend.text = element_text(size = legend.size),
-          strip.text.x = element_text(size = 14),
-          strip.background = element_rect(fill = RISEprimYellowLight),
-          panel.background = element_rect(fill = "white"),
-          panel.grid.major = element_line(color = "grey", linetype = "dotted"),
-          panel.grid.minor = element_line(color = "grey", linewidth = 2),
-          panel.spacing = unit(pandist, "cm", data = NULL)
-    )
+    theme_minimal() +
+    theme_rise()
 }
 
 
@@ -362,7 +352,7 @@ DIDmedelSD <- function(faktor, xlim = c(-3,3)) {
     )
 }
 
-DIDmedelSDg <- function(data,faktor, xlim = c(-3,3)) {
+DIDmedelSDg <- function(data,faktor, xlim = c(-2,2.5)) {
   plotFaktor <- faktor
   df.plot <- data %>%
     filter(Faktor == plotFaktor) %>%
@@ -374,7 +364,7 @@ DIDmedelSDg <- function(data,faktor, xlim = c(-3,3)) {
   ggplot(df.plot, aes(x = År, y = Medel, group = Kommun, color = Kommun, fill = Kommun)) + # make plot, with area color
     geom_line(linewidth = 1,
               alpha = 0.6,
-              linetype = 2) +
+              linetype = 3) +
     geom_point(size = 2.5, alpha = 0.6) +
     geom_line(data = filter(df.plot, Kommun == fokusKommun),
               alpha = 0.9, linewidth = 1.2,) +
@@ -385,7 +375,8 @@ DIDmedelSDg <- function(data,faktor, xlim = c(-3,3)) {
     ) +
     scale_y_continuous(limits = xlim) +
     scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
-    scale_color_brewer(type = "qual", palette = "Dark2", aesthetics = c("color","fill")) +
+    scale_color_brewer(type = "qual", palette = "Dark2",
+                       aesthetics = c("color","fill")) +
     labs(title = "Medelvärde över tid", subtitle = "Skuggat fält indikerar en standardavvikelse (~ 68%)") +
     xlab("Årtal") +
     ylab(paste0(plotFaktor)) +
@@ -407,35 +398,26 @@ DIDline90 <- function(faktor){
     filter(Kön %in% c("Flicka", "Pojke")) %>%
     filter(!År < 2006) %>%
     mutate(År = as.factor(År))
-
-  didline90 <- ggplot(df.plot, aes(x = År, y = n.90, group = Kön, color = Kön, tooltip = n)) + # make plot, with area color
+#   didline90 <-
+  ggplot(df.plot, aes(x = År, y = n.90, group = Kön, color = Kön, tooltip = n)) + # make plot, with area color
     geom_line(linewidth = 1) +
-    #geom_point(size = 3) +
-    geom_point_interactive(size = 3) +
+    geom_point(size = 3) +
+    #geom_point_interactive(size = 3) +
     scale_y_continuous(limits = c(0, 30)) +
     scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
-    scale_color_brewer(type = "qual", palette = "Dark2") +
+    scale_color_manual(values = RISEpalette1[c(1,5)]) +
     geom_hline(yintercept = 10, color = "darkgrey", linetype = 2, linewidth = 0.4, alpha = 0.7) +
-    ggtitle("Procent över percentil 90, per år") +
+    ggtitle("Andel i grupp \"förhöjd risk\"") +
     xlab("") +
     ylab(paste0(plotFaktor)) +
     facet_wrap(~Kommun, labeller = labeller(Kommun = label_wrap_gen(12))) +
     theme_minimal() +
     theme_rise()
 
-  girafe(ggobj = didline90)
+  #girafe(ggobj = didline90)
 }
 
-
 # Demografi ---------------------------------------------------------------
-
-
-# rename demographic variables for use in selectInput() later
-df <- df %>%
-  mutate(F5 = factor(F5, levels = c("Mindre än 5 år","5-9 år", "10 år eller mer", "Hela mitt liv"))) %>%
-  rename(`Hur länge har du bott i Sverige?` = F5,
-         `Vilken högsta utbildning har din mamma/pappa?` = f6ab,
-         `Vad bor du i för typ av bostad?` = F7)
 
 stapelDemografi <- function(demografi) {
   demogr <- demografi
@@ -466,6 +448,7 @@ stapelDemografi <- function(demografi) {
               color = "darkgrey") +
     scale_fill_viridis_d(begin = 0.3, end = 0.9, option = 7) +
     scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
+    scale_y_continuous(limits = c(0,100), breaks = seq(0, 100, 20)) +
     theme_minimal() +
     theme_rise() +
     labs(title = str_wrap(paste0(demogr)),

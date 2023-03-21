@@ -446,6 +446,8 @@ df.risk.gender %>%
 ::: panel-tabset
 #### 2022
 ```{r}
+#| fig-height: 7
+
 df.risk.gender.arskurs %>% 
   filter(!is.na(Årskurs)) %>% 
   DIDstapel("2022", tpathsize = 2.7) +
@@ -453,6 +455,8 @@ df.risk.gender.arskurs %>%
 ```
 #### 2020
 ```{r}
+#| fig-height: 7
+
 df.risk.gender.arskurs %>% 
   filter(!is.na(Årskurs)) %>% 
   DIDstapel("2020", tpathsize = 2.7) +
@@ -460,6 +464,8 @@ df.risk.gender.arskurs %>%
 ```
 #### 2018
 ```{r}
+#| fig-height: 7
+
 df.risk.gender.arskurs %>% 
   filter(!is.na(Årskurs)) %>% 
   DIDstapel("2018", tpathsize = 2.7) +
@@ -467,6 +473,8 @@ df.risk.gender.arskurs %>%
 ```
 #### 2016
 ```{r}
+#| fig-height: 7
+
 df.risk.gender.arskurs %>% 
   filter(!is.na(Årskurs)) %>% 
   DIDstapel("2016", tpathsize = 2.7) +
@@ -508,25 +516,60 @@ DIDradarPlot("2016")
 
 ### Riskfaktorer
 
-::: panel-tabset
 #### Utagerande
+
+::: panel-tabset
+##### Kön
 ```{r}
 DIDareaPlot("Utagerande")
+```
+
+##### Kön/Årskurs
+```{r}
 DIDareaPlot2("Utagerande")
+```
+
+##### Riskgrupp
+```{r}
 DIDline90("Utagerande")
+```
+
+##### Medelvärden
+```{r}
 DIDmedelSDg(sums.indexGG, "Utagerande") +
   facet_grid(Årskurs~Kön)
 ```
+:::
+
 #### Psykiska/psykosomatiska besvär
+
+::: panel-tabset
+##### Kön
 ```{r}
 DIDareaPlot("Psykiska/ psykosomatiska besvär")
+```
+
+##### Kön/Årskurs
+```{r}
 DIDareaPlot2("Psykiska/ psykosomatiska besvär")
+```
+
+##### Riskgrupp
+```{r}
 DIDline90("Psykiska/ psykosomatiska besvär")
+```
+
+##### Medelvärden
+```{r}
 DIDmedelSDg(sums.indexGG, "Psykiska/ psykosomatiska besvär") +
   facet_grid(Årskurs~Kön)
 ```
+:::
 
-#### Utsatt för brott
+#### Brott
+
+::: panel-tabset
+##### Utsatt för brott
 ```{r}
 utsatt.items <- c("f78aa","f78ba","f78ca","f78da","f78ea")
 utsatt.legend <- c("Hotad","Rånad","Bestulen","Misshandlad","Tvingad till sex")
@@ -554,13 +597,14 @@ utsattBrott <- df %>%
        subtitle = "Utsatt för någon typ av brott") +
   theme_minimal() +
   theme_rise() +
-  facet_wrap(~Årskurs)
+  facet_wrap(~Årskurs) +
+  theme(legend.background = element_rect(color = "lightgrey"))
 
 girafe(ggobj = utsattBrott)
 
 ```
 
-#### Antal utsatt för specifikt brott
+##### Antal utsatt för specifikt brott
 ```{r}
 df %>%
   filter(Kommun == fokusKommun,
@@ -590,9 +634,10 @@ df %>%
                          labels=utsatt.legend) +
   theme_minimal() +
   theme_rise() +
-  ylab("Antal individer")
+  ylab("Antal individer") +
+  theme(legend.background = element_rect(color = "lightgrey"))
 ```
-#### Andel utsatt för specifikt brott
+##### Andel utsatt för specifikt brott
 
 ```{r}
 SEutsattGÅ <- function(i) {
@@ -619,15 +664,17 @@ df.utsattGÅ %>%
   rename(Årskurs = ARSKURS) %>% 
   ggplot(aes(y = Procent, x = factor(ar), group = Item, color = Item)) +
   geom_point(aes(tooltip = Procent),
-                         size = 2) +
+                         size = 3) +
   geom_line(linewidth = 1) +
-  scale_color_manual(labels = utsatt.legend, values = RISEpalette1) +
+  scale_color_brewer(labels = utsatt.legend, type = "qual", palette = "Dark2") +
+  #scale_color_manual(labels = utsatt.legend, values = RISEpalette1) +
   xlab("Årtal") +
   facet_grid(Årskurs~Kön) +
   theme_minimal() +
-  theme_rise()
+  theme_rise() +
+  theme(legend.background = element_rect(color = "lightgrey"))
 ```
-#### Begått brott, antal
+##### Begått brott, antal
 Summerat utifrån självrapporterade brott.
 ```{r}
 items.brott <- df %>% 
@@ -646,14 +693,16 @@ df %>%
   mutate(År = factor(ar)) %>% 
   ggplot(aes(x = AntalBrott, y = after_stat(count), group = År, fill = År)) +
   geom_bar(position = "dodge") +
-  scale_fill_manual(values = RISEpalette1) +
+  scale_color_brewer(type = "qual", palette = "Dark2") +
+  #scale_fill_manual(values = RISEpalette1) +
   theme_minimal() +
   theme_rise() +
   ylab("Antal") +
-  facet_grid(ARSKURS~Kön)
+  facet_grid(ARSKURS~Kön) +
+  theme(legend.background = element_rect(color = "lightgrey"))
 
 ```
-#### Begått specifikt brott
+##### Begått specifikt brott
 ```{r}
 SEutsattGÅ <- function(i) {
   df %>%
@@ -686,17 +735,31 @@ df.begått %>%
   xlab("Årtal") +
   facet_grid(Årskurs~Kön) +
   theme_minimal() +
-  theme_rise()
+  theme_rise() +
+  theme(legend.background = element_rect(color = "lightgrey"))
 
 allitems %>% 
   filter(Index == "Brott") %>% 
   select(!Index) %>% 
-  kbl_rise()
+  kbl_rise(fontsize = 12)
 ```
+##### KOLADA
+```{r}
+df.kolada <- KOLADAs %>% 
+  filter(Kön == "Alla") %>% 
+  filter(Kommun %in% jmfKommun) %>% 
+  filter(KPI %in% c("Anmälda brott om skadegörelse per 1 000 inv.",
+                    "Anmälda stöld- och tillgreppsbrott, antal/1000 inv")
+  )
+
+DIDkoladaPlot(df.kolada)
+```
+
+:::
 
 #### Mobbning
 Det kommer data här senare.
-:::
+
 
 #### ANDTS
 
@@ -736,7 +799,8 @@ df %>%
   ) +
   theme_minimal() +
   theme_rise() +
-  facet_grid(ARSKURS ~ Kön)
+  facet_grid(ARSKURS ~ Kön) +
+  theme(legend.background = element_rect(color = "lightgrey"))
 ```
 ##### Rökning
 
@@ -783,7 +847,7 @@ andtsUseShare <- function(andts) {
       position = "stack",
       alpha = 0.9
     ) +
-    scale_fill_viridis_d() +
+    scale_fill_viridis_d('Bruk senaste 4 veckorna') +
     scale_y_continuous(breaks = c(0, 20, 40, 60, 80, 100)) +
     scale_x_continuous(breaks = årtal, guide = guide_axis(n.dodge = 2)) +
     xlab("Årtal") +
@@ -794,7 +858,8 @@ andtsUseShare <- function(andts) {
       title = paste0(plotFaktorName),
       subtitle = fokusKommun
     ) +
-    facet_grid(ARSKURS ~ Kön)
+    facet_grid(ARSKURS ~ Kön) +
+  theme(legend.background = element_rect(color = "lightgrey"))
 }
 ```
 
@@ -838,7 +903,7 @@ andtsUseShare2 <- function(andts) {
       position = "stack",
       alpha = 0.85
     ) +
-    scale_fill_viridis_d() +
+    scale_fill_viridis_d('Bruk senaste 4 veckorna') +
     scale_y_continuous(breaks = c(0, 20, 40, 60, 80, 100)) +
     scale_x_continuous(breaks = årtal, guide = guide_axis(n.dodge = 2)) +
     xlab("Årtal") +
@@ -849,7 +914,8 @@ andtsUseShare2 <- function(andts) {
       title = paste0(plotFaktorName, ", användning senaste 4 veckorna"),
       subtitle = fokusKommun
     ) +
-    facet_grid(ARSKURS ~ Kön)
+    facet_grid(ARSKURS ~ Kön) +
+  theme(legend.background = element_rect(color = "lightgrey"))
 }
 ```
 
@@ -911,7 +977,8 @@ df %>%
   ) +
   ylab("Medelvärde debutålder") +
   theme_minimal() +
-  theme_rise()
+  theme_rise() +
+  theme(legend.background = element_rect(color = "lightgrey"))
 ```
 :::
 

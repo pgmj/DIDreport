@@ -35,7 +35,8 @@ theme_rise <- function(fontfamily = "Lato", axissize = 13, titlesize = 15,
     legend.text = element_text(family = fontfamily, size = legendSize),
     legend.title = element_text(family = fontfamily, size = legendTsize),
     strip.text = element_text(size = stripsize),
-    panel.spacing = unit(panelDist, "cm", data = NULL)
+    panel.spacing = unit(panelDist, "cm", data = NULL),
+    legend.background = element_rect(color = "lightgrey")
   ) +
     # these rows are for geom_text() and geom_text_repel() to match font family
     update_geom_defaults("text", list(family = fontfamily)) +
@@ -92,19 +93,11 @@ DIDsnirkel <- function(årtal) {
       label = "Något förhöjd risk",
       hjust = 0.15
     ) +
-    # theme(
-    #   axis.text.x = element_text(size = ax.size),
-    #   axis.text.y = element_text(size = ax.size),
-    #   title = element_text(size = title.size),
-    #   legend.text = element_text(size = legend.size),
-    #   strip.text.x = element_text(size = stript.size),
-    #   panel.spacing = unit(pandist, "cm", data = NULL)
-    # ) +
     xlab("") +
     ylab("") +
     theme_minimal() +
-    theme_rise()
-#    theme(text = element_text(family = "Lato"))
+    theme_rise() +
+    theme(legend.background = element_rect(color = "lightgrey"))
 }
 
 DIDstapel <- function(data,årtal, tpathsize = 4) {
@@ -152,7 +145,8 @@ DIDstapel <- function(data,årtal, tpathsize = 4) {
     xlab("") +
     ylab("") +
     theme_minimal() +
-    theme_rise()
+    theme_rise() +
+    theme(legend.background = element_rect(color = "lightgrey"))
 }
 
 DIDareaPlot <- function(faktor) {
@@ -277,7 +271,8 @@ DIDareaPlot2 <- function(faktor) {
     ) +
     facet_grid(ARSKURS~Kön) +
     theme_minimal() +
-    theme_rise()
+    theme_rise() +
+    theme(legend.background = element_rect(color = "lightgrey"))
 }
 
 
@@ -438,7 +433,8 @@ DIDline90 <- function(faktor){
     ylab(paste0(plotFaktor)) +
     facet_wrap(~Kommun, labeller = labeller(Kommun = label_wrap_gen(12))) +
     theme_minimal() +
-    theme_rise()
+    theme_rise() +
+    theme(legend.background = element_rect(color = "lightgrey"))
 
   #girafe(ggobj = didline90)
 }
@@ -479,7 +475,8 @@ stapelDemografi <- function(demografi) {
     theme_rise() +
     labs(title = str_wrap(paste0(demogr)),
          subtitle = fokusKommun,
-         caption = "Siffrorna ovanför staplarna anger antalet respondenter i varje svarskategori.")
+         caption = "Siffrorna ovanför staplarna anger antalet respondenter i varje svarskategori.") +
+    theme(legend.background = element_rect(color = "lightgrey"))
 }
 
 

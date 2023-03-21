@@ -408,4 +408,19 @@ kpiChoices <- KOLADA %>%
   distinct(KPI) %>%
   pull()
 
+KOLADAs <- read_parquet("koladaData.parquet")
+summarize <- plyr::summarize
+
+kpi_mean <- KOLADAs %>%
+  group_by(kpi, KPI, År) %>%
+  summarise_at(vars(Andel), list(Andel = mean))
+
+kpi_mean$Kommun <- "Medel riket"
+kpi_mean$Kön <- "Alla"
+
+kpi_mean = kpi_mean %>% select(Kommun, KPI, kpi, År, Andel, Kön)
+
+KOLADAs <- bind_rows(KOLADAs, kpi_mean)
+
+
 

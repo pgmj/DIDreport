@@ -20,7 +20,7 @@ walk(1:nrow(DIDparams), function(i) {
 
   outfile <- glue("{Sys.Date()}_DIDrapport_{this$fokusKommun}.html")
 
-  quarto_render(input = "DIDreportTest.qmd",
+  quarto_render(input = "DIDreport2.qmd",
                 execute_params = list("fokusKommun" = this$fokusKommun,
                                       "jmfKommun" = this$jmfKommun %>% strsplit(",") %>% unlist(),
                                       "years" = this$years %>% strsplit(",") %>% unlist() %>% as.numeric()

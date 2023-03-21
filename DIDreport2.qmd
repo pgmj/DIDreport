@@ -37,7 +37,7 @@ execute:
   echo: false
   warning: false
   message: false
-  cache: true
+  cache: false
 editor_options: 
   chunk_output_type: console
 ---
@@ -518,73 +518,11 @@ DIDline90("Psykiska/ psykosomatiska besvär")
 DIDmedelSDg(sums.indexGG, "Psykiska/ psykosomatiska besvär") +
   facet_grid(Årskurs~Kön)
 ```
-#### Tabell
-```{r}
-### Tabell psykiska/psykosomatiska besvär åk 9
 
-  plotFaktor <- "Psykiska/ psykosomatiska besvär"
-  df.plot <- df %>%
-    filter(Kommun == fokusKommun) %>%
-    mutate(
-      Risknivå = case_when(
-        .data[[plotFaktor]] < rslimits |>
-          select(all_of(plotFaktor)) |>
-          slice(1) |>
-          pull() ~ "Låg risk",
-        .data[[plotFaktor]] >= rslimits |>
-          select(all_of(plotFaktor)) |>
-          slice(1) |>
-          pull() &
-          .data[[plotFaktor]] < rslimits |>
-            select(all_of(plotFaktor)) |>
-            slice(2) |>
-            pull() ~ "Något förhöjd risk",
-        .data[[plotFaktor]] >= rslimits |>
-          select(all_of(plotFaktor)) |>
-          slice(2) |>
-          pull() ~ "Förhöjd risk",
-        TRUE ~ "Otillräckliga svar"
-      )
-    )
-
-## Table for all years and ARSKURS
-#   df.plot %>%
-#     filter(Kön %in% c("Pojke", "Flicka")) %>%
-#     #filter(ar %in% c()) %>% # allow selection of span of years?
-#     mutate(Risknivå = factor(Risknivå, levels = c("Förhöjd risk", "Något förhöjd risk", "Låg risk", "Otillräckliga svar"))) %>%
-#     group_by(ar, Kön, ARSKURS) %>%
-#     count(Risknivå, .drop = FALSE) %>%
-#     mutate(Andel = (100 * n / sum(n)) %>% round(digits = 1)) %>% 
-#     rename(Antal = n) %>% 
-#     gt(.,
-#    groupname_col = c("ar","ARSKURS","Kön")) %>% 
-#   gt_theme_espn() %>% 
-#   tab_options(table.font.name = "Lato",
-#               container.width = 500,
-#               heading.align = "left") %>% 
-#   cols_align(align = "right")
-  
-    df.plot %>%
-    filter(Kön %in% c("Pojke", "Flicka")) %>%
-    filter(ar %in% c(2016,2018,2020,2022)) %>% # allow selection of span of years?
-    filter(ARSKURS == "Åk 9") %>% 
-    mutate(Risknivå = factor(Risknivå, levels = c("Förhöjd risk", "Något förhöjd risk", "Låg risk", "Otillräckliga svar"))) %>%
-    group_by(ar, Kön) %>%
-    count(Risknivå, .drop = FALSE) %>%
-    mutate(Andel = (100 * n / sum(n)) %>% round(digits = 1)) %>% 
-    rename(Antal = n) %>% 
-    gt(.,
-   groupname_col = c("ar","Kön")) %>% 
-  gt_theme_espn() %>% 
-  tab_options(table.font.name = "Lato",
-              container.width = 500,
-              heading.align = "left") %>% 
-  cols_align(align = "right")
-  
-```
 #### Utsatt för brott
 ```{r}
 utsatt.items <- c("f78aa","f78ba","f78ca","f78da","f78ea")
+utsatt.legend <- c("Hotad","Rånad","Bestulen","Misshandlad","Tvingad till sex")
 
 utsattBrott <- df %>% 
   filter(Kommun == fokusKommun,
@@ -614,7 +552,8 @@ utsattBrott <- df %>%
 girafe(ggobj = utsattBrott)
 
 ```
-#### Utsatt för specifikt brott
+
+#### Antal utsatt för specifikt brott
 ```{r}
 df %>%
   filter(Kommun == fokusKommun,
@@ -641,16 +580,115 @@ df %>%
   scale_color_brewer(type = "qual", palette = "Dark2",
                      name="Typ av brott",
                          breaks=utsatt.items,
-                         labels=c("Hotad", "Rånad", "Bestulen","Misshandlad","Tvingad till sex")) +
+                         labels=utsatt.legend) +
   theme_minimal() +
   theme_rise() +
   ylab("Antal individer")
 ```
-#### Begått brott
+#### Andel utsatt för specifikt brott
+
 ```{r}
+SEutsattGÅ <- function(i) {
+  df %>%
+    filter(Kön %in% c("Pojke","Flicka")) %>% 
+    filter(!is.na(ARSKURS)) %>% 
+    filter(Kommun == fokusKommun) %>% 
+    group_by(ar,ARSKURS,Kön,.data[[i]]) %>%
+    summarise(n = n()) %>%
+    mutate(Procent = round(100 * n / sum(n), 1)) %>% 
+    ungroup() %>% 
+    add_column(Item = as.character(i)) %>% 
+    rename(respons = as.character(i))
+}
+
+df.utsattGÅ <- rbind(SEutsattGÅ("f78aa"),
+                   SEutsattGÅ("f78ba"),
+                   SEutsattGÅ("f78ca"),
+                   SEutsattGÅ("f78da"),
+                   SEutsattGÅ("f78ea"))
+
+df.utsattGÅ %>% 
+  filter(respons == 1) %>% 
+  rename(Årskurs = ARSKURS) %>% 
+  ggplot(aes(y = Procent, x = factor(ar), group = Item, color = Item)) +
+  geom_point(aes(tooltip = Procent),
+                         size = 2) +
+  geom_line(linewidth = 1) +
+  scale_color_manual(labels = utsatt.legend, values = RISEpalette1) +
+  xlab("Årtal") +
+  facet_grid(Årskurs~Kön) +
+  theme_minimal() +
+  theme_rise()
+```
+#### Begått brott, antal
+Summerat utifrån självrapporterade brott.
+```{r}
+items.brott <- df %>% 
+  select(starts_with("f75")) %>% 
+  names()
+
+df <- df %>% 
+  mutate(AntalBrott = rowSums(across(all_of(items.brott)), na.rm = T))
+
+df %>% 
+  filter(Kön %in% c("Pojke","Flicka")) %>% 
+  filter(!is.na(ARSKURS)) %>% 
+  filter(Kommun == fokusKommun) %>% 
+  mutate(AntalBrott = recode(AntalBrott,"6:25=5")) %>% 
+  #mutate(AntalBrott = factor(AntalBrott)) %>%
+  mutate(År = factor(ar)) %>% 
+  ggplot(aes(x = AntalBrott, y = after_stat(count), group = År, fill = År)) +
+  geom_bar(position = "dodge") +
+  scale_fill_manual(values = RISEpalette1) +
+  theme_minimal() +
+  theme_rise() +
+  ylab("Antal") +
+  facet_grid(ARSKURS~Kön)
 
 ```
+#### Begått specifikt brott
+```{r}
+SEutsattGÅ <- function(i) {
+  df %>%
+    filter(Kön %in% c("Pojke","Flicka")) %>% 
+    filter(!is.na(ARSKURS)) %>% 
+    filter(Kommun == fokusKommun) %>% 
+    group_by(ar,ARSKURS,Kön,.data[[i]]) %>%
+    summarise(n = n()) %>%
+    mutate(Procent = round(100 * n / sum(n), 1)) %>% 
+    ungroup() %>% 
+    add_column(Item = as.character(i)) %>% 
+    rename(respons = as.character(i))
+}
 
+df.begått <- data.frame(matrix(ncol = 7, nrow = 0)) # we need to make a new dataframe
+
+for (i in items.brott) {
+  df.begåttN <- SEutsattGÅ(i)
+  df.begått <- rbind(df.begått,df.begåttN)
+}
+
+df.begått %>% 
+  filter(respons == 1) %>% 
+  rename(Årskurs = ARSKURS) %>% 
+  ggplot(aes(y = Procent, x = factor(ar), group = Item, color = Item)) +
+  geom_point(aes(tooltip = Procent),
+                         size = 2) +
+  geom_line(linewidth = 1) +
+  #scale_color_manual(labels = utsatt.legend, values = RISEpalette1) +
+  xlab("Årtal") +
+  facet_grid(Årskurs~Kön) +
+  theme_minimal() +
+  theme_rise()
+
+allitems %>% 
+  filter(Index == "Brott") %>% 
+  select(!Index) %>% 
+  kbl_rise()
+```
+
+#### Mobbning
+Det kommer data här senare.
 :::
 
 #### ANDTS
@@ -757,7 +795,7 @@ andtsUseShare <- function(andts) {
 andtsUseShare("F14r")
 ```
 
-##### Snus
+##### Snus    
 ```{r}
 andtsUseShare("F18r")
 ```
@@ -949,9 +987,12 @@ DIDmedelSDg(sums.indexGG, "Vantrivsel i skolan") +
 ### Skyddsfaktorer
 
 ::: panel-tabset
-#### Åk 9 & Gy 2 grupperat
+
 ```{r}
 #| include: false
+#| eval: false
+
+#### Åk 9 & Gy 2 grupperat
 plotFaktor <- "Positiv skolanknytning"
 
 df.plot <- df %>%
@@ -1025,7 +1066,7 @@ DIDmedelSDg(sums.si, "SkolaPositivSI") +
 ```
 :::
 
-### KOLADA
+### KOLADA (gammal)
 
 ::: panel-tabset
 #### Förskola
@@ -1040,7 +1081,7 @@ df.kolada <- KOLADA %>%
 
 ggplot(df.kolada,aes(x = År, y = Andel, group = Kommun, color = Kommun)) +
   geom_line(alpha = 0.5, 
-            linewidth = 0.8) +
+            linewidth = 0.8, linetype = 3) +
   geom_point(alpha = 0.5, 
              size = 2) +
   geom_line(data = filter(df.kolada, Kommun == fokusKommun), alpha = 1) +
@@ -1049,7 +1090,7 @@ ggplot(df.kolada,aes(x = År, y = Andel, group = Kommun, color = Kommun)) +
   scale_y_continuous(limits = c(0, 100)) +
   scale_color_brewer(type = "qual", palette = "Dark2") +
   facet_wrap(~KPI,
-             ncol = 4,
+             ncol = 2,
              scales = "free",
              labeller = labeller(KPI = label_wrap_gen(25))) +
   theme_minimal() +
@@ -1068,7 +1109,7 @@ df.kolada <- KOLADA %>%
   )
 
 ggplot(df.kolada,aes(x = År, y = Andel, group = Kommun, color = Kommun)) +
-  geom_line(alpha = 0.5, linewidth = 0.8) +
+  geom_line(alpha = 0.5, linewidth = 0.8, linetype = 3) +
   geom_point(alpha = 0.5, size = 2) +
   geom_line(data = filter(df.kolada, Kommun == fokusKommun), alpha = 1) +
   geom_point(data = filter(df.kolada, Kommun == fokusKommun), alpha = 1) +
@@ -1079,7 +1120,6 @@ ggplot(df.kolada,aes(x = År, y = Andel, group = Kommun, color = Kommun)) +
   xlab("") +
   facet_wrap(~KPI,
              ncol = 2,
-             nrow = 2,
              scales = "free",
              labeller = labeller(KPI = label_wrap_gen(22))) +
   theme_minimal() +
@@ -1097,7 +1137,7 @@ df.kolada <- KOLADA %>%
   )
 
 ggplot(df.kolada,aes(x = År, y = Andel, group = Kommun, color = Kommun)) +
-  geom_line(alpha = 0.5, linewidth = 0.5) +
+  geom_line(alpha = 0.5, linewidth = 0.5, linetype = 3) +
   geom_point(alpha = 0.5, size = 1.2) +
   geom_line(data = filter(df.kolada, Kommun == fokusKommun), alpha = 1) +
   geom_point(data = filter(df.kolada, Kommun == fokusKommun), alpha = 1) +
@@ -1108,11 +1148,73 @@ ggplot(df.kolada,aes(x = År, y = Andel, group = Kommun, color = Kommun)) +
   xlab("") +
   facet_wrap(~KPI,
              ncol = 2,
-             nrow = 2,
              scales = "free",
              labeller = labeller(KPI = label_wrap_gen(22))) +
   theme_minimal() +
   theme_rise()
+```
+:::
+
+### KOLADA (ny)
+
+::: panel-tabset
+#### Förskola
+```{r}
+#| fig-height: 9
+df.kolada_Simon <- KOLADAs %>% 
+  filter(Kön == "Alla") %>% 
+  filter(Kommun %in% jmfKommun) %>% 
+  filter(KPI %in% c("Barn 3-5 år inskrivna i förskola, andel (%)",
+                    "Heltidstjänster i förskola med pedagogisk högskoleexamen, lägeskommun, andel (%)",
+                    "Heltidstjänster i förskola med pedagogisk högskoleexamen, enskild regi, andel (%)",
+                    "Heltidstjänster i förskola med pedagogisk högskoleexamen, kommunal regi, andel (%)")
+  )
+
+ggplot(df.kolada_Simon,aes(x = År, y = Andel, group = Kommun, color = Kommun)) +
+  geom_line(alpha = 0.5, 
+            linewidth = 0.5, linetype = 3) +
+  geom_point(alpha = 0.5, 
+             size = 1.2) +
+  geom_line(data = filter(df.kolada_Simon, Kommun == fokusKommun), alpha = 1) +
+  geom_point(data = filter(df.kolada_Simon, Kommun == fokusKommun), alpha = 1) +
+  scale_x_continuous(guide = guide_axis(n.dodge = 2)) +
+  scale_y_continuous(limits = c(0, 100)) +
+  scale_color_brewer(type = "qual", palette = "Dark2") +
+  theme_minimal() +
+  theme_rise() +
+  facet_wrap(~KPI,
+             ncol = 2,
+             scales = "free",
+             labeller = labeller(KPI = label_wrap_gen(22)))
+```
+#### Grundskola & gymnasium
+```{r}
+#| fig-height: 9
+df.kolada_Simon <- KOLADAs %>% 
+  filter(Kön == "Alla") %>% 
+  filter(Kommun %in% jmfKommun) %>% 
+  filter(KPI %in% c("Gymnasieelever med indraget studiestöd pga. ogiltig frånvaro, hemkommun, andel (%)",
+                    "Gymnasieelever med examen inom 4 år, hemkommun, andel (%)",
+                    "Elever i åk 9 som är behöriga till yrkesprogram, hemkommun, andel (%)",
+                    "Elever vars föräldrar har eftergymnasial utbildning, åk 1-9 i lägeskommun, andel (%)")
+  )
+
+ggplot(df.kolada_Simon,aes(x = År, y = Andel, group = Kommun, color = Kommun)) +
+  geom_line(alpha = 0.5, 
+            linewidth = 0.5, linetype = 3) +
+  geom_point(alpha = 0.5, 
+             size = 1.2) +
+  geom_line(data = filter(df.kolada_Simon, Kommun == fokusKommun), alpha = 1) +
+  geom_point(data = filter(df.kolada_Simon, Kommun == fokusKommun), alpha = 1) +
+  scale_x_continuous(guide = guide_axis(n.dodge = 2)) +
+  scale_y_continuous(limits = c(0, 100)) +
+  scale_color_brewer(type = "qual", palette = "Dark2") +
+  theme_minimal() +
+  theme_rise() +
+  facet_wrap(~KPI,
+             ncol = 2,
+             scales = "free",
+             labeller = labeller(KPI = label_wrap_gen(22)))
 ```
 :::
 
@@ -1146,9 +1248,152 @@ DIDmedelSDg(sums.indexGG, "Närsamhälle") +
 
 ### Skyddsfaktorer
 
+### KOLADA
+```{r}
+#| fig-height: 11
+df.kolada_Simon <- KOLADAs %>% 
+  filter(Kön == "Alla") %>% 
+  filter(Kommun %in% jmfKommun) %>% 
+  filter(KPI %in% c("Invånare 0-19 år i ekonomiskt utsatta hushåll, andel (%)",
+                    "Trångboddhet i flerbostadshus, enligt norm 2, andel (%)",
+                    "Trångboddhet i flerbostadshus, enligt norm 3, andel (%)",
+                    "Anmälda våldsbrott, antal/100 000 inv",
+                    "Anmälda brott om skadegörelse per 1 000 inv.",
+                    "Anmälda stöld- och tillgreppsbrott, antal/1000 inv")
+  )
+
+ggplot(df.kolada_Simon,aes(x = År, y = Andel, group = Kommun, color = Kommun)) +
+  geom_line(alpha = 0.5, 
+            linewidth = 0.5,
+            linetype = 3) +
+  geom_point(alpha = 0.5, 
+             size = 1.2) +
+  geom_line(data = filter(df.kolada_Simon, Kommun == fokusKommun), alpha = 1) +
+  geom_point(data = filter(df.kolada_Simon, Kommun == fokusKommun), alpha = 1) +
+  scale_x_continuous(guide = guide_axis(n.dodge = 2)) +
+  scale_y_continuous(limits = c(0, 100)) +
+  scale_color_brewer(type = "qual", palette = "Dark2") +
+  theme_minimal() +
+  theme_rise() +
+  facet_wrap(~KPI,
+             ncol = 2,
+             scales = "free",
+             labeller = labeller(KPI = label_wrap_gen(25)))
+```
+
+
 ## Kamrater och fritid
 
 ### Riskfaktorer
 
 ### Skyddsfaktorer
+
+### KOLADA
+
+```{r}
+#| fig-height: 9
+
+df.koladaS <- KOLADAs %>%
+  filter(Kön == "Alla") %>%
+  filter(Kommun %in% jmfKommun) %>%
+  filter(KPI %in% c(
+    "Deltagartillfällen i idrottsföreningar, antal/inv 7-20 år",
+    "Deltagartillfällen i idrottsföreningar, antal/inv 13-20 år",
+    "Aktivitetstillfällen för barn och unga i kommunala bibliotek, antal/1000 inv 0-18 år",
+    "Elever i musik- eller kulturskola, 6-15 år, andel (%)"
+  ))
+
+# Create the plot
+
+ggplot(df.koladaS, aes(x = År, y = Andel, group = Kommun, color = Kommun)) +
+  geom_line(
+    alpha = 0.5,
+    linewidth = 0.5,
+    linetype = 3
+  ) +
+  geom_point(
+    alpha = 0.5,
+    size = 1.2
+  ) +
+  geom_line(data = filter(df.koladaS, Kommun == fokusKommun), alpha = 1) +
+  geom_point(data = filter(df.koladaS, Kommun == fokusKommun), alpha = 1) +
+  scale_x_continuous(guide = guide_axis(n.dodge = 2)) +
+  scale_y_continuous(limits = c(0, 100)) +
+  scale_color_brewer(type = "qual", palette = "Dark2") +
+  theme_minimal() +
+  theme_rise() +
+  facet_wrap(~KPI,
+    ncol = 2,
+    scales = "free",
+    labeller = labeller(KPI = label_wrap_gen(25))
+  ) 
+```
+
+
+### Tabell - psykiska/psykosomatiska besvär åk 9
+
+Utifrån tidigare efterfrågan på mera exakta siffror är denna med som exempel på vad som kan tas fram.
+```{r}
+### Tabell psykiska/psykosomatiska besvär åk 9
+
+  plotFaktor <- "Psykiska/ psykosomatiska besvär"
+  df.plot <- df %>%
+    filter(Kommun == fokusKommun) %>%
+    mutate(
+      Risknivå = case_when(
+        .data[[plotFaktor]] < rslimits |>
+          select(all_of(plotFaktor)) |>
+          slice(1) |>
+          pull() ~ "Låg risk",
+        .data[[plotFaktor]] >= rslimits |>
+          select(all_of(plotFaktor)) |>
+          slice(1) |>
+          pull() &
+          .data[[plotFaktor]] < rslimits |>
+            select(all_of(plotFaktor)) |>
+            slice(2) |>
+            pull() ~ "Något förhöjd risk",
+        .data[[plotFaktor]] >= rslimits |>
+          select(all_of(plotFaktor)) |>
+          slice(2) |>
+          pull() ~ "Förhöjd risk",
+        TRUE ~ "Otillräckliga svar"
+      )
+    )
+
+## Table for all years and ARSKURS
+#   df.plot %>%
+#     filter(Kön %in% c("Pojke", "Flicka")) %>%
+#     #filter(ar %in% c()) %>% # allow selection of span of years?
+#     mutate(Risknivå = factor(Risknivå, levels = c("Förhöjd risk", "Något förhöjd risk", "Låg risk", "Otillräckliga svar"))) %>%
+#     group_by(ar, Kön, ARSKURS) %>%
+#     count(Risknivå, .drop = FALSE) %>%
+#     mutate(Andel = (100 * n / sum(n)) %>% round(digits = 1)) %>% 
+#     rename(Antal = n) %>% 
+#     gt(.,
+#    groupname_col = c("ar","ARSKURS","Kön")) %>% 
+#   gt_theme_espn() %>% 
+#   tab_options(table.font.name = "Lato",
+#               container.width = 500,
+#               heading.align = "left") %>% 
+#   cols_align(align = "right")
+  
+    df.plot %>%
+    filter(Kön %in% c("Pojke", "Flicka")) %>%
+    filter(ar %in% c(2016,2018,2020,2022)) %>% # allow selection of span of years?
+    filter(ARSKURS == "Åk 9") %>% 
+    mutate(Risknivå = factor(Risknivå, levels = c("Förhöjd risk", "Något förhöjd risk", "Låg risk", "Otillräckliga svar"))) %>%
+    group_by(ar, Kön) %>%
+    count(Risknivå, .drop = FALSE) %>%
+    mutate(Andel = (100 * n / sum(n)) %>% round(digits = 1)) %>% 
+    rename(Antal = n) %>% 
+    gt(.,
+   groupname_col = c("ar","Kön")) %>% 
+  gt_theme_espn() %>% 
+  tab_options(table.font.name = "Lato",
+              container.width = 500,
+              heading.align = "left") %>% 
+  cols_align(align = "right")
+  
+```
 

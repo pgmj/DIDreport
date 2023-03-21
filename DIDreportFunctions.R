@@ -300,18 +300,44 @@ DIDradarPlot <- function(årtal) {
     geom_point(data = filter(df.plot, Kommun == fokusKommun), alpha = 0.9) +
     scale_color_brewer(type = "qual", palette = "Dark2") +
     see::coord_radar(theta = "x", start = 3, clip = "off") +
-    scale_y_continuous(limits = c(-3, NA), expand = c(0, 0, 0, 0)) +
+    scale_y_continuous(limits = c(-1.5, NA), expand = c(0, 0, 0, 0)) +
     scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
     labs(
       title = paste0("Riskfaktorer ", year),
       subtitle = "Högre värde = större risk",
       y = "", x = ""
     ) +
-    facet_wrap(~Kön) +
+    facet_wrap(~Kön, nrow = 2) +
     theme_minimal() +
-    theme_rise()
+    theme_rise() +
+    theme(legend.background = element_rect(color = "lightgrey"),
+          strip.background = element_rect(color = "lightgrey"),
+          legend.position = "right",
+          axis.text.y = element_blank())
 }
 
+DIDkoladaPlot <- function(data) {
+  data %>%
+  ggplot(aes(x = År, y = Andel, group = Kommun, color = Kommun)) +
+    geom_line(alpha = 0.5, linewidth = 0.8, linetype = 3) +
+    geom_point(alpha = 0.5, size = 2) +
+    geom_line(data = filter({{data}}, Kommun == fokusKommun), alpha = 1) +
+    geom_point(data = filter({{data}}, Kommun == fokusKommun), alpha = 1) +
+    scale_x_continuous(guide = guide_axis(n.dodge = 2)) +
+    scale_y_continuous(limits = c(0, 100)) +
+    scale_color_brewer(type = "qual", palette = "Dark2") +
+    ylab("Andel i %") +
+    xlab("") +
+    facet_wrap(~KPI,
+               ncol = 2,
+               scales = "free",
+               labeller = labeller(KPI = label_wrap_gen(22))) +
+    theme_minimal() +
+    theme_rise() +
+    theme(legend.background = element_rect(color = "lightgrey"),
+          strip.background = element_rect(color = "lightgrey"),
+          legend.position = "top")
+}
 
 # Mean ~ Time -------------------------------------------------------------
 

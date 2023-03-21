@@ -481,18 +481,25 @@ df.risk.gender.arskurs %>%
 
 Vi saknar data för Stockholm gällande 2022.
 ```{r}
+#| fig-height: 7
 DIDradarPlot("2022")
 ```
 #### 2020
 ```{r}
+#| fig-height: 7
+
 DIDradarPlot("2020")
 ```
 #### 2018
 ```{r}
+#| fig-height: 7
+
 DIDradarPlot("2018")
 ```
 #### 2016
 ```{r}
+#| fig-height: 7
+
 DIDradarPlot("2016")
 ```
 :::
@@ -1079,22 +1086,8 @@ df.kolada <- KOLADA %>%
                     "Heltidstjänster i förskolan med förskollärarexamen, lägeskommun, andel (%)")
   )
 
-ggplot(df.kolada,aes(x = År, y = Andel, group = Kommun, color = Kommun)) +
-  geom_line(alpha = 0.5, 
-            linewidth = 0.8, linetype = 3) +
-  geom_point(alpha = 0.5, 
-             size = 2) +
-  geom_line(data = filter(df.kolada, Kommun == fokusKommun), alpha = 1) +
-  geom_point(data = filter(df.kolada, Kommun == fokusKommun), alpha = 1) +
-  scale_x_continuous(guide = guide_axis(n.dodge = 2)) +
-  scale_y_continuous(limits = c(0, 100)) +
-  scale_color_brewer(type = "qual", palette = "Dark2") +
-  facet_wrap(~KPI,
-             ncol = 2,
-             scales = "free",
-             labeller = labeller(KPI = label_wrap_gen(25))) +
-  theme_minimal() +
-  theme_rise()
+DIDkoladaPlot(df.kolada)
+
 ```
 
 #### Grundskola
@@ -1108,22 +1101,8 @@ df.kolada <- KOLADA %>%
                     "Elever i åk 9 som är behöriga till yrkesprogram, hemkommun, andel (%)")
   )
 
-ggplot(df.kolada,aes(x = År, y = Andel, group = Kommun, color = Kommun)) +
-  geom_line(alpha = 0.5, linewidth = 0.8, linetype = 3) +
-  geom_point(alpha = 0.5, size = 2) +
-  geom_line(data = filter(df.kolada, Kommun == fokusKommun), alpha = 1) +
-  geom_point(data = filter(df.kolada, Kommun == fokusKommun), alpha = 1) +
-  scale_x_continuous(guide = guide_axis(n.dodge = 2)) +
-  scale_y_continuous(limits = c(0, 100)) +
-  scale_color_brewer(type = "qual", palette = "Dark2") +
-  ylab("Andel i %") +
-  xlab("") +
-  facet_wrap(~KPI,
-             ncol = 2,
-             scales = "free",
-             labeller = labeller(KPI = label_wrap_gen(22))) +
-  theme_minimal() +
-  theme_rise()
+DIDkoladaPlot(df.kolada)
+
 ```
 #### Gymnasie
 ```{r}
@@ -1136,22 +1115,8 @@ df.kolada <- KOLADA %>%
                     "Gymnasieelever med indraget studiestöd pga. ogiltig frånvaro, hemkommun, andel (%)")
   )
 
-ggplot(df.kolada,aes(x = År, y = Andel, group = Kommun, color = Kommun)) +
-  geom_line(alpha = 0.5, linewidth = 0.5, linetype = 3) +
-  geom_point(alpha = 0.5, size = 1.2) +
-  geom_line(data = filter(df.kolada, Kommun == fokusKommun), alpha = 1) +
-  geom_point(data = filter(df.kolada, Kommun == fokusKommun), alpha = 1) +
-  scale_x_continuous(guide = guide_axis(n.dodge = 2)) +
-  scale_y_continuous(limits = c(0, 100)) +
-  scale_color_brewer(type = "qual", palette = "Dark2") +
-  ylab("Andel i %") +
-  xlab("") +
-  facet_wrap(~KPI,
-             ncol = 2,
-             scales = "free",
-             labeller = labeller(KPI = label_wrap_gen(22))) +
-  theme_minimal() +
-  theme_rise()
+DIDkoladaPlot(df.kolada)
+
 ```
 :::
 
@@ -1161,7 +1126,7 @@ ggplot(df.kolada,aes(x = År, y = Andel, group = Kommun, color = Kommun)) +
 #### Förskola
 ```{r}
 #| fig-height: 9
-df.kolada_Simon <- KOLADAs %>% 
+df.kolada <- KOLADAs %>% 
   filter(Kön == "Alla") %>% 
   filter(Kommun %in% jmfKommun) %>% 
   filter(KPI %in% c("Barn 3-5 år inskrivna i förskola, andel (%)",
@@ -1170,27 +1135,13 @@ df.kolada_Simon <- KOLADAs %>%
                     "Heltidstjänster i förskola med pedagogisk högskoleexamen, kommunal regi, andel (%)")
   )
 
-ggplot(df.kolada_Simon,aes(x = År, y = Andel, group = Kommun, color = Kommun)) +
-  geom_line(alpha = 0.5, 
-            linewidth = 0.5, linetype = 3) +
-  geom_point(alpha = 0.5, 
-             size = 1.2) +
-  geom_line(data = filter(df.kolada_Simon, Kommun == fokusKommun), alpha = 1) +
-  geom_point(data = filter(df.kolada_Simon, Kommun == fokusKommun), alpha = 1) +
-  scale_x_continuous(guide = guide_axis(n.dodge = 2)) +
-  scale_y_continuous(limits = c(0, 100)) +
-  scale_color_brewer(type = "qual", palette = "Dark2") +
-  theme_minimal() +
-  theme_rise() +
-  facet_wrap(~KPI,
-             ncol = 2,
-             scales = "free",
-             labeller = labeller(KPI = label_wrap_gen(22)))
+DIDkoladaPlot(df.kolada)
+
 ```
 #### Grundskola & gymnasium
 ```{r}
 #| fig-height: 9
-df.kolada_Simon <- KOLADAs %>% 
+df.kolada <- KOLADAs %>% 
   filter(Kön == "Alla") %>% 
   filter(Kommun %in% jmfKommun) %>% 
   filter(KPI %in% c("Gymnasieelever med indraget studiestöd pga. ogiltig frånvaro, hemkommun, andel (%)",
@@ -1199,22 +1150,8 @@ df.kolada_Simon <- KOLADAs %>%
                     "Elever vars föräldrar har eftergymnasial utbildning, åk 1-9 i lägeskommun, andel (%)")
   )
 
-ggplot(df.kolada_Simon,aes(x = År, y = Andel, group = Kommun, color = Kommun)) +
-  geom_line(alpha = 0.5, 
-            linewidth = 0.5, linetype = 3) +
-  geom_point(alpha = 0.5, 
-             size = 1.2) +
-  geom_line(data = filter(df.kolada_Simon, Kommun == fokusKommun), alpha = 1) +
-  geom_point(data = filter(df.kolada_Simon, Kommun == fokusKommun), alpha = 1) +
-  scale_x_continuous(guide = guide_axis(n.dodge = 2)) +
-  scale_y_continuous(limits = c(0, 100)) +
-  scale_color_brewer(type = "qual", palette = "Dark2") +
-  theme_minimal() +
-  theme_rise() +
-  facet_wrap(~KPI,
-             ncol = 2,
-             scales = "free",
-             labeller = labeller(KPI = label_wrap_gen(22)))
+DIDkoladaPlot(df.kolada)
+
 ```
 :::
 
@@ -1251,34 +1188,18 @@ DIDmedelSDg(sums.indexGG, "Närsamhälle") +
 ### KOLADA
 ```{r}
 #| fig-height: 11
-df.kolada_Simon <- KOLADAs %>% 
+df.kolada <- KOLADAs %>% 
   filter(Kön == "Alla") %>% 
   filter(Kommun %in% jmfKommun) %>% 
   filter(KPI %in% c("Invånare 0-19 år i ekonomiskt utsatta hushåll, andel (%)",
                     "Trångboddhet i flerbostadshus, enligt norm 2, andel (%)",
                     "Trångboddhet i flerbostadshus, enligt norm 3, andel (%)",
-                    "Anmälda våldsbrott, antal/100 000 inv",
                     "Anmälda brott om skadegörelse per 1 000 inv.",
                     "Anmälda stöld- och tillgreppsbrott, antal/1000 inv")
   )
 
-ggplot(df.kolada_Simon,aes(x = År, y = Andel, group = Kommun, color = Kommun)) +
-  geom_line(alpha = 0.5, 
-            linewidth = 0.5,
-            linetype = 3) +
-  geom_point(alpha = 0.5, 
-             size = 1.2) +
-  geom_line(data = filter(df.kolada_Simon, Kommun == fokusKommun), alpha = 1) +
-  geom_point(data = filter(df.kolada_Simon, Kommun == fokusKommun), alpha = 1) +
-  scale_x_continuous(guide = guide_axis(n.dodge = 2)) +
-  scale_y_continuous(limits = c(0, 100)) +
-  scale_color_brewer(type = "qual", palette = "Dark2") +
-  theme_minimal() +
-  theme_rise() +
-  facet_wrap(~KPI,
-             ncol = 2,
-             scales = "free",
-             labeller = labeller(KPI = label_wrap_gen(25)))
+DIDkoladaPlot(df.kolada)
+
 ```
 
 
@@ -1293,7 +1214,7 @@ ggplot(df.kolada_Simon,aes(x = År, y = Andel, group = Kommun, color = Kommun)) 
 ```{r}
 #| fig-height: 9
 
-df.koladaS <- KOLADAs %>%
+df.kolada <- KOLADAs %>%
   filter(Kön == "Alla") %>%
   filter(Kommun %in% jmfKommun) %>%
   filter(KPI %in% c(
@@ -1305,28 +1226,8 @@ df.koladaS <- KOLADAs %>%
 
 # Create the plot
 
-ggplot(df.koladaS, aes(x = År, y = Andel, group = Kommun, color = Kommun)) +
-  geom_line(
-    alpha = 0.5,
-    linewidth = 0.5,
-    linetype = 3
-  ) +
-  geom_point(
-    alpha = 0.5,
-    size = 1.2
-  ) +
-  geom_line(data = filter(df.koladaS, Kommun == fokusKommun), alpha = 1) +
-  geom_point(data = filter(df.koladaS, Kommun == fokusKommun), alpha = 1) +
-  scale_x_continuous(guide = guide_axis(n.dodge = 2)) +
-  scale_y_continuous(limits = c(0, 100)) +
-  scale_color_brewer(type = "qual", palette = "Dark2") +
-  theme_minimal() +
-  theme_rise() +
-  facet_wrap(~KPI,
-    ncol = 2,
-    scales = "free",
-    labeller = labeller(KPI = label_wrap_gen(25))
-  ) 
+DIDkoladaPlot(df.kolada)
+
 ```
 
 

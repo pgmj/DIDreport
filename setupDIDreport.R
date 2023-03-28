@@ -397,30 +397,42 @@ df <- df %>%
 
 # KOLADA ------------------------------------------------------------------
 
-KOLADA <- read_parquet("../data/2023-01-10_koladaData.parquet")
+# KOLADA <- read_parquet("../data/2023-01-10_koladaData.parquet")
+#
+# # which KPI's to remove?
+# removed.kpi <- c("N17473","N15613","N15643","N17620")
+# # set which are available in app
+# kpiChoices <- KOLADA %>%
+#   filter(!kpi %in% removed.kpi) %>%
+#   arrange(kpi) %>%
+#   distinct(KPI) %>%
+#   pull()
 
-# which KPI's to remove?
-removed.kpi <- c("N17473","N15613","N15643","N17620")
-# set which are available in app
-kpiChoices <- KOLADA %>%
-  filter(!kpi %in% removed.kpi) %>%
-  arrange(kpi) %>%
-  distinct(KPI) %>%
-  pull()
-
-KOLADAs <- read_parquet("koladaData.parquet")
-summarize <- plyr::summarize
-
-kpi_mean <- KOLADAs %>%
-  group_by(kpi, KPI, År) %>%
-  summarise_at(vars(Andel), list(Andel = mean))
-
-kpi_mean$Kommun <- "Medel riket"
-kpi_mean$Kön <- "Alla"
-
-kpi_mean = kpi_mean %>% select(Kommun, KPI, kpi, År, Andel, Kön)
-
-KOLADAs <- bind_rows(KOLADAs, kpi_mean)
+## KOLADA Simon------------------------
+# KOLADAs <- read_parquet("koladaData.parquet")
+# summarize <- plyr::summarize
+#
+# kpi_mean <- KOLADAs %>%
+#   group_by(kpi, KPI, År) %>%
+#   summarise_at(vars(Andel), list(Andel = mean))
+#
+# kpi_mean$Kommun <- "Medel riket"
+# kpi_mean$Kön <- "Alla"
+#
+# kpi_mean <- kpi_mean %>%
+#   select(Kommun, KPI, kpi, År, Andel, Kön)
+#
+# KOLADAs <- bind_rows(KOLADAs, kpi_mean)
 
 
+# KOLADA new --------------------------------------------------------------
 
+KOLADA <- read_parquet("KOLADA/2023-03-28_KOLADA_data_ready.parquet")
+
+kpi_mean <- KOLADA %>%
+  group_by(KPI, kpi, År) %>%
+  summarise_at(vars(Andel), list(Andel = mean)) %>%
+  add_column(Kommun = "Medel riket", .before = "KPI") %>%
+  add_column(Kön = "Alla")
+
+KOLADA <- rbind(KOLADA, kpi_mean)

@@ -80,7 +80,8 @@ DIDsnirkel <- function(årtal) {
       breaks = seq(0, 90, 10),
       labels = paste0(seq(0, 90, 10), "%")
     ) +
-    labs(title = paste0(fokusKommun, " - ", årtal)) +
+    labs(title = paste0(fokusKommun, " - ", årtal),
+         caption = "Datakälla: Stockholmsenkäten.") +
     geom_texthline(
       yintercept = 10, color = "black",
       linetype = 2, size = 2.5, alpha = 0.6,
@@ -129,7 +130,8 @@ DIDstapel <- function(data,årtal, tpathsize = 4) {
       minor_breaks = seq(0, 100, 10),
       labels = paste0(seq(0, 100, 20), "%"),
     ) +
-    labs(title = paste0(fokusKommun, " - ", year)) +
+    labs(title = paste0(fokusKommun, " - ", year),
+         caption = "Datakälla: Stockholmsenkäten.") +
     geom_texthline(
       yintercept = 10, color = "black",
       linetype = 2, size = 2.5, alpha = 0.6,
@@ -197,22 +199,16 @@ DIDareaPlot <- function(faktor) {
     labs(
       title = paste0(plotFaktor, " - ", fokusKommun),
       subtitle = "Uppdelat på kön",
-      caption = str_wrap("Svart streckad linje = referensvärde för 10% med högst risk.
-      Röd linje = referensvärde för 25% med högst risk",
-                         width = 60
-      )
+      caption = "Svart streckad linje = referensvärde för 10% med högst indexvärde.\n
+      Röd linje = referensvärde för 25% med högst indexvärde.\n
+                         Datakälla: Stockholmsenkäten."
     ) +
     facet_wrap(~Kön) +
     theme_minimal() +
-    theme_rise()
-    # theme(text = element_text(family = "Lato"),
-    #       axis.text.x = element_text(size = ax.size),
-    #       axis.text.y = element_text(size = ax.size),
-    #       title = element_text(size = title.size),
-    #       legend.text = element_text(size = legend.size),
-    #       strip.text.x = element_text(size = 13),
-    #       panel.spacing = unit(pandist, "cm", data = NULL)
-    # )
+    theme_rise() +
+    theme(legend.background = element_rect(color = "lightgrey"),
+          plot.caption = element_text(lineheight = 0.45)
+    )
 }
 
 DIDareaPlot2 <- function(faktor) {
@@ -264,15 +260,16 @@ DIDareaPlot2 <- function(faktor) {
     labs(
       title = paste0(plotFaktor, " - ", fokusKommun),
       subtitle = "Uppdelat på kön och årskurs",
-      caption = str_wrap("Svart streckad linje = referensvärde för 10% med högst risk.
-      Röd linje = referensvärde för 25% med högst risk",
-                         width = 60
-      )
+      caption = "Svart streckad linje = referensvärde för 10% med högst indexvärde.\n
+      Röd linje = referensvärde för 25% med högst indexvärde.\n
+                         Datakälla: Stockholmsenkäten."
     ) +
     facet_grid(ARSKURS~Kön) +
     theme_minimal() +
     theme_rise() +
-    theme(legend.background = element_rect(color = "lightgrey"))
+    theme(legend.background = element_rect(color = "lightgrey"),
+          plot.caption = element_text(lineheight = 0.45)
+    )
 }
 
 
@@ -300,7 +297,8 @@ DIDradarPlot <- function(årtal) {
     labs(
       title = paste0("Riskfaktorer ", year),
       subtitle = "Högre värde = större risk",
-      y = "", x = ""
+      y = "", x = "",
+      caption = "Datakälla: Stockholmsenkäten"
     ) +
     facet_wrap(~Kön, nrow = 2) +
     theme_minimal() +
@@ -331,7 +329,8 @@ DIDkoladaPlot <- function(data) {
     theme_rise() +
     theme(legend.background = element_rect(color = "lightgrey"),
           strip.background = element_rect(color = "lightgrey"),
-          legend.position = "top")
+          legend.position = "top") +
+    labs(caption = "Datakälla: Kolada")
 }
 
 # Mean ~ Time -------------------------------------------------------------
@@ -358,7 +357,9 @@ DIDmedelSD <- function(faktor, xlim = c(-3,3)) {
     scale_y_continuous(limits = xlim) +
     scale_x_discrete(guide = guide_axis(n.dodge = 1)) +
 
-    labs(title = "Medelvärde över tid", subtitle = "Skuggat fält indikerar en standardavvikelse (~ 68%)") +
+    labs(title = "Medelvärde över tid",
+         subtitle = "Skuggat fält indikerar en standardavvikelse (~ 68%)",
+         caption = "Datakälla: Stockholmsenkäten") +
     xlab("Årtal") +
     ylab(paste0(plotFaktor)) +
     theme_minimal() +
@@ -398,7 +399,9 @@ DIDmedelSDg <- function(data,faktor, xlim = c(-2,2.5)) {
     scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
     scale_color_brewer(type = "qual", palette = "Dark2",
                        aesthetics = c("color","fill")) +
-    labs(title = "Medelvärde över tid", subtitle = "Skuggat fält indikerar en standardavvikelse (~ 68%)") +
+    labs(title = "Medelvärde över tid",
+         subtitle = "Skuggat fält indikerar en standardavvikelse (~ 68%)",
+         caption = "Datakälla: Stockholmsenkäten") +
     xlab("Årtal") +
     ylab(paste0(plotFaktor)) +
     theme_minimal() +
@@ -431,6 +434,7 @@ DIDline90 <- function(faktor){
     ggtitle("Andel i grupp \"förhöjd risk\"") +
     xlab("") +
     ylab(paste0(plotFaktor)) +
+    labs(caption = "Datakälla: Stockholmsenkäten") +
     facet_wrap(~Kommun, labeller = labeller(Kommun = label_wrap_gen(12))) +
     theme_minimal() +
     theme_rise() +
@@ -475,7 +479,114 @@ stapelDemografi <- function(demografi) {
     theme_rise() +
     labs(title = str_wrap(paste0(demogr)),
          subtitle = fokusKommun,
-         caption = "Siffrorna ovanför staplarna anger antalet respondenter i varje svarskategori.") +
+         caption = "Siffrorna ovanför staplarna anger antalet respondenter i varje svarskategori.\n
+         Datakälla: Stockholmsenkäten.") +
+    theme(legend.background = element_rect(color = "lightgrey"))
+}
+
+
+# ANDTS specific ----------------------------------------------------------
+
+# for FNY12020r and F14r (e-cig and smoking)
+
+# ta fram ett indexvärde för bruk under senaste 4v
+senaste4v <- c("F14r","F18r","F36new","F49new","FNY12020r")
+df <- df %>%
+  mutate(Senaste4v = rowSums(df %>% select(all_of(senaste4v)), na.rm = T))
+
+itemlabelsPlotFaktor <- cbind(senaste4v,
+                              c("Rökning","Snus","Alkohol","Narkotika (inkl. cannabis)","E-cigaretter")) %>%
+  as.data.frame() %>%
+  rename(itemnr = senaste4v,
+         item = V2)
+
+
+andtsUseShare <- function(andts) {
+  plotFaktor <- andts
+  plotFaktorName <- itemlabelsPlotFaktor %>%
+    filter(itemnr == plotFaktor) %>%
+    pull(item)
+
+  df %>%
+    filter(Kön %in% c("Pojke", "Flicka"),
+           !is.na(ARSKURS),
+           Kommun == fokusKommun) %>%
+    select(all_of(senaste4v), ar, Kön, ARSKURS) %>%
+    mutate(
+      bruk4v = case_when(
+        .data[[plotFaktor]] == 0 ~ "Ej använt",
+        .data[[plotFaktor]] == 1 ~ "Ibland men inte varje dag",
+        .data[[plotFaktor]] == 2 ~ "Dagligen",
+        TRUE ~ "Svar saknas"
+      )
+    ) %>%
+    mutate(bruk4v = factor(bruk4v, levels = c("Dagligen","Ibland men inte varje dag","Ej använt","Svar saknas"))) %>%
+    group_by(ar, Kön, ARSKURS) %>%
+    count(bruk4v, .drop = FALSE) %>%
+    mutate(Andel = (100 * n / sum(n)) %>% round(digits = 1)) %>%
+    ggplot(aes(x = ar, y = Andel)) +
+    geom_area(aes(fill = bruk4v),
+              position = "stack",
+              alpha = 0.9
+    ) +
+    scale_fill_viridis_d('Bruk senaste 4 veckorna') +
+    scale_y_continuous(breaks = c(0, 20, 40, 60, 80, 100)) +
+    scale_x_continuous(breaks = årtal, guide = guide_axis(n.dodge = 2)) +
+    xlab("Årtal") +
+    ylab("Andel i %") +
+    theme_minimal() +
+    theme_rise() +
+    labs(
+      title = paste0(plotFaktorName),
+      subtitle = fokusKommun,
+      caption = "Datakälla: Stockholmsenkäten."
+    ) +
+    facet_grid(ARSKURS ~ Kön) +
+    theme(legend.background = element_rect(color = "lightgrey"))
+}
+
+andtsUseShare2 <- function(andts) {
+  plotFaktor <- andts
+  plotFaktorName <- itemlabelsPlotFaktor %>%
+    filter(itemnr == plotFaktor) %>%
+    pull(item)
+
+  df %>%
+    filter(Kön %in% c("Pojke", "Flicka"),
+           !is.na(ARSKURS),
+           Kommun == fokusKommun) %>%
+    select(all_of(senaste4v), ar, Kön, ARSKURS) %>%
+    mutate(
+      bruk4v = case_when(
+        .data[[plotFaktor]] == 0 ~ "Ej använt",
+        .data[[plotFaktor]] == 1 ~ "En gång",
+        .data[[plotFaktor]] == 2 ~ "Två gånger",
+        .data[[plotFaktor]] == 3 ~ "Tre gånger eller fler",
+        TRUE ~ "Svar saknas"
+      )
+    ) %>%
+    mutate(bruk4v = factor(bruk4v, levels = c("Tre gånger eller fler","Två gånger","En gång","Ej använt","Svar saknas"))) %>%
+    group_by(ar, Kön, ARSKURS) %>%
+    count(bruk4v, .drop = FALSE) %>%
+    mutate(Andel = (100 * n / sum(n)) %>% round(digits = 1)) %>%
+    ggplot(aes(x = ar, y = Andel)) +
+    geom_area(aes(fill = bruk4v),
+              position = "stack",
+              alpha = 0.85
+    ) +
+    scale_fill_viridis_d('Bruk senaste 4 veckorna') +
+    scale_y_continuous(breaks = c(0, 20, 40, 60, 80, 100)) +
+    scale_x_continuous(breaks = årtal, guide = guide_axis(n.dodge = 2)) +
+    xlab("Årtal") +
+    ylab("Andel i %") +
+    theme_minimal() +
+    theme_rise() +
+    labs(
+      title = paste0(plotFaktorName, ", användning senaste 4 veckorna"),
+      subtitle = fokusKommun,
+      caption = "Datakälla: Stockholmsenkäten."
+    ) +
+    facet_grid(ARSKURS ~ Kön) +
     theme(legend.background = element_rect(color = "lightgrey"))
 }
 

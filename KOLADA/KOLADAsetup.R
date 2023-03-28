@@ -79,10 +79,10 @@ colnames(df.values) <- c("Kommun", "KPI", "kpi", "År", "Andel", "Kön")
 df.values$Kön <- recode_factor(df.values$Kön, T = "Alla", 
                                M = "Pojke", K = "Flicka")
 
-df.values %>% 
-  distinct(kpi,KPI) %>% 
-  kbl()
-
+# check that things look good
+# df.values %>% 
+#   distinct(kpi,KPI) %>% 
+#   kbl()
 
 write_parquet(df.values, glue("{Sys.Date()}_KOLADA_data_ready.parquet"))
 

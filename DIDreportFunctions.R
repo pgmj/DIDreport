@@ -400,8 +400,7 @@ DIDmedelSDg <- function(data,faktor, xlim = c(-2,2.5)) {
     scale_color_brewer(type = "qual", palette = "Dark2",
                        aesthetics = c("color","fill")) +
     labs(title = "Medelvärde över tid",
-         subtitle = "Skuggat fält indikerar en standardavvikelse (~ 68%)",
-         caption = "Datakälla: Stockholmsenkäten") +
+         subtitle = "Skuggat fält indikerar en standardavvikelse (~ 68%)") +
     xlab("Årtal") +
     ylab(paste0(plotFaktor)) +
     theme_minimal() +

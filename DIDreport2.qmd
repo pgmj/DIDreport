@@ -145,7 +145,7 @@ source("setupDIDreport.R")
 source("DIDreportFunctions.R")
 ```
 
-## Demografi
+## Demografi Stockholmsenkäten
 
 För att se exakta antal i figurerna går det att använda muspekaren på respektive punkt.
 
@@ -412,36 +412,6 @@ df.risk.gender.arskurs %>%
 ```
 :::
 
-### Spindeldiagram
-
-::: panel-tabset
-#### 2022
-
-Vi saknar data för Stockholm gällande 2022.
-```{r}
-#| fig-height: 7
-DIDradarPlot("2022")
-```
-#### 2020
-```{r}
-#| fig-height: 7
-
-DIDradarPlot("2020")
-```
-#### 2018
-```{r}
-#| fig-height: 7
-
-DIDradarPlot("2018")
-```
-#### 2016
-```{r}
-#| fig-height: 7
-
-DIDradarPlot("2016")
-```
-:::
-
 ### Snirkeldiagram
 
 ::: panel-tabset
@@ -513,6 +483,37 @@ df.risk %>%
   facet_wrap(~År) +
   theme_minimal() +
   theme_rise()
+```
+:::
+
+
+### Spindeldiagram
+
+::: panel-tabset
+#### 2022
+
+Vi saknar data för Stockholm gällande 2022.
+```{r}
+#| fig-height: 7
+DIDradarPlot("2022")
+```
+#### 2020
+```{r}
+#| fig-height: 7
+
+DIDradarPlot("2020")
+```
+#### 2018
+```{r}
+#| fig-height: 7
+
+DIDradarPlot("2018")
+```
+#### 2016
+```{r}
+#| fig-height: 7
+
+DIDradarPlot("2016")
 ```
 :::
 

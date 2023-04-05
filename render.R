@@ -2,6 +2,7 @@ library(glue)
 library(quarto)
 library(purrr)
 library(readxl)
+library(dplyr)
 
 ### Credit to https://github.com/Pecners/sra_pullout/blob/main/render.R for inspiration
 

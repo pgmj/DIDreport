@@ -535,16 +535,21 @@ DIDareaPlot("Föräldraskap")
 DIDareaPlot2("Föräldraskap")
 ```
 
-#### Riskgrupp
+#### Förhöjd risk
 ```{r}
 DIDline90("Föräldraskap")
+```
+
+#### Förhöjd risk per årskurs
+```{r}
+DIDline90åk("Föräldraskap")
 ```
 
 #### Medelvärden
 ```{r}
 DIDmedelSDg(sums.indexGG, "Föräldraskap") +
   facet_grid(Årskurs~Kön) +
-  labs(caption = "Datakälla: Stockholmsenkäten")
+  labs(caption = "Datakälla: Stockholmsenkäten.")
 ```
 :::
 
@@ -581,9 +586,14 @@ DIDareaPlot("Vantrivsel i skolan")
 DIDareaPlot2("Vantrivsel i skolan")
 ```
 
-#### Riskgrupp
+#### Förhöjd risk
 ```{r}
 DIDline90("Vantrivsel i skolan")
+```
+
+#### Förhöjd risk per årskurs
+```{r}
+DIDline90åk("Vantrivsel i skolan")
 ```
 
 #### Medelvärden
@@ -770,10 +780,16 @@ DIDareaPlot("Närsamhälle")
 DIDareaPlot2("Närsamhälle")
 ```
 
-#### Riskgrupp
+#### Förhöjd risk
 ```{r}
 DIDline90("Närsamhälle")
 ```
+
+#### Förhöjd risk per årskurs
+```{r}
+DIDline90åk("Närsamhälle")
+```
+
 
 #### Medelvärden
 ```{r}
@@ -817,9 +833,14 @@ DIDareaPlot("Utagerande")
 DIDareaPlot2("Utagerande")
 ```
 
-### Riskgrupp
+#### Förhöjd risk
 ```{r}
 DIDline90("Utagerande")
+```
+
+#### Förhöjd risk per årskurs
+```{r}
+DIDline90åk("Utagerande")
 ```
 
 ### Medelvärden
@@ -843,9 +864,14 @@ DIDareaPlot("Psykiska/ psykosomatiska besvär")
 DIDareaPlot2("Psykiska/ psykosomatiska besvär")
 ```
 
-### Riskgrupp
+#### Förhöjd risk
 ```{r}
 DIDline90("Psykiska/ psykosomatiska besvär")
+```
+
+#### Förhöjd risk per årskurs
+```{r}
+DIDline90åk("Psykiska/ psykosomatiska besvär")
 ```
 
 ### Medelvärden
@@ -887,8 +913,7 @@ utsattBrott <- df %>%
        subtitle = "Utsatt för någon typ av brott") +
   theme_minimal() +
   theme_rise() +
-  facet_wrap(~Årskurs) +
-  theme(legend.background = element_rect(color = "lightgrey"))
+  facet_wrap(~Årskurs)
 
 girafe(ggobj = utsattBrott)
 
@@ -924,8 +949,7 @@ df %>%
                          labels=utsatt.legend) +
   theme_minimal() +
   theme_rise() +
-  ylab("Antal individer") +
-  theme(legend.background = element_rect(color = "lightgrey"))
+  ylab("Antal individer")
 ```
 ### Andel utsatt för specifikt brott
 
@@ -961,8 +985,7 @@ df.utsattGÅ %>%
   xlab("Årtal") +
   facet_grid(Årskurs~Kön) +
   theme_minimal() +
-  theme_rise() +
-  theme(legend.background = element_rect(color = "lightgrey"))
+  theme_rise()
 ```
 ### Begått brott, antal
 Summerat utifrån självrapporterade brott.
@@ -988,8 +1011,7 @@ df %>%
   theme_minimal() +
   theme_rise() +
   ylab("Antal") +
-  facet_grid(ARSKURS~Kön) +
-  theme(legend.background = element_rect(color = "lightgrey"))
+  facet_grid(ARSKURS~Kön)
 
 ```
 ### Begått specifikt brott
@@ -1025,8 +1047,7 @@ df.begått %>%
   xlab("Årtal") +
   facet_grid(Årskurs~Kön) +
   theme_minimal() +
-  theme_rise() +
-  theme(legend.background = element_rect(color = "lightgrey"))
+  theme_rise()
 
 allitems %>% 
   filter(Index == "Brott") %>% 
@@ -1047,8 +1068,8 @@ KOLADA %>%
 :::
 
 ## Mobbning
-Det kommer data här senare.
 
+Kommer under april.
 
 ## ANDTS
 
@@ -1160,15 +1181,14 @@ df %>%
   ) +
   ylab("Medelvärde debutålder") +
   theme_minimal() +
-  theme_rise() +
-  theme(legend.background = element_rect(color = "lightgrey"))
+  theme_rise()
 ```
 :::
 
 ## Välbefinnande
 
 ::: panel-tabset
-### Kön
+### Uppdelat på kön
 ```{r}
 DIDmedelSDg(sums.index,"Välbefinnande") + 
   facet_wrap(~Kön) +

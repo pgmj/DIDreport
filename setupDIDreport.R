@@ -91,7 +91,7 @@ RSsmf <- function(df, i, j) { # input df, index, and index number
       n.75 = length(which({{ i }} > rslimits[1, j])) / n * 100
     ) %>%
     rename(År = ar) %>%
-    mutate(across(where(is.numeric), \(x) round(x, 3))) %>%
+    mutate(across(where(is.numeric), ~ round(.x, 3))) %>%
     as.data.frame()
 }
 
@@ -138,7 +138,7 @@ RSsmfGender <- function(df, i, j) { # input df, index, and index number
             n.90 = length(which({{i}} > rslimits[2,j]))/n*100,
             n.75 = length(which({{i}} > rslimits[1,j]))/n*100) %>%
     rename(År = ar) %>%
-    mutate(across(where(is.numeric), \(x) round(x, 3))) %>%
+    mutate(across(where(is.numeric), ~ round(.x, 3))) %>%
     as.data.frame()
 }
 
@@ -216,7 +216,7 @@ RSsmfGenderG <- function(df, i, j) { # input df, index, and index number
             n.75 = length(which({{i}} > rslimits[1,j]))/n*100) %>%
     rename(År = ar,
            Årskurs = ARSKURS) %>%
-    mutate(across(where(is.numeric), \(x) round(x, 3))) %>%
+    mutate(across(where(is.numeric), ~ round(.x, 3))) %>%
     as.data.frame()
 }
 
@@ -259,8 +259,8 @@ RSrisklevel <- function(df, i) { # input df, index, and index number
       !!paste0("Risk",i) := case_when(
         .data[[i]] < rslimits |> select(all_of(i)) |> slice(1) |> pull() ~ "Låg risk",
         .data[[i]] >= rslimits |> select(all_of(i)) |> slice(1) |> pull()
-        & .data[[i]] < rslimits |> select(all_of(i)) |> slice(2) |> pull() ~ "Medelhög risk",
-        .data[[i]] >= rslimits |> select(all_of(i)) |> slice(2) |> pull() ~ "Hög risk")
+        & .data[[i]] < rslimits |> select(all_of(i)) |> slice(2) |> pull() ~ "Något förhöjd risk",
+        .data[[i]] >= rslimits |> select(all_of(i)) |> slice(2) |> pull() ~ "Förhöjd risk")
     ) |>
     select(!!paste0("Risk",i))
 }
@@ -316,13 +316,13 @@ riskCalc <- function(df,index){
     mutate(riskLevel = case_when(
       .data[[index]] < rslimits |> select(all_of(index)) |> slice(1) |> pull() ~ "Låg risk",
       .data[[index]] >= rslimits |> select(all_of(index)) |> slice(1) |> pull() &
-        .data[[index]] < rslimits |> select(all_of(index)) |> slice(2) |> pull() ~ "Medelhög risk",
-      .data[[index]] >= rslimits |> select(all_of(index)) |> slice(2) |> pull() ~ "Hög risk")
+        .data[[index]] < rslimits |> select(all_of(index)) |> slice(2) |> pull() ~ "Något förhöjd risk",
+      .data[[index]] >= rslimits |> select(all_of(index)) |> slice(2) |> pull() ~ "Förhöjd risk")
     ) %>%
     group_by(Kommun,ar)  %>%
     count(riskLevel) %>%
     mutate(Andel = (100 * n / sum(n)) %>% round(digits = 1)) %>%
-    mutate(riskLevel = factor(riskLevel, levels = c('Hög risk','Medelhög risk','Låg risk','NA'))) %>%
+    mutate(riskLevel = factor(riskLevel, levels = c('Förhöjd risk','Något förhöjd risk','Låg risk','NA'))) %>%
     ungroup() %>%
     add_column(Index = as.character(index)) %>%
     mutate(År = as.factor(ar)) %>%
@@ -340,13 +340,13 @@ riskCalcGender <- function(df,index){
     mutate(riskLevel = case_when(
       .data[[index]] < rslimits |> select(all_of(index)) |> slice(1) |> pull() ~ "Låg risk",
       .data[[index]] >= rslimits |> select(all_of(index)) |> slice(1) |> pull() &
-        .data[[index]] < rslimits |> select(all_of(index)) |> slice(2) |> pull() ~ "Medelhög risk",
-      .data[[index]] >= rslimits |> select(all_of(index)) |> slice(2) |> pull() ~ "Hög risk")
+        .data[[index]] < rslimits |> select(all_of(index)) |> slice(2) |> pull() ~ "Något förhöjd risk",
+      .data[[index]] >= rslimits |> select(all_of(index)) |> slice(2) |> pull() ~ "Förhöjd risk")
     ) %>%
     group_by(Kommun,ar,Kön)  %>%
     count(riskLevel) %>%
     mutate(Andel = (100 * n / sum(n)) %>% round(digits = 2)) %>%
-    mutate(riskLevel = factor(riskLevel, levels = c('Hög risk','Medelhög risk','Låg risk','NA'))) %>%
+    mutate(riskLevel = factor(riskLevel, levels = c('Förhöjd risk','Något förhöjd risk','Låg risk','NA'))) %>%
     ungroup() %>%
     add_column(Index = as.character(index)) %>%
     mutate(År = as.factor(ar)) %>%
@@ -365,13 +365,13 @@ riskCalcGG <- function(df,index){
     mutate(riskLevel = case_when(
       .data[[index]] < rslimits |> select(all_of(index)) |> slice(1) |> pull() ~ "Låg risk",
       .data[[index]] >= rslimits |> select(all_of(index)) |> slice(1) |> pull() &
-        .data[[index]] < rslimits |> select(all_of(index)) |> slice(2) |> pull() ~ "Medelhög risk",
-      .data[[index]] >= rslimits |> select(all_of(index)) |> slice(2) |> pull() ~ "Hög risk")
+        .data[[index]] < rslimits |> select(all_of(index)) |> slice(2) |> pull() ~ "Något förhöjd risk",
+      .data[[index]] >= rslimits |> select(all_of(index)) |> slice(2) |> pull() ~ "Förhöjd risk")
     ) %>%
     group_by(Kommun,ar,Kön,ARSKURS)  %>%
     count(riskLevel) %>%
     mutate(Andel = (100 * n / sum(n)) %>% round(digits = 2)) %>%
-    mutate(riskLevel = factor(riskLevel, levels = c('Hög risk','Medelhög risk','Låg risk','NA'))) %>%
+    mutate(riskLevel = factor(riskLevel, levels = c('Förhöjd risk','Något förhöjd risk','Låg risk','NA'))) %>%
     ungroup() %>%
     add_column(Index = as.character(index)) %>%
     mutate(År = as.factor(ar)) %>%
@@ -394,6 +394,65 @@ df <- df %>%
          `Vad bor du i för typ av bostad?` = F7)
 
 
+
+# Mobbning ----------------------------------------------------------------
+
+# df.mobbad <- df %>%
+#   mutate(mobbad = case_when(f60b == 1 ~ "Jag har blivit hånad, förlöjligad, kallad öknamn eller blivit retad på ett obehagligt och sårande sätt",
+#                             f60c == 1 ~ "Jag har blivit utfrusen av andra elever",
+#                             f60d == 1 ~ "Jag har blivit slagen, sparkad, knuffad eller stängd inne",
+#                             f60e == 1 ~ "Någon elev har spritt lögner eller falska rykten om mig och försökt få andra att tycka illa om mig",
+#                             f60f == 1 ~ "Jag har blivit fråntagen pengar eller saker eller fått saker förstörda
+# ",
+#                             f60g == 1 ~ "Jag har blivit hotad eller tvingad att göra saker som jag inte ville göra
+# ",
+#                             f60h == 1 ~ "Lärare har psykat eller på annat sätt varit elaka mot mig
+# ",
+#                             f60i == 1 ~ "Jag har mobbats på annat sätt.
+# ",
+#                             F63 == 1 ~ "Har du blivit mobbad eller trakasserad via internet eller SMS/MMS det här läsåret?",
+#                             TRUE ~ "Nej"
+#   )) %>%
+#   mutate(mobbad = factor(mobbad))
+#
+# df.mobbadG <- df.mobbad %>%
+#   filter(ar == 2020,
+#          !is.na(Kön)) %>%
+#   group_by(Kön) %>%
+#   count(mobbad) %>%
+#   mutate(Andel = 100*n/sum(n)) %>%
+#   mutate(mobbad = fct_reorder(mobbad, desc(n)))
+#
+# df.mobbadAlla <- df.mobbad %>%
+#   filter(ar == 2020) %>%
+#   count(mobbad) %>%
+#   mutate(Andel = 100*n/sum(n)) %>%
+#   mutate(mobbad = fct_reorder(mobbad, desc(n)))
+#
+# nejMedel <- df.mobbadAlla %>%
+#   filter(mobbad == 'Nej') %>%
+#   pull(Andel) %>%
+#   round(1)
+#
+# nejMedelÅk9 <- df.mobbad %>%
+#   filter(ar == 2020,
+#          !is.na(Kön),
+#          ARSKURS == "Åk 9") %>%
+#   count(mobbad) %>%
+#   mutate(Andel = 100*n/sum(n)) %>%
+#   filter(mobbad == 'Nej') %>%
+#   pull(Andel) %>%
+#   round(1)
+#
+# nejMedelGy2 <- df.mobbad %>%
+#   filter(ar == 2020,
+#          !is.na(Kön),
+#          ARSKURS == "Gy 2") %>%
+#   count(mobbad) %>%
+#   mutate(Andel = 100*n/sum(n)) %>%
+#   filter(mobbad == 'Nej') %>%
+#   pull(Andel) %>%
+#   round(1)
 
 # KOLADA ------------------------------------------------------------------
 

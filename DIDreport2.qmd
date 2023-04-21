@@ -11,8 +11,8 @@ author:
 date: last-modified
 params:
   fokusKommun: "Vallentuna"
-  jmfKommun: "Stockholm"
-  years: 2020
+  jmfKommun: c("Österåker","Danderyd","Täby")
+  years: c(2016,2018,2020,2022)
 format: 
   html:
     toc: true
@@ -1045,7 +1045,10 @@ df %>%
   mutate(År = factor(ar)) %>% 
   ggplot(aes(x = AntalBrott, y = after_stat(count), group = År, fill = År)) +
   geom_bar(position = "dodge") +
-  scale_color_brewer(type = "qual", palette = "Dark2") +
+  scale_color_viridis_d(begin = 0.2,
+                     aesthetics = c("fill","color")) +
+  scale_x_continuous(breaks = c(0:5),
+                     labels = c("0","1","2","3","4","5+")) +
   #scale_fill_manual(values = RISEpalette1) +
   theme_minimal() +
   theme_rise() +
@@ -1079,10 +1082,30 @@ df.begått %>%
   filter(respons == 1) %>% 
   rename(Årskurs = ARSKURS) %>% 
   ggplot(aes(y = Procent, x = factor(ar), group = Item, color = Item)) +
-  geom_point(aes(tooltip = Procent),
-                         size = 2) +
+  geom_point(size = 2) +
   geom_line(linewidth = 1) +
-  #scale_color_manual(labels = utsatt.legend, values = RISEpalette1) +
+  # label the top 3 for girls
+  geom_text_repel(data = df.begått %>% 
+                    filter(ARSKURS == "Åk 9",
+                           Kön == "Flicka",
+                           respons == 1,
+                           #Procent > 12,
+                           ar == 2020) %>% 
+                    arrange(desc(Procent)) %>% 
+                    head(3),
+             aes(label = Item)) +
+  # and labels for boys
+  geom_text_repel(data = df.begått %>% 
+                    filter(ARSKURS == "Åk 9",
+                           Kön == "Pojke",
+                           respons == 1,
+                           #Procent > 12,
+                           ar == 2020) %>% 
+                    arrange(desc(Procent)) %>% 
+                    head(3),
+             aes(label = Item)) +
+  scale_color_viridis_d(begin = 0.2,
+                     aesthetics = c("fill","color")) +  
   xlab("Årtal") +
   facet_grid(Årskurs~Kön) +
   theme_minimal() +

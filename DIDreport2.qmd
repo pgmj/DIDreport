@@ -189,7 +189,7 @@ responsesARSKURS <- df %>%
   geom_line(linewidth = 1) +
   geom_point_interactive(aes(tooltip = Antal),
                          size = 3) +
-  #scale_color_brewer(type = "qual", palette = "Dark2") +
+  scale_color_brewer(type = "qual", palette = "Set1") +
   scale_x_continuous(guide = guide_axis(n.dodge = 1), breaks = årtal) +
   scale_y_continuous(limits = c(0,NA)) +
   labs(title = "Antal respondenter per år",
@@ -885,7 +885,7 @@ DIDmedelSDg(sums.indexGG, "Psykiska/ psykosomatiska besvär") +
 ## Brott
 
 ::: panel-tabset
-### Utsatt för brott
+### Antal utsatta för brott
 ```{r}
 utsatt.items <- c("f78aa","f78ba","f78ca","f78da","f78ea")
 utsatt.legend <- c("Hotad","Rånad","Bestulen","Misshandlad","Tvingad till sex")
@@ -897,19 +897,25 @@ utsattBrott <- df %>%
   rename(År = ar,
          Årskurs = ARSKURS) %>% 
   mutate(Utsatt = f78aa + f78ba + f78ca + f78da + f78ea) %>%
-  mutate(Utsatt1 = case_when(Utsatt > 0 ~ "Utsatt för brott")) %>% 
+  mutate(Utsatt1 = case_when(Utsatt >= 1 ~ "Utsatt för brott",
+                             Utsatt == 0 ~ "Ej utsatt för brott",
+                             TRUE ~ "Svar saknas")
+         ) %>%
+  mutate(Utsatt1 = factor(Utsatt1, levels = c("Utsatt för brott","Ej utsatt för brott","Svar saknas"))) %>% 
   select(all_of(c("Utsatt1","År","Kön","Årskurs"))) %>% 
   group_by(År,Årskurs,Kön) %>% 
-  summarise(Antal = n()) %>% 
-  #mutate(Andel = Antal * 100 / sum(Antal)) %>% 
-  ggplot(aes(x = År, y = Antal, color = Kön)) + 
+  count(Utsatt1) %>% 
+  mutate(Andel = n * 100 / sum(n)) %>% 
+  filter(Utsatt1 == "Utsatt för brott") %>% 
+  ggplot(aes(x = År, y = n, color = Kön)) + 
   geom_line(linewidth = 1) +
-  geom_point_interactive(aes(tooltip = Antal),
-                         size = 3) +
+  geom_point_interactive(aes(tooltip = n),
+                         size = 3,
+                         alpha = 0.8) +
   scale_color_manual(values = RISEpalette1[c(1,5)]) +
   scale_x_continuous(guide = guide_axis(n.dodge = 1), breaks = årtal) +
-  scale_y_continuous(limits = c(0,NA)) +
-  labs(title = "Andel respondenter per år",
+  scale_y_continuous('Antal', limits = c(0,NA)) +
+  labs(title = "Antal respondenter per år",
        subtitle = "Utsatt för någon typ av brott") +
   theme_minimal() +
   theme_rise() +
@@ -918,6 +924,39 @@ utsattBrott <- df %>%
 girafe(ggobj = utsattBrott)
 
 ```
+
+### Andel utsatta för brott
+```{r}
+df %>% 
+  filter(Kommun == fokusKommun,
+         !is.na(Kön),
+         !is.na(ARSKURS)) %>% 
+  rename(År = ar,
+         Årskurs = ARSKURS) %>% 
+  mutate(Utsatt = f78aa + f78ba + f78ca + f78da + f78ea) %>% 
+  mutate(Utsatt1 = case_when(Utsatt >= 1 ~ "Utsatt för brott",
+                             Utsatt == 0 ~ "Ej utsatt för brott",
+                             TRUE ~ "Svar saknas")
+         ) %>%
+  mutate(Utsatt1 = factor(Utsatt1, levels = c("Utsatt för brott","Ej utsatt för brott","Svar saknas"))) %>% 
+  select(all_of(c("Utsatt1","År","Kön","Årskurs"))) %>% 
+  group_by(År,Årskurs,Kön) %>% 
+  count(Utsatt1) %>% 
+  mutate(Andel = n * 100 / sum(n)) %>% 
+  filter(Utsatt1 == "Utsatt för brott") %>% 
+  ggplot(aes(x = År, y = Andel, color = Kön)) + 
+  geom_line(linewidth = 1) +
+  geom_point(size = 3) +
+  scale_color_manual(values = RISEpalette1[c(1,5)]) +
+  scale_x_continuous(guide = guide_axis(n.dodge = 1), breaks = årtal) +
+  scale_y_continuous(limits = c(0,100)) +
+  labs(title = "Andel respondenter per år",
+       subtitle = "Utsatt för någon typ av brott") +
+  theme_minimal() +
+  theme_rise() +
+  facet_wrap(~Årskurs)
+```
+
 
 ### Antal utsatt för specifikt brott
 ```{r}
@@ -977,12 +1016,12 @@ df.utsattGÅ %>%
   filter(respons == 1) %>% 
   rename(Årskurs = ARSKURS) %>% 
   ggplot(aes(y = Procent, x = factor(ar), group = Item, color = Item)) +
-  geom_point(aes(tooltip = Procent),
-                         size = 3) +
+  geom_point(size = 3) +
   geom_line(linewidth = 1) +
   scale_color_brewer(labels = utsatt.legend, type = "qual", palette = "Dark2") +
   #scale_color_manual(labels = utsatt.legend, values = RISEpalette1) +
   xlab("Årtal") +
+  ylab("Andel i procent") +
   facet_grid(Årskurs~Kön) +
   theme_minimal() +
   theme_rise()

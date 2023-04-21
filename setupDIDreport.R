@@ -411,7 +411,8 @@ df <- df %>%
 #                             f60i == 1 ~ "Jag har mobbats på annat sätt.
 # ",
 #                             F63 == 1 ~ "Har du blivit mobbad eller trakasserad via internet eller SMS/MMS det här läsåret?",
-#                             TRUE ~ "Nej"
+#                             f60a == 1 ~ "Nej",
+#                             TRUE ~ NA
 #   )) %>%
 #   mutate(mobbad = factor(mobbad))
 #

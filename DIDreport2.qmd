@@ -11,8 +11,8 @@ author:
 date: last-modified
 params:
   fokusKommun: "Vallentuna"
-  jmfKommun: c("Österåker","Danderyd","Täby")
-  years: c(2016,2018,2020,2022)
+  jmfKommun: "Täby"
+  years: 2020
 format: 
   html:
     toc: true

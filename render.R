@@ -6,7 +6,7 @@ library(dplyr)
 
 ### Credit to https://github.com/Pecners/sra_pullout/blob/main/render.R for inspiration
 
-### Parallelization doesn't work with these settings, but haven't experimented much.
+### Parallelization doesn't work with the settings (commented) below, but haven't experimented much.
 # library(furrr)
 # plan(multisession, workers = 8) # set up parallel processing, using 8 cpu cores
 # furrr_options(seed = TRUE)
@@ -19,7 +19,7 @@ DIDparams <- read_excel("DIDreportParameters.xls") %>%
 walk(1:nrow(DIDparams), function(i) {
   this <- DIDparams[i,]
 
-  outfile <- glue("{Sys.Date()}_DIDrapport_{this$fokusKommun}.html")
+  outfile <- glue("{format(Sys.Date(), '%Y-%m')}_DIDrapport_{this$fokusKommun}.html")
 
   quarto_render(input = "DIDreport2.qmd",
                 execute_params = list("fokusKommun" = this$fokusKommun,

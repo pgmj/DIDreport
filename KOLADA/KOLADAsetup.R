@@ -8,15 +8,19 @@ library(glue)
 
 # kpis <- get_kpi(cache = FALSE)
 # write_parquet(kpis, glue("{Sys.Date()}_KOLADA_KPI_list.parquet"))
- 
-# munic <- get_municipality(cache = FALSE) %>% 
+
+# munic <- get_municipality(cache = FALSE) %>%
 #   filter(type == "K")
 # write_parquet(munic, glue("{Sys.Date()}_KOLADA_Municipality_list.parquet"))
 
 ## Read downloaded information from disk to avoid API abuse -------------------------------------
 
 kpis <- read_parquet("")
-munic <- read_parquet("")
+munic <- read_parquet("KOLADA/2023-03-28_KOLADA_Municipality_list.parquet")
+
+sthlms.län <- munic %>%
+  filter(str_detect(id,"^01")) # filter to only include municipalities that begin with "01" for Stockholms län
+# 03 is Uppsala
 
 KPI <- select(kpis, id, title)
 
@@ -53,7 +57,7 @@ df.values$count <- NULL
 df.values$status <- NULL
 df.values$municipality_type <- NULL
 
-# Rename column names to match 
+# Rename column names to match
 
 colnames(KPI) <- c("kpi", "KPI")
 
@@ -63,7 +67,7 @@ df.values <- left_join(df.values, KPI, by = "kpi")
 
 # Reorder columns to match Magnus'
 
-df.values <- df.values %>% 
+df.values <- df.values %>%
   select(municipality, municipality_id, KPI, kpi, year, value, gender)
 
 # Drop municipality id
@@ -76,12 +80,12 @@ colnames(df.values) <- c("Kommun", "KPI", "kpi", "År", "Andel", "Kön")
 
 # Recode Factor names to match Magnus'
 
-df.values$Kön <- recode_factor(df.values$Kön, T = "Alla", 
+df.values$Kön <- recode_factor(df.values$Kön, T = "Alla",
                                M = "Pojke", K = "Flicka")
 
 # check that things look good
-# df.values %>% 
-#   distinct(kpi,KPI) %>% 
+# df.values %>%
+#   distinct(kpi,KPI) %>%
 #   kbl()
 
 write_parquet(df.values, glue("{Sys.Date()}_KOLADA_data_ready.parquet"))

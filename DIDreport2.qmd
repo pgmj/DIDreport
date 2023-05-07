@@ -51,14 +51,14 @@ editor_options:
 
 # which municipality to focus this report on?
 fokusKommun <- params$fokusKommun
-fokusKommun <- "Sigtuna"
+#fokusKommun <- "Sigtuna"
 
 # which municipalities should be included in comparisons?
 jmfKommun <- c(fokusKommun,params$jmfKommun)
-jmfKommun <- c(fokusKommun,"Järfälla", "Upplands Väsby", "Botkyrka")
+#jmfKommun <- c(fokusKommun,"Järfälla", "Upplands Väsby", "Botkyrka")
 # years of interest
 yearsIn <- params$years
-yearsIn <- c(2016,2018,2020,2022)
+#yearsIn <- c(2016,2018,2020,2022)
 
 # setup -------------------------------------------------------------------
 library(ggplot2)

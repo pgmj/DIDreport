@@ -1,9 +1,19 @@
 # Import data -------------------------------------------------------------
 
+### some commands exist in multiple packages, here we define preferred ones that are frequently used
+select <- dplyr::select
+count <- dplyr::count
+recode <- car::recode
+rename <- dplyr::rename
+
 ## Stockholmsenkäten --------------------------------------
-df <- read_parquet("../DIDapp/data/2023-03-19_ScoredRev.parquet")
+df <- read_parquet("../DIDapp/data/2023-05-07_ScoredRev.parquet")
 df <- df %>%
   rename(Kommun = DIDkommun)
+
+allaKommuner <- df %>%
+  distinct(Kommun) %>%
+  pull(Kommun)
 
 df <- df %>%
   filter(Kommun %in% jmfKommun)
@@ -17,7 +27,7 @@ demogr.vars<-read.csv("../DIDapp/data/SthlmsEnk_demographicVariables.csv")
 demogr.vars <- demogr.vars$demogr.vars
 
 # final set of items based on psychometric analyses
-itemlabels.final <- read_excel("../DIDapp/data/2023-03-19_allItemInfo.xls") %>%
+itemlabels.final <- read_excel("../DIDapp/data/2023-05-07_allItemInfo.xls") %>%
   select(itemnr,item,Index)
 
 # list of all items included in analyses (even those discarded)
@@ -53,11 +63,11 @@ si.items <- read_csv("../DIDapp/data/SkolinspFinalItems_2022-12-20.csv")
 # each year's 70th and 90th percentile value was used to calculate an average (not weighted in any way)
 # see script "file 04 Distributions and risk limits.R" in https://github.com/pgmj/sthlmsenk/tree/main/OtherScripts
 #rslimits <- read.csv("../../DIDapp/data/SthlmsEnk_rslimitsNoRev2022-12-06.csv")
-rslimits <- read_csv("../DIDapp/data/2023-03-20_rslimitsNoRev.csv")
+rslimits <- read_csv("../DIDapp/data/2023-05-07_rslimitsNoRev.csv")
 
 # read cutoffs for protective factors
 #rslimits.prot <- read_csv("data/2022-12-16_protective.csv")
-rslimits.prot <- read_csv("../DIDapp/data/2023-03-20_protective.csv")
+rslimits.prot <- read_csv("../DIDapp/data/2023-05-07_protective.csv")
 
 rslimits <- cbind(rslimits,rslimits.prot)
 rslimits <- rslimits %>%
@@ -397,93 +407,24 @@ df <- df %>%
 
 # Mobbning ----------------------------------------------------------------
 
-# df.mobbad <- df %>%
-#   mutate(mobbad = case_when(f60b == 1 ~ "Jag har blivit hånad, förlöjligad, kallad öknamn eller blivit retad på ett obehagligt och sårande sätt",
-#                             f60c == 1 ~ "Jag har blivit utfrusen av andra elever",
-#                             f60d == 1 ~ "Jag har blivit slagen, sparkad, knuffad eller stängd inne",
-#                             f60e == 1 ~ "Någon elev har spritt lögner eller falska rykten om mig och försökt få andra att tycka illa om mig",
-#                             f60f == 1 ~ "Jag har blivit fråntagen pengar eller saker eller fått saker förstörda
-# ",
-#                             f60g == 1 ~ "Jag har blivit hotad eller tvingad att göra saker som jag inte ville göra
-# ",
-#                             f60h == 1 ~ "Lärare har psykat eller på annat sätt varit elaka mot mig
-# ",
-#                             f60i == 1 ~ "Jag har mobbats på annat sätt.
-# ",
-#                             F63 == 1 ~ "Har du blivit mobbad eller trakasserad via internet eller SMS/MMS det här läsåret?",
-#                             f60a == 1 ~ "Nej",
-#                             TRUE ~ NA
-#   )) %>%
-#   mutate(mobbad = factor(mobbad))
-#
-# df.mobbadG <- df.mobbad %>%
-#   filter(ar == 2020,
-#          !is.na(Kön)) %>%
-#   group_by(Kön) %>%
-#   count(mobbad) %>%
-#   mutate(Andel = 100*n/sum(n)) %>%
-#   mutate(mobbad = fct_reorder(mobbad, desc(n)))
-#
-# df.mobbadAlla <- df.mobbad %>%
-#   filter(ar == 2020) %>%
-#   count(mobbad) %>%
-#   mutate(Andel = 100*n/sum(n)) %>%
-#   mutate(mobbad = fct_reorder(mobbad, desc(n)))
-#
-# nejMedel <- df.mobbadAlla %>%
-#   filter(mobbad == 'Nej') %>%
-#   pull(Andel) %>%
-#   round(1)
-#
-# nejMedelÅk9 <- df.mobbad %>%
-#   filter(ar == 2020,
-#          !is.na(Kön),
-#          ARSKURS == "Åk 9") %>%
-#   count(mobbad) %>%
-#   mutate(Andel = 100*n/sum(n)) %>%
-#   filter(mobbad == 'Nej') %>%
-#   pull(Andel) %>%
-#   round(1)
-#
-# nejMedelGy2 <- df.mobbad %>%
-#   filter(ar == 2020,
-#          !is.na(Kön),
-#          ARSKURS == "Gy 2") %>%
-#   count(mobbad) %>%
-#   mutate(Andel = 100*n/sum(n)) %>%
-#   filter(mobbad == 'Nej') %>%
-#   pull(Andel) %>%
-#   round(1)
-
-# KOLADA ------------------------------------------------------------------
-
-# KOLADA <- read_parquet("../data/2023-01-10_koladaData.parquet")
-#
-# # which KPI's to remove?
-# removed.kpi <- c("N17473","N15613","N15643","N17620")
-# # set which are available in app
-# kpiChoices <- KOLADA %>%
-#   filter(!kpi %in% removed.kpi) %>%
-#   arrange(kpi) %>%
-#   distinct(KPI) %>%
-#   pull()
-
-## KOLADA Simon------------------------
-# KOLADAs <- read_parquet("koladaData.parquet")
-# summarize <- plyr::summarize
-#
-# kpi_mean <- KOLADAs %>%
-#   group_by(kpi, KPI, År) %>%
-#   summarise_at(vars(Andel), list(Andel = mean))
-#
-# kpi_mean$Kommun <- "Medel riket"
-# kpi_mean$Kön <- "Alla"
-#
-# kpi_mean <- kpi_mean %>%
-#   select(Kommun, KPI, kpi, År, Andel, Kön)
-#
-# KOLADAs <- bind_rows(KOLADAs, kpi_mean)
-
+df <- df %>%
+  mutate(mobbad = case_when(f60b == 1 ~ "Jag har blivit hånad, förlöjligad, kallad öknamn eller blivit retad på ett obehagligt och sårande sätt",
+                            f60c == 1 ~ "Jag har blivit utfrusen av andra elever",
+                            f60d == 1 ~ "Jag har blivit slagen, sparkad, knuffad eller stängd inne",
+                            f60e == 1 ~ "Någon elev har spritt lögner eller falska rykten om mig och försökt få andra att tycka illa om mig",
+                            f60f == 1 ~ "Jag har blivit fråntagen pengar eller saker eller fått saker förstörda
+",
+                            f60g == 1 ~ "Jag har blivit hotad eller tvingad att göra saker som jag inte ville göra
+",
+                            f60h == 1 ~ "Lärare har psykat eller på annat sätt varit elaka mot mig
+",
+                            f60i == 1 ~ "Jag har mobbats på annat sätt.
+",
+                            F63 == 1 ~ "Har du blivit mobbad eller trakasserad via internet eller SMS/MMS det här läsåret?",
+                            f60a == 1 ~ "Nej",
+                            TRUE ~ NA
+  )) %>%
+  mutate(mobbad = factor(mobbad))
 
 # KOLADA new --------------------------------------------------------------
 
@@ -496,3 +437,13 @@ kpi_mean <- KOLADA %>%
   add_column(Kön = "Alla")
 
 KOLADA <- rbind(KOLADA, kpi_mean)
+
+
+# RSfigurerRapport --------------------------------------------------------
+
+## For sankey diagrams
+lst.data <- read_excel("../DIDapp/data/RISE LST RS-faktorer tabeller OSF.xlsx")
+rskontext <- c("Individ","Familj","Kamrater och fritid","Skola","Samhälle")
+
+
+

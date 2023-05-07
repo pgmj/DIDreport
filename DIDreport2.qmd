@@ -51,12 +51,14 @@ editor_options:
 
 # which municipality to focus this report on?
 fokusKommun <- params$fokusKommun
+fokusKommun <- "Sigtuna"
 
 # which municipalities should be included in comparisons?
 jmfKommun <- c(fokusKommun,params$jmfKommun)
-
+jmfKommun <- c(fokusKommun,"Järfälla", "Upplands Väsby", "Botkyrka")
 # years of interest
 yearsIn <- params$years
+yearsIn <- c(2016,2018,2020,2022)
 
 # setup -------------------------------------------------------------------
 library(ggplot2)
@@ -143,6 +145,14 @@ pfactors <- c('Välbefinnande','Positiv skolanknytning')
 source("setupDIDreport.R")
 # import functions to create figures and tables
 source("DIDreportFunctions.R")
+
+# if (fokusKommun == "Alla"){
+#   
+#   df <- df %>% 
+#     mutate(Kommun = "Alla")
+#   
+# }
+
 ```
 
 ## Demografi Stockholmsenkäten
@@ -163,6 +173,7 @@ responsesGender <- df %>%
   geom_line(linewidth = 1) +
   geom_point_interactive(aes(tooltip = Antal),
                          size = 3) +
+  #geom_point(size = 3) +
   scale_color_brewer(type = "qual", palette = "Dark2") +
   scale_x_continuous(guide = guide_axis(n.dodge = 1), breaks = årtal) +
   scale_y_continuous(limits = c(0,NA)) +
@@ -522,7 +533,13 @@ DIDradarPlot("2016")
 
 ### Riskfaktorer 
 
-Bristande föräldraskap.
+```{r}
+#| fig-width: 6
+RSfigur("Familj")
+```
+
+
+### Bristande föräldraskap
 
 ::: panel-tabset
 #### Kön
@@ -551,9 +568,22 @@ DIDmedelSDg(sums.indexGG, "Föräldraskap") +
   facet_grid(Årskurs~Kön) +
   labs(caption = "Datakälla: Stockholmsenkäten.")
 ```
+#### Frågor i indexet
+```{r}
+itemlabels.final %>% 
+  filter(Index == "Parenting") %>% 
+  select(!Index) %>% 
+  kbl_rise(width = 60)
+```
 :::
 
 ### Skyddsfaktorer
+
+```{r}
+#| fig-width: 6
+
+RSfigur("Familj", rs = "Skyddsfaktor")
+```
 
 ### KOLADA
 
@@ -572,6 +602,12 @@ KOLADA %>%
 ```
 
 ## Skola
+
+```{r}
+#| fig-width: 6
+
+RSfigur("Skola")
+```
 
 ### Riskfaktorer åk 9 & gy 2
 
@@ -602,10 +638,120 @@ DIDmedelSDg(sums.indexGG, "Vantrivsel i skolan") +
   facet_grid(Årskurs~Kön) +
   labs(caption = "Datakälla: Stockholmsenkäten")
 ```
+#### Enkätfrågor i indexet
+```{r}
+itemlabels.final %>% 
+  filter(Index == "SkolaNegativ") %>% 
+  select(!Index) %>% 
+  kbl_rise(width = 60)
+```
 :::
 
+### Mobbning
+
+I Stockholmsenkäten handlar frågorna om mobbning primärt om mobbning i skolan, och de redovisas därför i denna sektion.
+
+#### Ej mobbad, över tid
+
+```{r}
+df %>% 
+  filter(Kommun == fokusKommun,
+         !is.na(Kön),
+         !is.na(ARSKURS)
+         ) %>%
+  drop_na(mobbad) %>% 
+  group_by(ar,ARSKURS,Kön) %>% 
+  count(mobbad, .drop = F) %>% 
+  mutate(Andel = 100*n/sum(n)) %>% 
+  filter(mobbad == "Nej") %>% 
+  ggplot(aes(x = ar, y = Andel, color = Kön, group = Kön)) +
+  geom_point(size = 3) +
+  geom_line(linewidth = 1.3) +
+  scale_color_manual(values = RISEpalette1[c(1,5)],
+                     aesthetics = c("fill","color")) +
+  scale_x_continuous("Årtal", guide = guide_axis(n.dodge = 2), breaks = årtal) +
+  scale_y_continuous(limits = c(0,100), breaks = c(0,20,40,60,80,100)) +
+  theme_minimal() +
+  theme_rise() +
+  labs(title = "Andel elever som inte känt sig mobbade eller trakasserade",
+       subtitle = "Andel som svarat 'Nej' på frågan\n'Har du känt dig mobbad eller trakasserad i skolan det här läsåret?'") +
+  ylab("Andel i %") +
+  xlab("") +
+  facet_wrap(~ARSKURS)
+```
+
+
+#### Båda årskurser
+
+:::panel-tabset
+##### 2022
+```{r}
+DIDmobbadAlla(2022)
+```
+##### 2020
+```{r}
+DIDmobbadAlla(2020)
+```
+##### 2018
+```{r}
+DIDmobbadAlla(2018)
+```
+##### 2016
+```{r}
+DIDmobbadAlla(2016)
+```
+:::
+
+#### Åk 9
+
+:::panel-tabset
+##### 2022
+```{r}
+DIDmobbadÅK(2022,"Åk 9")
+```
+##### 2020
+```{r}
+DIDmobbadÅK(2020,"Åk 9")
+```
+##### 2018
+```{r}
+DIDmobbadÅK(2018,"Åk 9")
+```
+##### 2016
+```{r}
+DIDmobbadÅK(2016,"Åk 9")
+```
+:::
+
+#### Gy 2
+
+:::panel-tabset
+##### 2022
+```{r}
+DIDmobbadÅK(2022,"Gy 2")
+```
+##### 2020
+```{r}
+DIDmobbadÅK(2020,"Gy 2")
+```
+##### 2018
+```{r}
+DIDmobbadÅK(2018,"Gy 2")
+```
+##### 2016
+```{r}
+DIDmobbadÅK(2016,"Gy 2")
+```
+:::
 
 ### Skyddsfaktorer
+
+```{r}
+#| fig-width: 6
+
+RSfigur("Skola", rs = "Skyddsfaktor")
+```
+
 
 ::: panel-tabset
 
@@ -697,6 +843,24 @@ if (fokusKommun %in% c("Stockholm","Vallentuna","Vaxholm")) {
 ```
 :::
 
+#### Enkätfrågor i "Positiv skolanknytning"
+
+::: panel-tabset
+##### Stockholmsenkäten
+```{r}
+itemlabels.final %>% 
+  filter(Index == "SkolaPositiv") %>% 
+  select(!Index) %>% 
+  kbl_rise(width = 60)
+```
+##### Skolinspektionen Åk 5
+```{r}
+kbl_rise(si.items, width = 60)
+# note that all SI items have merged the top 3 response categories (top = highest risk)
+```
+:::
+
+
 ### KOLADA
 
 ::: panel-tabset
@@ -746,6 +910,15 @@ KOLADA %>%
 
 ## Kamrater och fritid
 
+### Riskfaktorer
+
+```{r}
+#| fig-width: 6
+
+RSfigur("Kamrater och fritid")
+```
+
+
 ### KOLADA
 
 ```{r}
@@ -764,10 +937,23 @@ KOLADA %>%
 
 ```
 
+### Skyddsfaktorer
+
+```{r}
+#| fig-width: 6
+
+RSfigur("Kamrater och fritid", rs = "Skyddsfaktor")
+```
 
 ## Närsamhälle
 
 ### Riskfaktorer
+
+```{r}
+#| fig-width: 6
+
+RSfigur("Samhälle")
+```
 
 ::: panel-tabset
 #### Kön
@@ -797,9 +983,21 @@ DIDmedelSDg(sums.indexGG, "Närsamhälle") +
   facet_grid(Årskurs~Kön) +
   labs(caption = "Datakälla: Stockholmsenkäten")
 ```
+#### Enkätfrågor i indexet
+```{r}
+itemlabels.final %>% 
+  filter(Index == "Community") %>% 
+  select(!Index) %>% 
+  kbl_rise(width = 60)
+```
 :::
 
-### Skyddsfaktorer
+### Skyddsfaktorer    
+
+```{r}
+#| fig-width: 6
+RSfigur("Samhälle", rs = "Skyddsfaktor")
+```
 
 ### KOLADA
 ```{r}
@@ -817,9 +1015,6 @@ KOLADA %>%
 
 ```
 
-
-
-
 ## Utagerande
 
 ::: panel-tabset
@@ -833,12 +1028,12 @@ DIDareaPlot("Utagerande")
 DIDareaPlot2("Utagerande")
 ```
 
-#### Förhöjd risk
+### Förhöjd risk
 ```{r}
 DIDline90("Utagerande")
 ```
 
-#### Förhöjd risk per årskurs
+### Förhöjd risk per årskurs
 ```{r}
 DIDline90åk("Utagerande")
 ```
@@ -848,6 +1043,13 @@ DIDline90åk("Utagerande")
 DIDmedelSDg(sums.indexGG, "Utagerande") +
   facet_grid(Årskurs~Kön) +
   labs(caption = "Datakälla: Stockholmsenkäten")
+```
+### Enkätfrågor i indexet
+```{r}
+itemlabels.final %>% 
+  filter(Index == "Utagerande") %>% 
+  select(!Index) %>% 
+  kbl_rise(width = 60)
 ```
 :::
 
@@ -864,12 +1066,12 @@ DIDareaPlot("Psykiska/ psykosomatiska besvär")
 DIDareaPlot2("Psykiska/ psykosomatiska besvär")
 ```
 
-#### Förhöjd risk
+### Förhöjd risk
 ```{r}
 DIDline90("Psykiska/ psykosomatiska besvär")
 ```
 
-#### Förhöjd risk per årskurs
+### Förhöjd risk per årskurs
 ```{r}
 DIDline90åk("Psykiska/ psykosomatiska besvär")
 ```
@@ -879,6 +1081,13 @@ DIDline90åk("Psykiska/ psykosomatiska besvär")
 DIDmedelSDg(sums.indexGG, "Psykiska/ psykosomatiska besvär") +
   facet_grid(Årskurs~Kön) +
   labs(caption = "Datakälla: Stockholmsenkäten")
+```
+### Enkätfrågor i indexet
+```{r}
+itemlabels.final %>% 
+  filter(Index == "PsykSomBesv") %>% 
+  select(!Index) %>% 
+  kbl_rise(width = 60)
 ```
 :::
 
@@ -1129,11 +1338,7 @@ KOLADA %>%
 
 :::
 
-## Mobbning
-
-Kommer under april.
-
-## ANDTS
+## ANDTS/substansbruk
 
 ::: panel-tabset
 ### Antal substanser
@@ -1262,5 +1467,13 @@ DIDmedelSDg(sums.index,"Välbefinnande") +
 DIDmedelSDg(sums.indexGG, "Välbefinnande") + 
   facet_grid(Årskurs~Kön) +
   labs(caption = "Datakälla: Stockholmsenkäten")
+```
+
+#### Enkätfrågor i indexet
+```{r}
+itemlabels.final %>% 
+  filter(Index == "Wellbeing") %>% 
+  select(!Index) %>% 
+  kbl_rise(width = 60)
 ```
 :::

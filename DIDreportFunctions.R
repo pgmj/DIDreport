@@ -44,7 +44,6 @@ theme_rise <- function(fontfamily = "Lato", axissize = 13, titlesize = 15,
     update_geom_defaults("text_repel", list(family = fontfamily)) +
     update_geom_defaults("textpath", list(family = fontfamily)) +
     update_geom_defaults("texthline", list(family = fontfamily))
-
 }
 
 

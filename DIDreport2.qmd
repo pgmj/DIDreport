@@ -10,7 +10,7 @@ author:
   orcid: 0000-0003-1669-592X
 date: last-modified
 params:
-  fokusKommun: "Vallentuna"
+  fokusKommun: "Järfälla"
   jmfKommun: "Täby"
   years: 2020
 format: 
@@ -51,11 +51,15 @@ editor_options:
 
 # which municipality to focus this report on?
 fokusKommun <- params$fokusKommun
-#fokusKommun <- "Sigtuna"
-
 # which municipalities should be included in comparisons?
-jmfKommun <- c(fokusKommun,params$jmfKommun)
-#jmfKommun <- c(fokusKommun,"Järfälla", "Upplands Väsby", "Botkyrka")
+jmfKommun <- factor(c(fokusKommun,params$jmfKommun),
+                    levels = c(fokusKommun,params$jmfKommun))
+
+# ## for testing/dev:
+# fokusKommun <- "Järfälla"
+# jmfKommun <- factor(c(fokusKommun,"Huddinge", "Södertälje", "Botkyrka"),
+#                    levels = c(fokusKommun,"Huddinge", "Södertälje", "Botkyrka"))
+
 # years of interest
 yearsIn <- params$years
 #yearsIn <- c(2016,2018,2020,2022)
@@ -63,27 +67,26 @@ yearsIn <- params$years
 # setup -------------------------------------------------------------------
 library(ggplot2)
 library(tidyverse)
-library(shiny)
+#library(shiny)
 library(arrow)
-library(xlsx)
+#library(xlsx)
 
-library(ggdist) # for shadeable density slabs
-library(ggpp) # for position_dodge2nudge
-library(stringr)
-library(EnvStats)
-library(bslib)
+#library(ggdist) # for shadeable density slabs
+#library(ggpp) # for position_dodge2nudge
+#library(stringr)
+#library(EnvStats)
+#library(bslib)
 library(formattable)
-library(thematic)
-library(catR)
-library(Hmisc)
+#library(thematic)
+#library(catR)
+#library(Hmisc)
 library(colorspace) # for modifying color palettes
 
 library(geomtextpath)
 library(readxl)
-library(rlang)
 library(visNetwork)
 library(networkD3)
-library(RColorBrewer)
+#library(RColorBrewer)
 library(vctrs)
 library(ggiraph)
 library(gt)
@@ -316,32 +319,36 @@ df %>%
 ```
 :::
 
-## Överblick 
+## Överblick riskfaktorer
 
-### Stapeldiagram riskfaktorer
+### Stapel samtliga
 
 Både åk 9 och gy 2, samt både pojkar och flickor samlat i samma figur.
 
 ::: panel-tabset
 #### 2022
 ```{r}
-DIDstapel(df.risk, "2022")
+DIDstapel(df.risk, "2022") +
+  labs(subtitle = "Både åk 9 och gy 2")
 ```
 #### 2020
 ```{r}
-DIDstapel(df.risk, "2020")
+DIDstapel(df.risk, "2020") +
+  labs(subtitle = "Både åk 9 och gy 2")
 ```
 #### 2018
 ```{r}
-DIDstapel(df.risk, "2018")
+DIDstapel(df.risk, "2018") +
+  labs(subtitle = "Både åk 9 och gy 2")
 ```
 #### 2016
 ```{r}
-DIDstapel(df.risk, "2016")
+DIDstapel(df.risk, "2016") +
+  labs(subtitle = "Både åk 9 och gy 2")
 ```
 :::
 
-### Stapeldiagram, uppdelat på kön
+### Stapel kön
 
 Både åk 9 och gy 2 tillsammans.
 
@@ -351,7 +358,8 @@ Både åk 9 och gy 2 tillsammans.
 df.risk.gender %>% 
   filter(!is.na(Kön)) %>% 
   DIDstapel("2022") +
-  facet_wrap(~Kön)
+  facet_wrap(~Kön) +
+  labs(subtitle = "Både åk 9 och gy 2")
 ```
 
 #### 2020
@@ -359,7 +367,8 @@ df.risk.gender %>%
 df.risk.gender %>% 
   filter(!is.na(Kön)) %>% 
   DIDstapel("2020") +
-  facet_wrap(~Kön)
+  facet_wrap(~Kön) +
+  labs(subtitle = "Både åk 9 och gy 2")
 ```
 
 
@@ -368,7 +377,8 @@ df.risk.gender %>%
 df.risk.gender %>% 
   filter(!is.na(Kön)) %>% 
   DIDstapel("2018") +
-  facet_wrap(~Kön)
+  facet_wrap(~Kön) +
+  labs(subtitle = "Både åk 9 och gy 2")
 ```
 
 
@@ -377,12 +387,62 @@ df.risk.gender %>%
 df.risk.gender %>% 
   filter(!is.na(Kön)) %>% 
   DIDstapel("2016") +
-  facet_wrap(~Kön)
+  facet_wrap(~Kön) +
+  labs(subtitle = "Både åk 9 och gy 2")
 ```
 
 :::
 
-### Stapeldiagram, uppdelat på kön och årskurs
+### Stapel åk9 kön
+
+Enbart åk 9.
+
+::: panel-tabset
+#### 2022
+```{r}
+df.risk.gender.arskurs %>% 
+  filter(!is.na(Kön),
+         Årskurs == "Åk 9") %>% 
+  DIDstapel("2022") +
+  facet_wrap(~Kön) +
+  labs(subtitle = "Enbart åk 9")
+```
+
+#### 2020
+```{r}
+df.risk.gender.arskurs %>% 
+  filter(!is.na(Kön),
+         Årskurs == "Åk 9") %>% 
+  DIDstapel("2020") +
+  facet_wrap(~Kön) +
+  labs(subtitle = "Enbart åk 9")
+```
+
+
+#### 2018
+```{r}
+df.risk.gender.arskurs %>% 
+  filter(!is.na(Kön),
+         Årskurs == "Åk 9") %>% 
+  DIDstapel("2018") +
+  facet_wrap(~Kön) +
+  labs(subtitle = "Enbart åk 9")
+```
+
+
+#### 2016
+```{r}
+df.risk.gender.arskurs %>% 
+  filter(!is.na(Kön),
+         Årskurs == "Åk 9") %>% 
+  DIDstapel("2016") +
+  facet_wrap(~Kön) +
+  labs(subtitle = "Enbart åk 9")
+```
+
+:::
+
+### Stapel kön och årskurs
 
 ::: panel-tabset
 #### 2022
@@ -544,12 +604,16 @@ RSfigur("Familj")
 ::: panel-tabset
 #### Kön
 ```{r}
-DIDareaPlot("Föräldraskap")
+DIDareaPlot("Föräldraskap") + 
+  ggtitle(paste0("Bristande föräldraskap - ",fokusKommun))
 ```
 
 #### Kön/Årskurs
 ```{r}
-DIDareaPlot2("Föräldraskap")
+#| fig-height: 7
+DIDareaPlot2("Föräldraskap") + 
+  ggtitle(paste0("Bristande föräldraskap - ",fokusKommun)) +
+  theme(legend.justification = c(0.0, 1.0))
 ```
 
 #### Förhöjd risk
@@ -587,12 +651,27 @@ RSfigur("Familj", rs = "Skyddsfaktor")
 
 ### KOLADA
 
+::: panel-tabset
+#### 0-100
 ```{r}
 #| fig-height: 5
 
 KOLADA %>%
   filter(Kön == "Alla") %>%
-  filter(Kommun %in% jmfKommun) %>%
+  filter(KPI %in% c(
+    "Föräldrapenningdagar som tas ut av män, andel av antal dagar (%)",
+    "Tillfälliga föräldrapenningdagar (VAB) som tas ut av män, andel av antal dagar (%)"
+  )) %>% 
+  DIDkoladaPlot() +
+  scale_y_continuous(limits = c(0, 100))
+
+```
+#### Inzoomad
+```{r}
+#| fig-height: 5
+
+KOLADA %>%
+  filter(Kön == "Alla") %>%
   filter(KPI %in% c(
     "Föräldrapenningdagar som tas ut av män, andel av antal dagar (%)",
     "Tillfälliga föräldrapenningdagar (VAB) som tas ut av män, andel av antal dagar (%)"
@@ -600,6 +679,7 @@ KOLADA %>%
   DIDkoladaPlot()
 
 ```
+:::
 
 ## Skola
 
@@ -619,7 +699,9 @@ DIDareaPlot("Vantrivsel i skolan")
 
 #### Kön/Årskurs
 ```{r}
-DIDareaPlot2("Vantrivsel i skolan")
+#| fig-height: 7
+DIDareaPlot2("Vantrivsel i skolan")  +
+  theme(legend.justification = c(0.0, 1.0))
 ```
 
 #### Förhöjd risk
@@ -869,7 +951,19 @@ kbl_rise(si.items, width = 60)
 #| fig-height: 8
 KOLADA %>% 
   filter(Kön == "Alla") %>% 
-  filter(Kommun %in% jmfKommun) %>% 
+  filter(KPI %in% c("Barn 3-5 år inskrivna i förskola, andel (%)",
+                    "Heltidstjänster i förskola med pedagogisk högskoleexamen, lägeskommun, andel (%)",
+                    "Heltidstjänster i förskola med pedagogisk högskoleexamen, enskild regi, andel (%)",
+                    "Heltidstjänster i förskola med pedagogisk högskoleexamen, kommunal regi, andel (%)")
+  ) %>% 
+  DIDkoladaPlot() + scale_y_continuous(limits = c(0, 100))
+
+```
+#### Förskola inzoomad
+```{r}
+#| fig-height: 8
+KOLADA %>% 
+  filter(Kön == "Alla") %>% 
   filter(KPI %in% c("Barn 3-5 år inskrivna i förskola, andel (%)",
                     "Heltidstjänster i förskola med pedagogisk högskoleexamen, lägeskommun, andel (%)",
                     "Heltidstjänster i förskola med pedagogisk högskoleexamen, enskild regi, andel (%)",
@@ -884,7 +978,19 @@ KOLADA %>%
 #| fig-height: 8
 KOLADA %>% 
   filter(Kön == "Alla") %>% 
-  filter(Kommun %in% jmfKommun) %>% 
+  filter(KPI %in% c("Lärare med pedagogisk högskoleexamen i grundskola åk 1-9, lägeskommun, andel (%)",
+                    "Lärare (heltidstjänster) med lärarlegitimation och behörighet i minst ett ämne i grundskola åk 1-9, lägeskommun, andel (%)",
+                    "Elever i åk 9 som är behöriga till yrkesprogram, hemkommun, andel (%)",
+                    "Elever vars föräldrar har eftergymnasial utbildning, åk 1-9 i lägeskommun, andel (%)")
+  ) %>% 
+  DIDkoladaPlot() + scale_y_continuous(limits = c(0, 100))
+
+```
+#### Grundskola inzoomad
+```{r}
+#| fig-height: 8
+KOLADA %>% 
+  filter(Kön == "Alla") %>% 
   filter(KPI %in% c("Lärare med pedagogisk högskoleexamen i grundskola åk 1-9, lägeskommun, andel (%)",
                     "Lärare (heltidstjänster) med lärarlegitimation och behörighet i minst ett ämne i grundskola åk 1-9, lägeskommun, andel (%)",
                     "Elever i åk 9 som är behöriga till yrkesprogram, hemkommun, andel (%)",
@@ -893,17 +999,50 @@ KOLADA %>%
   DIDkoladaPlot()
 
 ```
+#### Grundskola könsuppdelat
+```{r}
+#| fig-height: 8
+KOLADA %>% 
+  filter(KPI %in% c("Lärare med pedagogisk högskoleexamen i grundskola åk 1-9, lägeskommun, andel (%)",
+                    "Lärare (heltidstjänster) med lärarlegitimation och behörighet i minst ett ämne i grundskola åk 1-9, lägeskommun, andel (%)",
+                    "Elever i åk 9 som är behöriga till yrkesprogram, hemkommun, andel (%)",
+                    "Elever vars föräldrar har eftergymnasial utbildning, åk 1-9 i lägeskommun, andel (%)")
+  ) %>% 
+  DIDkoladaPlotG()
+```
 #### Gymnasie
 ```{r}
 #| fig-height: 8
 KOLADA %>% 
   filter(Kön == "Alla") %>% 
-  filter(Kommun %in% jmfKommun) %>% 
+  filter(KPI %in% c("Lärare med pedagogisk högskoleexamen i gymnasieskola, lägeskommun, andel (%)",
+                    "Gymnasieelever som uppnått grundläggande behörighet till universitet och högskola inom 4 år, hemkommun, andel (%)",
+                    "Gymnasieelever med indraget studiestöd pga. ogiltig frånvaro, hemkommun, andel (%)")
+  ) %>% 
+  DIDkoladaPlot() + scale_y_continuous(limits = c(0, 100))
+
+```
+#### Gymnasie inzoomad
+```{r}
+#| fig-height: 8
+KOLADA %>% 
+  filter(Kön == "Alla") %>% 
   filter(KPI %in% c("Lärare med pedagogisk högskoleexamen i gymnasieskola, lägeskommun, andel (%)",
                     "Gymnasieelever som uppnått grundläggande behörighet till universitet och högskola inom 4 år, hemkommun, andel (%)",
                     "Gymnasieelever med indraget studiestöd pga. ogiltig frånvaro, hemkommun, andel (%)")
   ) %>% 
   DIDkoladaPlot()
+
+```
+#### Gymnasie könsuppdelat
+```{r}
+#| fig-height: 8
+KOLADA %>% 
+  filter(KPI %in% c("Lärare med pedagogisk högskoleexamen i gymnasieskola, lägeskommun, andel (%)",
+                    "Gymnasieelever som uppnått grundläggande behörighet till universitet och högskola inom 4 år, hemkommun, andel (%)",
+                    "Gymnasieelever med indraget studiestöd pga. ogiltig frånvaro, hemkommun, andel (%)")
+  ) %>% 
+  DIDkoladaPlotG()
 
 ```
 :::
@@ -921,12 +1060,28 @@ RSfigur("Kamrater och fritid")
 
 ### KOLADA
 
+::: panel-tabset
+#### 0-100
 ```{r}
 #| fig-height: 9
 
 KOLADA %>%
   filter(Kön == "Alla") %>%
-  filter(Kommun %in% jmfKommun) %>%
+  filter(KPI %in% c(
+    "Deltagartillfällen i idrottsföreningar, antal/inv 7-20 år",
+    "Deltagartillfällen i idrottsföreningar, antal/inv 13-20 år",
+    "Aktivitetstillfällen för barn och unga i kommunala bibliotek, antal/1000 inv 0-18 år",
+    "Elever i musik- eller kulturskola, 6-15 år, andel (%)"
+  )) %>% 
+  DIDkoladaPlot() +
+  scale_y_continuous(limits = c(0, 100))
+```
+#### Inzoomad
+```{r}
+#| fig-height: 9
+
+KOLADA %>%
+  filter(Kön == "Alla") %>%
   filter(KPI %in% c(
     "Deltagartillfällen i idrottsföreningar, antal/inv 7-20 år",
     "Deltagartillfällen i idrottsföreningar, antal/inv 13-20 år",
@@ -934,9 +1089,21 @@ KOLADA %>%
     "Elever i musik- eller kulturskola, 6-15 år, andel (%)"
   )) %>% 
   DIDkoladaPlot()
-
 ```
-
+#### Uppdelat på kön
+```{r}
+#| fig-height: 7
+KOLADA %>%
+  filter(Kön %in% c("Flicka","Pojke")) %>%
+  filter(KPI %in% c(
+    "Deltagartillfällen i idrottsföreningar, antal/inv 7-20 år",
+    "Deltagartillfällen i idrottsföreningar, antal/inv 13-20 år",
+    "Aktivitetstillfällen för barn och unga i kommunala bibliotek, antal/1000 inv 0-18 år",
+    "Elever i musik- eller kulturskola, 6-15 år, andel (%)"
+  )) %>% 
+  DIDkoladaPlotG()
+```
+:::
 ### Skyddsfaktorer
 
 ```{r}
@@ -963,7 +1130,9 @@ DIDareaPlot("Närsamhälle")
 
 #### Kön/Årskurs
 ```{r}
-DIDareaPlot2("Närsamhälle")
+#| fig-height: 7
+DIDareaPlot2("Närsamhälle") +
+  theme(legend.justification = c(0.0, 1.0))
 ```
 
 #### Förhöjd risk
@@ -992,19 +1161,29 @@ itemlabels.final %>%
 ```
 :::
 
-### Skyddsfaktorer    
-
-```{r}
-#| fig-width: 6
-RSfigur("Samhälle", rs = "Skyddsfaktor")
-```
-
 ### KOLADA
+
+::: panel-tabset
+#### 0-100
 ```{r}
 #| fig-height: 11
 KOLADA %>% 
   filter(Kön == "Alla") %>% 
-  filter(Kommun %in% jmfKommun) %>% 
+  filter(KPI %in% c("Invånare 0-19 år i ekonomiskt utsatta hushåll, andel (%)",
+                    "Trångboddhet i flerbostadshus, enligt norm 2, andel (%)",
+                    "Trångboddhet i flerbostadshus, enligt norm 3, andel (%)",
+                    "Anmälda brott om skadegörelse per 1 000 inv.",
+                    "Anmälda stöld- och tillgreppsbrott, antal/1000 inv")
+  ) %>% 
+  DIDkoladaPlot() +
+  scale_y_continuous(limits = c(0, 100))
+
+```
+#### Inzoomad
+```{r}
+#| fig-height: 11
+KOLADA %>% 
+  filter(Kön == "Alla") %>% 
   filter(KPI %in% c("Invånare 0-19 år i ekonomiskt utsatta hushåll, andel (%)",
                     "Trångboddhet i flerbostadshus, enligt norm 2, andel (%)",
                     "Trångboddhet i flerbostadshus, enligt norm 3, andel (%)",
@@ -1012,8 +1191,29 @@ KOLADA %>%
                     "Anmälda stöld- och tillgreppsbrott, antal/1000 inv")
   ) %>% 
   DIDkoladaPlot()
+```
+#### Könsuppdelat
+```{r}
+#| fig-height: 11
+KOLADA %>% 
+  filter(KPI %in% c("Invånare 0-19 år i ekonomiskt utsatta hushåll, andel (%)",
+                    "Trångboddhet i flerbostadshus, enligt norm 2, andel (%)",
+                    "Trångboddhet i flerbostadshus, enligt norm 3, andel (%)",
+                    "Anmälda brott om skadegörelse per 1 000 inv.",
+                    "Anmälda stöld- och tillgreppsbrott, antal/1000 inv")
+  ) %>% 
+  DIDkoladaPlotG()
 
 ```
+:::
+
+### Skyddsfaktorer    
+
+```{r}
+#| fig-width: 6
+RSfigur("Samhälle", rs = "Skyddsfaktor")
+```
+
 
 ## Utagerande
 
@@ -1025,7 +1225,9 @@ DIDareaPlot("Utagerande")
 
 ### Kön/Årskurs
 ```{r}
-DIDareaPlot2("Utagerande")
+#| fig-height: 7
+DIDareaPlot2("Utagerande") +
+  theme(legend.justification = c(0.0, 1.0))
 ```
 
 ### Förhöjd risk
@@ -1063,7 +1265,9 @@ DIDareaPlot("Psykiska/ psykosomatiska besvär")
 
 ### Kön/Årskurs
 ```{r}
-DIDareaPlot2("Psykiska/ psykosomatiska besvär")
+#| fig-height: 7
+DIDareaPlot2("Psykiska/ psykosomatiska besvär") +
+  theme(legend.justification = c(0.0, 1.0))
 ```
 
 ### Förhöjd risk
@@ -1259,7 +1463,6 @@ df %>%
   scale_x_continuous(breaks = c(0:5),
                      labels = c("0","1","2","3","4","5+")) +
   #scale_fill_manual(values = RISEpalette1) +
-  theme_minimal() +
   theme_rise() +
   ylab("Antal") +
   facet_grid(ARSKURS~Kön)
@@ -1317,7 +1520,6 @@ df.begått %>%
                      aesthetics = c("fill","color")) +  
   xlab("Årtal") +
   facet_grid(Årskurs~Kön) +
-  theme_minimal() +
   theme_rise()
 
 allitems %>% 
@@ -1325,17 +1527,26 @@ allitems %>%
   select(!Index) %>% 
   kbl_rise(fontsize = 12)
 ```
-### KOLADA
+
+### KOLADA 0-100
 ```{r}
 KOLADA %>% 
   filter(Kön == "Alla") %>% 
-  filter(Kommun %in% jmfKommun) %>% 
+  filter(KPI %in% c("Anmälda brott om skadegörelse per 1 000 inv.",
+                    "Anmälda stöld- och tillgreppsbrott, antal/1000 inv")
+  ) %>% 
+  DIDkoladaPlot() +
+  scale_y_continuous(limits = c(0, 100))
+```
+### KOLADA inzoomad
+```{r}
+KOLADA %>% 
+  filter(Kön == "Alla") %>% 
   filter(KPI %in% c("Anmälda brott om skadegörelse per 1 000 inv.",
                     "Anmälda stöld- och tillgreppsbrott, antal/1000 inv")
   ) %>% 
   DIDkoladaPlot()
 ```
-
 :::
 
 ## ANDTS/substansbruk

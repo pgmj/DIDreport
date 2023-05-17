@@ -34,7 +34,7 @@ itemlabels.final <- read_excel("../DIDapp/data/2023-05-07_allItemInfo.xls") %>%
 allitems <- read.csv("../DIDapp/data/SthlmsEnk_allitems.csv")
 
 # list of item responses for Psykiska/ psykosomatiska besvär, for use in the "persona" visualization
-itemresponses <- read.xlsx("../DIDapp/data/SthlmsEnk_04psfRespCats.xls", sheetName = "04psf")
+itemresponses <- read_excel("../DIDapp/data/SthlmsEnk_04psfRespCats.xls", sheet = "04psf")
 
 # create vector with all index names
 sthlm.index <- itemlabels.final %>%
@@ -437,7 +437,13 @@ kpi_mean <- KOLADA %>%
   add_column(Kön = "Alla")
 
 KOLADA <- rbind(KOLADA, kpi_mean)
+LänetsKommuner <- read_parquet("KOLADA/2023-03-28_KOLADA_Municipality_list.parquet") %>%
+  filter(str_detect(id,"^01")) %>%
+  pull(title)
 
+KOLADA <- KOLADA %>%
+  filter(Kommun %in% LänetsKommuner,
+         År > 2009)
 
 # RSfigurerRapport --------------------------------------------------------
 

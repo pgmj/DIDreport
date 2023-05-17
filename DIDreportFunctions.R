@@ -12,6 +12,7 @@ stript.size <- 10
 theme_rise <- function(fontfamily = "Lato", axissize = 13, titlesize = 15,
                        margins = 12, axisface = "plain", stripsize = 12,
                        panelDist = 0.6, legendSize = 11, legendTsize = 12) {
+  theme_minimal() +
   theme(
     text = element_text(family = fontfamily),
     axis.title.x = element_text(
@@ -37,7 +38,7 @@ theme_rise <- function(fontfamily = "Lato", axissize = 13, titlesize = 15,
     legend.background = element_rect(color = "lightgrey"),
     strip.text = element_text(size = stripsize),
     strip.background = element_rect(color = "lightgrey"),
-    panel.spacing = unit(panelDist, "cm", data = NULL),
+    panel.spacing = unit(panelDist, "cm", data = NULL)
   ) +
     # these rows are for geom_text() and geom_text_repel() to match font family
     update_geom_defaults("text", list(family = fontfamily)) +
@@ -299,12 +300,24 @@ DIDradarPlot <- function(årtal) {
 DIDkoladaPlot <- function(data) {
   data %>%
   ggplot(aes(x = År, y = Andel, group = Kommun, color = Kommun)) +
-    geom_line(alpha = 0.5, linewidth = 0.8, linetype = 3) +
-    geom_point(alpha = 0.5, size = 2) +
-    geom_line(data = filter({{data}}, Kommun == fokusKommun), alpha = 1) +
-    geom_point(data = filter({{data}}, Kommun == fokusKommun), alpha = 1) +
-    scale_x_continuous(guide = guide_axis(n.dodge = 2)) +
-    scale_y_continuous(limits = c(0, 100)) +
+    geom_smooth(method = "loess",
+                span = 8,
+                aes(group = 1),
+                alpha = 0.17,
+                color = "darkblue",
+                linewidth = 0,
+                linetype = 2) +
+    geom_line(data = filter({{data}}, Kommun %in% jmfKommun),
+              alpha = 0.5, linewidth = 0.8, linetype = 3) +
+    geom_point(data = filter({{data}}, Kommun %in% fokusKommun),
+               alpha = 0.5, size = 2) +
+    geom_line(data = filter({{data}}, Kommun == fokusKommun),
+              alpha = 1) +
+    geom_point(data = filter({{data}}, Kommun == fokusKommun),
+               alpha = 1) +
+    scale_x_continuous(guide = guide_axis(n.dodge = 2),
+                       breaks = årtal) +
+    #scale_y_continuous(limits = c(0, 100)) +
     scale_color_brewer(type = "qual", palette = "Dark2") +
     ylab("Andel i %") +
     xlab("") +
@@ -312,11 +325,31 @@ DIDkoladaPlot <- function(data) {
                ncol = 2,
                scales = "free",
                labeller = labeller(KPI = label_wrap_gen(22))) +
-    theme_minimal() +
     theme_rise() +
-    theme(legend.background = element_rect(color = "lightgrey"),
-          strip.background = element_rect(color = "lightgrey"),
-          legend.position = "top") +
+    theme(legend.position = "top") +
+    labs(caption = "Ljusgrått fält visar 95% konfidensintervall för en oviktad trendlinje baserad på länets kommuner.\nDatakälla: Kolada")
+}
+
+DIDkoladaPlotG <- function(data) {
+  data %>%
+    mutate(Kön = fct_rev(Kön)) %>%
+    filter(Kommun %in% jmfKommun,
+           Kön %in% c("Flicka","Pojke")) %>%
+    mutate(Kommun = factor(Kommun, levels = jmfKommun)) %>%
+    ggplot(aes(x = År, y = Andel, group = Kön, color = Kön)) +
+    geom_line(alpha = 0.9, linewidth = 0.8) +
+    geom_point(alpha = 0.9, size = 1.6) +
+    scale_x_continuous(guide = guide_axis(n.dodge = 2),
+                       breaks = seq(2010, 2022, 2)) +
+    scale_y_continuous(limits = c(0, 100)) +
+    scale_color_manual(values = RISEpalette1[c(1,5)])  +
+    ylab("Andel i %") +
+    xlab("") +
+    facet_grid(Kommun~KPI,
+               #scales = "free",
+               labeller = labeller(KPI = label_wrap_gen(22))) +
+    theme_rise(stripsize = 10) +
+    theme(legend.position = "top") +
     labs(caption = "Datakälla: Kolada")
 }
 

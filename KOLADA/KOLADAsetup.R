@@ -15,7 +15,7 @@ library(glue)
 
 ## Read downloaded information from disk to avoid API abuse -------------------------------------
 
-kpis <- read_parquet("")
+#kpis <- read_parquet("")
 munic <- read_parquet("KOLADA/2023-03-28_KOLADA_Municipality_list.parquet")
 
 sthlms.län <- munic %>%

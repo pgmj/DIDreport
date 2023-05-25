@@ -47,6 +47,9 @@ theme_rise <- function(fontfamily = "Lato", axissize = 13, titlesize = 15,
     update_geom_defaults("texthline", list(family = fontfamily))
 }
 
+gender_colors <- c("Pojke" = "#F5A127", "Flicka" = "#009CA6")
+scale_color_gender <- partial(scale_color_manual, values = gender_colors)
+scale_fill_gender <- partial(scale_fill_manual, values = gender_colors)
 
 # Överblick ---------------------------------------------------------------
 
@@ -844,4 +847,111 @@ RSfigur <- function(kontext, rs = "Riskfaktor") {
 }
 
 
+# Skolinspektionen single item --------------------------------------------
+# other possible values of svarskategorier are: "viss", "inte", "vetinte"
+
+DIDskolinsp <- function(item, årskurs, svarskategorier = c("helt", "stor")) {
+  df.si.long %>%
+    filter(
+      item == {{item}},
+      Årskurs == {{årskurs}}
+    ) %>%
+    filter(svarskategori %in% {{svarskategorier}}) %>%
+    group_by(Kommun, Årskurs, item, Svarsfrekvens) %>%
+    summarise(Andel = sum(Andel, na.rm = T)) %>%
+    ungroup() %>%
+    mutate(Kommun = fct_reorder(Kommun, Andel)) %>%
+
+    ggplot(aes(x = Kommun, y = Andel)) +
+    geom_col(aes(fill = Kommun)) +
+    geom_col(data = . %>%
+               filter(Kommun == fokusKommun),
+             color = "black",
+             fill = "darkgrey") +
+    geom_col(data = . %>%
+               filter(Kommun %in% jmfKommun),
+             color = "darkgrey",
+             fill = "lightgrey") +
+    geom_hline(aes(yintercept = mean(Andel, na.rm = T)),
+               linetype = 3,
+               color = "#D55E00",
+               linewidth = 0.9,
+               alpha = 0.7
+    ) +
+    geom_text(aes(label = paste0(round(mean(Andel, na.rm = T),1),"%"),
+                  y = mean(Andel, na.rm = T)+3),
+              x = 1,
+              color = "#D55E00",
+              alpha = 0.7) +
+    geom_text(aes(label = paste0(round(Andel,1),"%")),
+              position = position_dodge(width = 0.9),
+              hjust = 0, vjust = -0.35, angle = 45, size = 2.9,
+              color = "black") +
+    geom_text(aes(label = paste0(Svarsfrekvens,"%"),
+                  y = 1,
+                  angle = 0),
+              position = position_dodge(width = 1),
+              hjust = 0.5,
+              vjust = 0,
+              size = 2.4,
+              color = "white"
+    ) +
+    scale_fill_viridis_d(aesthetics = c("color","fill"),
+                         guide = "none") +
+    theme_rise() +
+    scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
+    scale_y_continuous(limits = c(0,100), breaks = c(0,20,40,60,80,100)) +
+    labs(title = paste0("Skolinspektionen - ",årskurs," - 2022"),
+         subtitle = glue("Andel respondenter som svarat positivt på frågan om '{item}'"),
+         caption = "Siffror längst ner i kolumnen indikerar svarsfrekvensen.\nKälla: Skolinspektionens skolenkät") +
+    coord_cartesian(clip = "off")
+}
+
+# DIDskolinsp("trygghet","Åk 8", c("viss","inte")) + labs(subtitle = glue("Andel respondenter som svarat negativt på frågan om trygghet"))
+
+
+DIDskolinspG <- function(KPI,kön) {
+  df.si.kolada %>%
+    filter(
+      KPI == {{KPI}},
+      Kön == kön
+    ) %>%
+    drop_na(Andel) %>%
+    mutate(Kommun = fct_reorder(Kommun, Andel)) %>%
+
+    ggplot(aes(x = Kommun, y = Andel)) +
+    geom_col(aes(fill = Kommun)) +
+    geom_col(data = . %>%
+               filter(Kommun == fokusKommun),
+             color = "black",
+             fill = "darkgrey") +
+    geom_col(data = . %>%
+               filter(Kommun %in% jmfKommun),
+             color = "darkgrey",
+             fill = "lightgrey") +
+    geom_hline(aes(yintercept = mean(Andel, na.rm = T)),
+               linetype = 3,
+               color = "#D55E00",
+               linewidth = 0.9,
+               alpha = 0.7
+    ) +
+    geom_text(aes(label = paste0(round(mean(Andel, na.rm = T),1),"%"),
+                  y = mean(Andel, na.rm = T)+3),
+              x = 1,
+              color = "#D55E00",
+              alpha = 0.7) +
+    geom_text(aes(label = paste0(round(Andel,1),"%")),
+              position = position_dodge(width = 0.9),
+              hjust = 0, vjust = -0.35, angle = 45, size = 2.9,
+              color = "black") +
+    scale_fill_viridis_d(aesthetics = c("color","fill"),
+                         guide = "none") +
+    theme_rise() +
+    scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
+    scale_y_continuous(limits = c(0,100), breaks = c(0,20,40,60,80,100)) +
+    labs(title = str_wrap(KPI,60),
+         subtitle = paste0(kön,", År 2022"),
+         caption = "Källa: Skolinspektionens skolenkät") +
+    coord_cartesian(clip = "off")
+} # Kön recoded to either "Flickor" or "Pojkar".
 

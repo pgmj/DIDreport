@@ -16,16 +16,40 @@ library(glue)
 ## Read downloaded information from disk to avoid API abuse -------------------------------------
 
 #kpis <- read_parquet("")
-munic <- read_parquet("KOLADA/2023-03-28_KOLADA_Municipality_list.parquet")
+#munic <- read_parquet("KOLADA/2023-03-28_KOLADA_Municipality_list.parquet")
 
-sthlms.län <- munic %>%
-  filter(str_detect(id,"^01")) # filter to only include municipalities that begin with "01" for Stockholms län
-# 03 is Uppsala
+#sthlms.län <- munic %>%
+#  filter(str_detect(id,"^01")) # filter to only include municipalities that begin with "01" for Stockholms län
+# 03 is Uppsala län
 
-KPI <- select(kpis, id, title)
+#KPI <- select(kpis, id, title)
 
 
 # Download data via API ---------------------------------------------------
+
+
+## get skolinspektionens trygghet & nöjdhet -----------------------------------------
+
+munic <- read_parquet("KOLADA/2023-03-28_KOLADA_Municipality_list.parquet") %>%
+  filter(type == "K")
+
+KPI <- read_parquet("KOLADA/2023-03-28_KOLADA_KPI_list.parquet") %>%
+  select(all_of(c("id", "title"))) %>%
+  rename(kpi = id,
+         KPI = title)
+
+df.values <- get_values(
+  kpi = c(
+    "N15613", "N15643", "N17673", #trygghet
+    "N15629", "N15659", "N17650" #nöjdhet
+  ),
+  municipality = munic$id,
+  period = 2021:2022, simplify = TRUE
+)
+
+## get other kpi's ---------------------------------------------------------
+
+
 
 # This call takes a long time, and should only be used when updating the KPI
 # selection or when new data is available. Otherwise, skip ahead and read
@@ -45,7 +69,7 @@ KPI <- select(kpis, id, title)
 
 ## Read data from disk -------------------------------------------------------
 
-df.values <- read_parquet("2023-03-28_KOLADA_data_raw.parquet")
+#df.values <- read_parquet("2023-03-28_KOLADA_data_raw.parquet")
 
 
 # Data wrangling ----------------------------------------------------------
@@ -59,7 +83,7 @@ df.values$municipality_type <- NULL
 
 # Rename column names to match
 
-colnames(KPI) <- c("kpi", "KPI")
+#colnames(KPI) <- c("kpi", "KPI")
 
 # Add description to df.values based on kpi
 
@@ -84,9 +108,9 @@ df.values$Kön <- recode_factor(df.values$Kön, T = "Alla",
                                M = "Pojke", K = "Flicka")
 
 # check that things look good
-# df.values %>%
-#   distinct(kpi,KPI) %>%
-#   kbl()
+df.values %>%
+  distinct(kpi,KPI) %>%
+  kbl()
 
-write_parquet(df.values, glue("{Sys.Date()}_KOLADA_data_ready.parquet"))
+write_parquet(df.values, glue("{Sys.Date()}_KOLADA_skolinsp_tryggNöjd.parquet"))
 

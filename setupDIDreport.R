@@ -440,6 +440,10 @@ KOLADA <- rbind(KOLADA, kpi_mean)
 LänetsKommuner <- read_parquet("KOLADA/2023-03-28_KOLADA_Municipality_list.parquet") %>%
   filter(str_detect(id,"^01")) %>%
   pull(title)
+KommunID <- read_parquet("KOLADA/2023-03-28_KOLADA_Municipality_list.parquet") %>%
+  select(id, title) %>%
+  rename(KommunID = id,
+         Kommun = title)
 
 KOLADA <- KOLADA %>%
   filter(Kommun %in% LänetsKommuner,
@@ -451,5 +455,30 @@ KOLADA <- KOLADA %>%
 lst.data <- read_excel("../DIDapp/data/RISE LST RS-faktorer tabeller OSF.xlsx")
 rskontext <- c("Individ","Familj","Kamrater och fritid","Skola","Samhälle")
 
+
+# Skolinspektionen excel --------------------------------------------------
+
+df.si.2022 <- read_parquet("Skolinspektionen/Trygghet och studiero 2022/SItryggNöjd.parquet")
+
+si.kommuner <- df.si.2022 %>%
+  filter(Kommun %in% LänetsKommuner) %>%
+  distinct(Kommun) %>%
+  pull()
+
+df.si.long <- df.si.2022 %>%
+  filter(Kommun %in% LänetsKommuner) %>%
+  select(!TotalN) %>%
+  pivot_longer(starts_with(c("trygghet","nöjdhet")),
+               values_to = "Antal") %>%
+  separate(name, c("item","svarskategori"), sep = "_") %>%
+  group_by(Kommun,Årskurs,item) %>%
+  mutate(Andel = round(100 * Antal / sum(Antal, na.rm = T),1),
+         Svarsfrekvens = 100 * Svarsfrekvens) %>%
+  ungroup()
+
+df.si.kolada <- read_parquet("KOLADA/2023-05-19_KOLADA_skolinsp_tryggNöjd.parquet") %>%
+  filter(Kommun %in% LänetsKommuner) %>%
+  mutate(Kön = car::recode(Kön,"'Flicka'='Flickor';
+                           'Pojke'='Pojkar'"))
 
 

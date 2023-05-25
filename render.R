@@ -13,8 +13,7 @@ library(dplyr)
 # then use future_walk() instead of walk()
 
 # read file with parameters
-DIDparams <- read_excel("DIDreportParameters.xls") %>%
-  mutate(across(everything(), ~ gsub(" ","",.x)))
+DIDparams <- read_excel("DIDreportParameters.xls")
 
 walk(1:nrow(DIDparams), function(i) {
   this <- DIDparams[i,]
@@ -23,7 +22,7 @@ walk(1:nrow(DIDparams), function(i) {
 
   quarto_render(input = "DIDreport2.qmd",
                 execute_params = list("fokusKommun" = this$fokusKommun,
-                                      "jmfKommun" = this$jmfKommun %>% strsplit(",") %>% unlist(),
+                                      "jmfKommun" = this$jmfKommun %>% strsplit(", ") %>% unlist(),
                                       "years" = this$years %>% strsplit(",") %>% unlist() %>% as.numeric()
                                       ),
                 output_file = outfile,

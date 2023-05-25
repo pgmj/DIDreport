@@ -1,0 +1,8 @@
+```{r}
+# this file is for the municipalities that have data in Skolinspektionens Skolenkät
+if (fokusKommun %in% si.kommuner) {
+  
+  
+  }
+```
+

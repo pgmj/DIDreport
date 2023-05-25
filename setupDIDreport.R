@@ -15,8 +15,19 @@ allaKommuner <- df %>%
   distinct(Kommun) %>%
   pull(Kommun)
 
-df <- df %>%
-  filter(Kommun %in% jmfKommun)
+if (fokusKommun == "Alla") {
+  df <- df %>%
+    select(!Kommun) %>%
+    add_column(Kommun = "Alla")
+
+  jmfKommun <- "Alla"
+
+} else {
+  df <- df %>%
+    filter(Kommun %in% jmfKommun)
+}
+
+
 
 # remove data from before 2006 for Södertälje, due to lack of comparisons
 df <- df %>%

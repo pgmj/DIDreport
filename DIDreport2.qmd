@@ -10,7 +10,7 @@ author:
   orcid: 0000-0003-1669-592X
 date: last-modified
 params:
-  fokusKommun: "Järfälla"
+  fokusKommun: "Alla"
   jmfKommun: "Täby"
   years: 2020
 format: 
@@ -51,12 +51,12 @@ editor_options:
 
 # which municipality to focus this report on?
 fokusKommun <- params$fokusKommun
-# which municipalities should be included in comparisons?
-jmfKommun <- factor(c(fokusKommun,params$jmfKommun),
-                    levels = c(fokusKommun,params$jmfKommun))
+# # which municipalities should be included in comparisons?
+# jmfKommun <- factor(c(fokusKommun,params$jmfKommun),
+#                     levels = c(fokusKommun,params$jmfKommun))
 
 ## for testing/dev:
-# fokusKommun <- "Järfälla"
+# fokusKommun <- "Alla"
 # jmfKommun <- factor(c(fokusKommun,"Huddinge", "Södertälje", "Botkyrka"),
 #                    levels = c(fokusKommun,"Huddinge", "Södertälje", "Botkyrka"))
 

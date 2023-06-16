@@ -52,8 +52,8 @@ editor_options:
 # which municipality to focus this report on?
 fokusKommun <- params$fokusKommun
 # # which municipalities should be included in comparisons?
-# jmfKommun <- factor(c(fokusKommun,params$jmfKommun),
-#                     levels = c(fokusKommun,params$jmfKommun))
+jmfKommun <- factor(c(fokusKommun,params$jmfKommun),
+                    levels = c(fokusKommun,params$jmfKommun))
 
 ## for testing/dev:
 # fokusKommun <- "Alla"
@@ -66,17 +66,6 @@ yearsIn <- params$years
 
 # setup -------------------------------------------------------------------
 
-#library(shiny)
-#library(xlsx)
-#library(ggdist) # for shadeable density slabs
-#library(ggpp) # for position_dodge2nudge
-#library(stringr)
-#library(EnvStats)
-#library(bslib)
-#library(thematic)
-#library(catR)
-#library(Hmisc)
-#library(RColorBrewer)
 library(ggplot2)
 library(tidyverse)
 library(arrow)
@@ -452,7 +441,8 @@ df.risk.gender.arskurs %>%
 df.risk.gender.arskurs %>% 
   filter(!is.na(Årskurs)) %>% 
   DIDstapel("2022", tpathsize = 2.7) +
-  facet_grid(Årskurs~Kön)
+  facet_grid(Årskurs~Kön) +
+  theme(legend.justification = c(0.0, 1.0))
 ```
 #### 2020
 ```{r}
@@ -461,7 +451,8 @@ df.risk.gender.arskurs %>%
 df.risk.gender.arskurs %>% 
   filter(!is.na(Årskurs)) %>% 
   DIDstapel("2020", tpathsize = 2.7) +
-  facet_grid(Årskurs~Kön)
+  facet_grid(Årskurs~Kön) +
+  theme(legend.justification = c(0.0, 1.0))
 ```
 #### 2018
 ```{r}
@@ -470,7 +461,8 @@ df.risk.gender.arskurs %>%
 df.risk.gender.arskurs %>% 
   filter(!is.na(Årskurs)) %>% 
   DIDstapel("2018", tpathsize = 2.7) +
-  facet_grid(Årskurs~Kön)
+  facet_grid(Årskurs~Kön) +
+  theme(legend.justification = c(0.0, 1.0))
 ```
 #### 2016
 ```{r}
@@ -479,7 +471,8 @@ df.risk.gender.arskurs %>%
 df.risk.gender.arskurs %>% 
   filter(!is.na(Årskurs)) %>% 
   DIDstapel("2016", tpathsize = 2.7) +
-  facet_grid(Årskurs~Kön)
+  facet_grid(Årskurs~Kön) +
+  theme(legend.justification = c(0.0, 1.0))
 ```
 :::
 

@@ -1,0 +1,258 @@
+---
+title: "Stockholmsenkäten - bortfallsanalys"
+title-block-banner: "#009ca6"
+title-block-banner-color: "#FFFFFF"
+author: 
+  name: Magnus Johansson
+  affiliation: RISE Research Institutes of Sweden
+  affiliation-url: https://www.ri.se/sv/vad-vi-gor/expertiser/kategoriskt-baserade-matningar
+  orcid: 0000-0003-1669-592X
+date: last-modified
+date-format: iso
+format: 
+  html:
+    toc: true
+    toc-depth: 4
+    toc-title: "Innehållsförteckning"
+    embed-resources: true
+    standalone: true
+    mainfont: 'Lato'
+    monofont: 'Roboto Mono'
+    code-overflow: wrap
+    code-fold: true
+    number-sections: true
+    linestretch: 1.6
+    theme: materia
+    css: styles.css
+execute:
+  echo: true
+  warning: false
+  message: false
+  cache: false
+editor_options: 
+  chunk_output_type: console
+---
+
+## Bakgrund
+
+Stockholmsenkäten genomförs på våren jämna år i årskurs 9 (åk9) och gymnasiets årskurs 2 (gy2). Enkäten är anonym, och data framgår skoltillhörighet samt demografiska variabler som kan ligga till grund för en bortfallsanalys. Svarsdata behöver jämföras med elevunderlaget på respektive skola, vilket innebär att registerdata behöver finnas som underlag.
+
+Skolverket har sedan januari 2023 tillgängliggjort vissa data i Skolenhetsregistret via ett API, medan annan data finns tillgänglig enbart för manuell hämtning. RISE har dokumenterat vårt arbete med att sammanställa data via både API och manuell nedladdning:
+<https://pgmj.github.io/SkolverketAPI/skolverketapi.html>
+
+Vi kommer här titta närmare på de variabler som sammanställts och hur de kan jämföras med Stockholmsenkätens dataunderlag i de kommuner som ingår i projektet [Data i dialog](https://www.ri.se/sv/vad-vi-gor/projekt/data-i-dialog-risk-och-skyddsfaktorer-for-barn-och-unga).
+
+## Inläsning av data
+
+```{r}
+library(tidyverse)
+library(arrow)
+
+### some commands exist in multiple packages, here we define preferred ones that are frequently used
+select <- dplyr::select
+count <- dplyr::count
+recode <- car::recode
+rename <- dplyr::rename
+
+skolverket <- read_parquet("Skolverket/skolverketDemografi.parquet")
+sthlmsenk <- read_parquet("../DIDapp/data/2023-05-07_ScoredRev.parquet") %>% 
+  rename(Kommun = DIDkommun)
+
+glimpse(skolverket)
+```
+Som synes finns antalet elever per årskurs, samt andel i procent för flickor (totalt åk 1-9), elever med utländsk bakgrund, samt elever med föräldrar med eftergymnasial bakgrund.
+
+Data från Skolverket använder skolenhet som minsta enhet, medan Stockholmsenkäten har data på individnivå som behöver aggregeras till skolnivå för att bli jämförbar. Tyvärr visar inte Skolverkets data andelen flickor/pojkar på klassnivå, utan enbart på skolnivå. Vi kan använda denna som en schablon för samtliga klasser på skolan, men det medför osäkerheter i estimat.
+
+Som exempel börjar vi med data från Botkyrka åk 9 och tittar på data per klass och årskurs, per år, med start 2010.
+
+Eftersom det finns risk för att skolnamn skrivs på olika sätt vid olika mättillfällen använder vi skolenhetskod som beteckning för att sammanföra information från de olika datakällorna.
+
+```{r}
+df <- sthlmsenk %>% 
+  filter(Kommun == "Botkyrka",
+         ARSKURS == "Åk 9",
+         ar > 2009)
+
+df.sk <- skolverket %>% 
+  filter(kommun_kod == "0127",
+         year %in% c(2010,2012,2014,2016,2018,2020,2022)) %>% 
+  select(year,
+         skol_enhetskod,
+         elever_arskurs_9,
+         andel_percent_flickor_arskurs_1_9,
+         andel_percent_elever_med_utlandsk_bakgrund_ak_1_9,
+         andel_percent_elever_med_foraldrar_med_eftergymnasial_utb_ak_1_9)
+```
+
+Antal elever per skola, per år
+```{r}
+df.antalSkolaÅr <- df %>% 
+  drop_na(Kön) %>% 
+  group_by(Skolenhetskod,ar) %>% 
+  summarise(n = n()) %>% 
+  filter(n > 5) %>% 
+  arrange(ar,Skolenhetskod)
+
+df.antalSkolaÅr
+```
+
+Det är många respondenter som saknar Skolenhetskod, men också variation i antal. Hur stor andel rör det sig om?
+
+```{r}
+df.antalSkolaÅr %>% 
+  filter(is.na(Skolenhetskod)) %>% 
+  mutate(totalNA = sum(n))
+```
+
+Totalt 3380 respondenter, av `r nrow(df)`, vilket innebär `r round(3380/nrow(df)*100,1)`%. Det är en oväntat hög siffra. Vi behöver gå tillbaka till källfilerna för att dubbelkolla så att dataimporten inte kan ha ställt till något fel.
+
+Inga fel i importen. Det är anmärkningsvärt höga siffror för de flesta år, och egentligen oklart varför det alls saknas information om Skolenhetskod? Årtalen 2014 samt 2020 och 2022 har hur som helst avsevärt lägre antal respondenter utan Skolenhetskod, så vi gör en ansats till att titta närmare på dessa.
+
+```{r}
+df <- sthlmsenk %>% 
+  filter(Kommun == "Botkyrka",
+         ARSKURS == "Åk 9",
+         ar %in% c(2014,2020,2022))
+
+df.sk <- skolverket %>% 
+  filter(kommun_kod == "0127",
+         year %in% c(2014,2020,2022)) %>% 
+  select(year,
+         skol_enhetskod,
+         elever_arskurs_9,
+         andel_percent_flickor_arskurs_1_9,
+         andel_percent_elever_med_utlandsk_bakgrund_ak_1_9,
+         andel_percent_elever_med_foraldrar_med_eftergymnasial_utb_ak_1_9)
+
+df.antalSkolaÅr <- df %>% 
+  drop_na(Kön) %>% 
+  group_by(Skolenhetskod,ar) %>% 
+  summarise(n = n()) %>% 
+  filter(n > 5) %>% 
+  arrange(ar,Skolenhetskod)
+```
+
+Vi använder Skolenhetskoden för att sätta samman dataseten.
+
+```{r}
+df.antal <- left_join(df.sk, df.antalSkolaÅr, 
+          by = join_by(skol_enhetskod == Skolenhetskod,
+                       year == ar)
+          ) %>% 
+  select(year,skol_enhetskod,elever_arskurs_9,n)
+
+glimpse(df.antal)
+```
+Mycket missing data här. Vi filtrerar fram de som vi har data om från Stockholmsenkäten.
+
+```{r}
+df.antal %>% 
+  drop_na(n) %>% 
+  mutate(andel = round(100*n/elever_arskurs_9,1),
+         skolenhetskod = factor(skol_enhetskod)) %>% 
+  ggplot(aes(x = factor(year),
+             y = andel,
+             color = skolenhetskod)) +
+  geom_point() +
+  geom_line(aes(group = skolenhetskod)) +
+  scale_color_viridis_d() +
+  theme_bw()
+```
+
+2014 är inte med? Och vi har värden som är över 100%. Här finns uppenbarligen en del att felsöka i data.
+
+Men frågan är om Skolenhetskod kanske inte är den optimala grupperingsvariabeln? Vi tittar på Skolnamn och se hur det ser ut med missing data där. Då behöver vi ta in data från alla år igen.
+
+```{r}
+df <- sthlmsenk %>% 
+  filter(Kommun == "Botkyrka",
+         ARSKURS == "Åk 9",
+         ar %in% c(2010,2012,2014,2016,2018,2020,2022))
+
+
+df.sk <- skolverket %>% 
+  filter(kommun_kod == "0127",
+         year %in% c(2010,2012,2014,2016,2018,2020,2022)) %>% 
+  select(year,
+         skola,
+         skol_enhetskod,
+         elever_arskurs_9,
+         andel_percent_flickor_arskurs_1_9,
+         andel_percent_elever_med_utlandsk_bakgrund_ak_1_9,
+         andel_percent_elever_med_foraldrar_med_eftergymnasial_utb_ak_1_9)
+
+df.antalSkolenhetskodÅr <- df %>% 
+  drop_na(Kön) %>% 
+  group_by(Skolenhetskod,ar) %>% 
+  summarise(n = n())
+
+df.antalSkolnamnÅr <- df %>% 
+  drop_na(Kön) %>% 
+  mutate(Skolnamn = str_squish(Skolnamn)) %>% 
+  group_by(Skolnamn,ar) %>% 
+  summarise(n = n())
+
+df.antalSkolnamnÅr %>% 
+  arrange(desc(n))
+```
+
+Vi kan jämföra antalet respondenter med när vi använde Skolenhetskod.
+
+```{r}
+sum(df.antalSkolenhetskodÅr$n)
+
+sum(df.antalSkolnamnÅr$n)
+
+```
+
+Exakt samma.
+
+Vi tittar först på antalet svar per skolnamn (och filtrerar bort de med färre än 10 svar)
+
+```{r}
+df %>% 
+  drop_na(Kön) %>% 
+  mutate(Skolnamn = str_squish(Skolnamn)) %>% 
+  count(Skolnamn,Skolenhetskod) %>% 
+  filter(n > 9) %>% 
+  arrange(desc(n))
+```
+
+"Skola i annan kommun" kommer på sjätte plats. Ett blankt skolnamn förekommer på rad 24. Samma skolnamn finns med flera gånger, med och utan Skolenhetskod.
+
+Vi kan även se problem med att man skrivit skolnamnet olika för "Botkyrka friskola", med stort/litet "f" (rad 31-32), vilket gör att de framstår som olika skolor i data om man använder Skolnamn (men de har båda samma Skolenhetskod).
+
+Stockholmsenkätens data, i alla fall gällande detta urval, ter sig illa strukturerad och kommer kräva en del bearbetning för att bena ut.
+
+## Data-städning
+
+En möjlig väg framåt vore att börja med att säkerställa följande:
+
+- att alla skolnamn är skrivna på samma sätt
+  - kräver manuell/visuell bearbetning av data, där "fuzzy matching" förmodligen kan vara hjälpsamt
+- att alla skolnamn har en skolenhetskod
+  - efter att skolnamnen "städats" kan vi antagligen lösa detta enkelt med matchning mot data från Skolenhetsregistret som förhoppningsvis är korrekt
+
+## Sigtuna
+
+Vi gör ett nytt försök med Sigtuna kommun som exempel.
+
+```{r}
+df <- sthlmsenk %>% 
+  filter(Kommun == "Sigtuna",
+         ARSKURS == "Åk 9",
+         ar > 2009)
+
+df.sk <- skolverket %>% 
+  filter(kommun_kod == "0191",
+         year %in% c(2010,2012,2014,2016,2018,2020,2022)) %>% 
+  select(year,
+         skol_enhetskod,
+         elever_arskurs_9,
+         andel_percent_flickor_arskurs_1_9,
+         andel_percent_elever_med_utlandsk_bakgrund_ak_1_9,
+         andel_percent_elever_med_foraldrar_med_eftergymnasial_utb_ak_1_9)
+```
+
+

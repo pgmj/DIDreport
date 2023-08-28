@@ -1,6 +1,7 @@
 library(tidyverse)
 library(janitor)
 
+# file naming is based on the fall term, meaning that 2022 indicates the school year 2022/2023.
 test <- read_delim("Skolverket/Grundskolan - Antal elever per årskurs 2022 Skolenhet.csv",
                  skip = 5, na = c(".",".."), delim = ";") %>%
   clean_names() %>%

@@ -1,3 +1,29 @@
+library(ggplot2)
+library(tidyverse)
+library(arrow)
+library(colorspace) # for modifying color palettes
+library(formattable)
+library(geomtextpath)
+library(readxl)
+library(visNetwork)
+library(networkD3)
+library(vctrs)
+library(ggiraph)
+library(gt)
+library(gtExtras)
+library(RISEkbmRasch)
+library(janitor)
+
+### some commands exist in multiple packages, here we define preferred ones that are frequently used
+select <- dplyr::select
+count <- dplyr::count
+recode <- car::recode
+rename <- dplyr::rename
+
+LänetsKommuner <- read_parquet("KOLADA/2023-03-28_KOLADA_Municipality_list.parquet") %>%
+  filter(str_detect(id,"^01")) %>%
+  pull(title)
+
 # manual download from https://skolinspektionen.se/beslut-rapporter-statistik/statistik/statistik-fran-skolenkaten/resultat-skolenkaten-2022/
 df.si5 <- read_excel("Skolinspektionen/excelrapport-elever-grundskola-ak-5-2022.xlsx", sheet = 1) %>%
   janitor::clean_names() %>%
@@ -143,8 +169,8 @@ DIDskolinsp <- function(item, årskurs, svarskategorier = c("helt", "stor")) {
     geom_text(aes(label = paste0(round(mean(Andel, na.rm = T),1),"%"),
                   y = mean(Andel, na.rm = T)+3),
               x = 1,
-              color = "#D55E00",
-              alpha = 0.7) +
+              color = "sienna2",
+              alpha = 0.6) +
     geom_text(aes(label = paste0(round(Andel,1),"%")),
               position = position_dodge(width = 0.9),
               hjust = 0, vjust = -0.35, angle = 45, size = 2.9,
@@ -168,6 +194,10 @@ DIDskolinsp <- function(item, årskurs, svarskategorier = c("helt", "stor")) {
          caption = "Siffror längst ner i kolumnen indikerar svarsfrekvensen.\nKälla: Skolinspektionens skolenkät") +
     coord_cartesian(clip = "off")
 }
+
+fokusKommun <- "Sigtuna"
+jmfKommun <- c("Botkyrka","Järfälla","Upplands Väsby")
+
 DIDskolinsp("trygghet","Åk 8")
 
 

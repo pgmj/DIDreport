@@ -54,6 +54,54 @@ scale_fill_gender <- partial(scale_fill_manual, values = gender_colors)
 # Överblick ---------------------------------------------------------------
 
 
+DIDsnirkel <- function(årtal) {
+  df.risk %>%
+    filter(Kommun == fokusKommun) %>%
+    filter(År == {{ årtal }} ) %>%
+    filter(!Index %in% c("Välbefinnande", "Positiv skolanknytning")) %>%
+    mutate(riskLevel = car::recode(riskLevel,"NA='För få svar';
+                                   '<NA>'='För få svar'")) %>%
+    mutate(Risknivå = factor(riskLevel,
+                             levels = c("För få svar", "Låg risk", "Något förhöjd risk", "Förhöjd risk"))) %>%
+    ggplot(aes(x = Index, y = Andel, fill = Risknivå)) +
+    geom_col(alpha = 0.9) +
+    geom_textpath(aes(label = Index, group = Index),
+                  text_only = T,
+                  position = "stack",
+                  hjust = 0,
+                  size = 4
+    ) +
+    coord_polar(theta = "y") +
+    scale_fill_manual(values = DIDcolorsGGYR) +
+    scale_x_discrete(
+      expand = expansion(add = c(3, 0)),
+      limits = rev,
+      labels = NULL
+    ) +
+    scale_y_continuous(
+      breaks = seq(0, 90, 10),
+      labels = paste0(seq(0, 90, 10), "%")
+    ) +
+    labs(title = paste0(fokusKommun, " - ", årtal),
+         caption = "Datakälla: Stockholmsenkäten.") +
+    geom_texthline(
+      yintercept = 10, color = "black",
+      linetype = 2, size = 2.5, alpha = 0.6,
+      label = "Förhöjd risk",
+      hjust = 0.05
+    ) +
+    geom_texthline(
+      yintercept = 25, color = RISEprimRed,
+      linetype = 2, size = 2.5, alpha = 0.6,
+      label = "Något förhöjd risk",
+      hjust = 0.15
+    ) +
+    xlab("") +
+    ylab("") +
+    theme_minimal() +
+    theme_rise()
+}
+
 DIDstapel <- function(data,årtal, tpathsize = 4) {
   year <- årtal
   data %>%
@@ -211,13 +259,46 @@ DIDareaPlot2 <- function(faktor) {
       Röd linje = referensvärde för 25% med högst indexvärde.\n
                          Datakälla: Stockholmsenkäten."
     ) +
-    facet_grid2(ARSKURS~Kön,
-               axes = "all") +
+    facet_grid(ARSKURS~Kön) +
     theme_minimal() +
     theme_rise() +
     theme(plot.caption = element_text(lineheight = 0.45))
 }
 
+
+DIDradarPlot <- function(årtal) {
+  year <- årtal
+  df.plot <- sums.index %>%
+    filter(Kommun %in% jmfKommun) %>%
+    filter(Faktor %in% rfactors) %>%
+    filter(Kön %in% c("Flicka", "Pojke")) %>%
+    filter(År == year)
+
+  ggplot(df.plot, aes(x = Faktor, y = Medel, group = Kommun, color = Kommun, fill = Kommun)) + # make plot, with area color
+    geom_line(
+      linewidth = 0.9,
+      alpha = 0.6,
+      linetype = 3
+    ) +
+    geom_point(size = 2.5, alpha = 0.6) +
+    geom_line(data = filter(df.plot, Kommun == fokusKommun), alpha = 0.9) +
+    geom_point(data = filter(df.plot, Kommun == fokusKommun), alpha = 0.9) +
+    scale_color_brewer(type = "qual", palette = "Dark2") +
+    see::coord_radar(theta = "x", start = 3, clip = "off") +
+    scale_y_continuous(limits = c(-1.5, NA), expand = c(0, 0, 0, 0)) +
+    scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
+    labs(
+      title = paste0("Riskfaktorer ", year),
+      subtitle = "Högre värde = större risk",
+      y = "", x = "",
+      caption = "Datakälla: Stockholmsenkäten"
+    ) +
+    facet_wrap(~Kön, nrow = 2) +
+    theme_minimal() +
+    theme_rise() +
+    theme(legend.position = "right",
+          axis.text.y = element_blank())
+}
 
 DIDkoladaPlot <- function(data) {
   data %>%

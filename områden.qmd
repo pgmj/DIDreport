@@ -1,0 +1,603 @@
+---
+title: "Data i dialog"
+subtitle: "Utforskande av områden inom kommuner"
+title-block-banner: "#009ca6"
+title-block-banner-color: "#FFFFFF"
+author:
+  name: Magnus Johansson
+  affiliation: RISE Research Institutes of Sweden
+  affiliation-url: https://www.ri.se/sv/vad-vi-gor/expertiser/kategoriskt-baserade-matningar
+  orcid: 0000-0003-1669-592X
+date: last-modified
+date-format: iso
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    toc-title: "Innehållsförteckning"
+    embed-resources: true
+    standalone: true
+    page-layout: full
+    mainfont: 'Lato'
+    monofont: 'Roboto Mono'
+    code-overflow: wrap
+    code-tools: false
+    code-fold: true
+    number-sections: true
+    fig-dpi: 96
+    layout-align: left
+    linestretch: 1.6
+    theme: materia
+    link-external-newwindow: true
+    fig-cap-location: bottom
+    css: styles.css
+execute:
+  echo: true
+  warning: false
+  message: false
+  cache: false
+editor_options:
+  chunk_output_type: console
+---
+
+## Dataimport
+
+```{r}
+årtal <- c(2006,2008,2010,2012,2014,2016,2018,2020,2022)
+
+fokusKommun <- "Sigtuna"
+jmfKommun <- c("Järfälla","Sigtuna")
+source("DIDreportSetup.R")
+source("DIDreportFunctions.R")
+
+### set up color palette based on RISE guidelines
+RISEprimGreen <- "#009ca6"
+RISEprimRed <- "#e83c63"
+RISEprimYellow <- "#ffe500"
+RISEprimGreenMid <- "#8dc8c7"
+RISEprimRedMid <- "#f5a9ab"
+RISEprimYellowMid <- "#ffee8d"
+RISEprimGreenLight <- "#ebf5f0"
+RISEprimRedLight <- "#fde8df"
+RISEprimYellowLight <- "#fff7dd"
+RISEcompPurple <- "#482d55"
+RISEcompGreenDark <- "#0e4e65"
+RISEgrey1 <- "#f0f0f0"
+RISEgrey2 <- "#c8c8c8"
+RISEgrey3 <- "#828282"
+RISEgrey4 <- "#555555"
+
+### colors specifically for DID application
+DIDcolorsOriginal <- c('#D55E00','#F0E442','#009E73','#999999')
+DIDcolors <- lighten(DIDcolorsOriginal, amount = 0.1, space = "HLS")
+DIDred <- "#D55E00"
+DIDorange <- "#E69F00"
+DIDgreen <- "#009E73"
+DIDyellow <- "#F0E442"
+```
+
+
+## Skolnamn
+
+Först kollar vi vilka unika skolnamn som finns i Sigtuna kommun.
+```{r}
+df %>%
+  #filter(ARSKURS == "Åk 9") %>%
+  filter(Kommun == "Sigtuna") %>%
+  distinct(str_squish(Skolnamn)) %>%
+  arrange(`str_squish(Skolnamn)`)
+```
+
+En del skolnamn innehåller kommatecken, vilket behöver tas bort (för att skolnamnen enklare ska kunna användas i vektorer, etc).
+
+Ordet "gymnasium" förekommer med både versal och gemen i början, vilket behöver kodas om.
+```{r}
+df %>%
+  #filter(ARSKURS == "Åk 9") %>%
+  filter(Kommun == "Sigtuna") %>%
+  mutate(Skolnamn = str_squish(Skolnamn),
+         Skolnamn = gsub(",","",Skolnamn),
+         Skolnamn = gsub("gymnasium","Gymnasium",Skolnamn)) %>%
+
+  distinct(Skolnamn) %>%
+  arrange(Skolnamn)
+```
+
+Vi har en del att reda ut gällande Sigtunaskolan Humanistiska Läroverket, som har många olika benämningar
+
+-      Sigtunaskolan Humanistiska Läroverket Gymnasium
+-     Sigtunaskolan Humanistiska Läroverket grundskola
+-                Sigtunaskolan Humanistiska läroverket
+-                     Sigtunaskolan hum. läroverket gr
+-                     Sigtunaskolan hum. läroverket gy
+-                 Sigtunaskolan hum. läroverket int gr
+-                 Sigtunaskolan hum. läroverket int gy
+
+Alla utom en beskriver gr/gy, så vi behöver titta på vilka elever som finns i data för den skolan.
+
+```{r}
+df %>%
+  mutate(Skolnamn = str_squish(Skolnamn)) %>%
+  filter(Skolnamn == "Sigtunaskolan Humanistiska läroverket") %>%
+  count(ARSKURS)
+```
+
+Där finns bara gymnasie-elever. Vi utgår från att detta INTE är internationella programmet eftersom det inte ingår i namnet.
+
+```{r}
+df %>%
+  filter(Kommun == "Sigtuna") %>%
+  mutate(Skolnamn = str_squish(Skolnamn),
+         Skolnamn = gsub(",","",Skolnamn),
+         Skolnamn = gsub("gymnasium","Gymnasium",Skolnamn),
+         Skolnamn = car::recode(Skolnamn,"'Sigtunaskolan Humanistiska Läroverket Gymnasium'='Sigtunaskolan hum. läroverket gy';'Sigtunaskolan Humanistiska Läroverket grundskola'='Sigtunaskolan hum. läroverket gr';'Sigtunaskolan Humanistiska läroverket'='Sigtunaskolan hum. läroverket gy'")) %>%
+  distinct(Skolnamn) %>%
+  arrange(Skolnamn)
+```
+
+Detta ser bättre ut. Vi "sparar" ändringarna i data och övergår till att titta på antalet elever per område.
+
+```{r}
+df.sigtuna <- df %>%
+  filter(Kommun == "Sigtuna") %>%
+  mutate(Skolnamn = str_squish(Skolnamn),
+         Skolnamn = gsub(",","",Skolnamn),
+         Skolnamn = gsub("gymnasium","Gymnasium",Skolnamn),
+         Skolnamn = car::recode(Skolnamn,"'Sigtunaskolan Humanistiska Läroverket Gymnasium'='Sigtunaskolan hum. läroverket gy';'Sigtunaskolan Humanistiska Läroverket grundskola'='Sigtunaskolan hum. läroverket gr';'Sigtunaskolan Humanistiska läroverket'='Sigtunaskolan hum. läroverket gy'"))
+
+```
+
+## Områden
+
+Vi har via mail fått info om vilka områden Sigtuna kommun vill använda
+
+```{r}
+data.frame(
+  stringsAsFactors = FALSE,
+            Område = c("Centrala Märsta",
+                       "Ekilla och Tingvalla","Sigtuna","Steninge","Valsta"),
+            Skolnamn = c("Centralskolan","Ekillaskolan",
+                       "St Olofs skola,Sigtunaskolan hum. läroverket gr,Sigtunaskolan hum. läroverket gy,Sigtunaskolan hum. läroverket int gr,Sigtunaskolan hum. läroverket int gy",
+                       "Steningehöjdens skola","Arlandagymnasiet,Valstaskolan")
+) %>% 
+  kbl_rise()
+```
+
+Med hjälp av detta kan vi skapa en områdes-variabel i data.
+
+```{r}
+sOmråden <- data.frame(
+  stringsAsFactors = FALSE,
+                        Område = c("Centrala Märsta","Ekilla och Tingvalla","Sigtuna",
+                                   "Sigtuna","Sigtuna","Sigtuna","Sigtuna",
+                                   "Steninge","Valsta","Valsta"),
+                      Skolnamn = c("Centralskolan","Ekillaskolan","St Olofs skola",
+                                   "Sigtunaskolan hum. läroverket gr",
+                                   "Sigtunaskolan hum. läroverket gy",
+                                   "Sigtunaskolan hum. läroverket int gr",
+                                   "Sigtunaskolan hum. läroverket int gy","Steningehöjdens skola",
+                                   "Arlandagymnasiet","Valstaskolan")
+            )
+
+df.sigtuna <- left_join(df.sigtuna,sOmråden, by = "Skolnamn")
+```
+
+Och nu kan vi undersöka mängden svar över tid fördelat per område
+
+## Visualisering Stockholmsenkäten
+
+:::: {.column-page-left}
+::: panel-tabset
+### Antal svar över tid (kön)
+
+```{r}
+#| fig-width: 11
+#| fig-height: 7
+df.sigtuna %>% 
+  drop_na(Kön) %>%
+  filter(!is.na(Område)) %>% 
+  rename(År = ar,
+         Årskurs = ARSKURS) %>% 
+  group_by(År,Kön,Område) %>% 
+  reframe(Antal = n()) %>% 
+  ggplot(aes(x = År, y = Antal, color = Kön)) + 
+  geom_line(linewidth = 1) +
+  geom_point(size = 3) +
+  scale_color_brewer(type = "qual", palette = "Dark2") +
+  scale_x_continuous(guide = guide_axis(n.dodge = 2), breaks = årtal) +
+  scale_y_continuous(limits = c(0,NA)) +
+  labs(title = "Antal respondenter per år",
+       subtitle = "Fördelat på kön") +
+  theme_minimal() +
+  theme_rise() +
+  facet_wrap(~Område,
+             scales = "free_x")
+
+```
+
+### Antal svar över tid (skola)
+
+```{r}
+#| fig-width: 11
+#| fig-height: 7
+df.sigtuna %>% 
+  drop_na(Kön) %>%
+  filter(!is.na(Område)) %>% 
+  rename(År = ar,
+         Årskurs = ARSKURS) %>% 
+  group_by(År,Område,Skolnamn) %>% 
+  reframe(Antal = n()) %>% 
+  ggplot(aes(x = År, y = Antal, color = Skolnamn)) + 
+  geom_line(linewidth = 1) +
+  geom_point(size = 3) +
+  #scale_color_brewer(type = "qual", palette = "Dark2") +
+  scale_x_continuous(guide = guide_axis(n.dodge = 2), breaks = årtal) +
+  scale_y_continuous(limits = c(0,NA)) +
+  labs(title = "Antal respondenter per år",
+       subtitle = "Fördelat på skolor") +
+  theme_minimal() +
+  theme_rise() +
+  facet_wrap(~Område,
+             scales = "free_x")
+
+```
+
+### Andel svar över tid som ej angivit pojke/flicka som kön
+```{r}
+#| fig-width: 11
+#| fig-height: 7
+df.sigtuna %>% 
+  #filter(!Kön %in% c("Pojke","Flicka")) %>%
+  mutate(Kön = car::recode(Kön,"NA='Svar saknas'")) %>% 
+  rename(År = ar,
+         Årskurs = ARSKURS) %>% 
+  group_by(År,Kön) %>% 
+  summarise(Antal = n()) %>% 
+  mutate(Andel = Antal * 100 / sum(Antal)) %>% 
+  ggplot(aes(x = År, y = Andel, color = Kön)) + 
+  geom_line(linewidth = 1) +
+  geom_point(size = 11) +
+  geom_text(aes(label = round(Andel,1)), color = "white") +
+  scale_color_brewer(type = "qual", palette = "Dark2") +
+  scale_x_continuous(guide = guide_axis(n.dodge = 1), breaks = årtal) +
+  scale_y_continuous(limits = c(0,NA)) +
+  labs(title = "Andel respondenter per år (Sigtuna)",
+       subtitle = "Som ej angett pojke/flicka som kön",
+       y = 'Andel i %') +
+  theme_minimal() +
+  theme_rise()
+```
+
+### Andel ... i hela Sthlms-datasetet
+```{r}
+#| fig-width: 11
+#| fig-height: 7
+df.raw %>% 
+  #filter(!Kön %in% c("Pojke","Flicka")) %>%
+  mutate(Kön = car::recode(Kön,"NA='Svar saknas';990='Svar saknas'")) %>% 
+  rename(År = ar,
+         Årskurs = ARSKURS) %>% 
+  filter(År > 2005) %>% 
+  group_by(År,Kön) %>% 
+  summarise(Antal = n()) %>% 
+  mutate(Andel = Antal * 100 / sum(Antal)) %>% 
+  ggplot(aes(x = År, y = Andel, color = Kön)) + 
+  geom_line(linewidth = 1) +
+  geom_point(size = 11) +
+  geom_text(aes(label = round(Andel,1)), color = "white") +
+  scale_color_brewer(type = "qual", palette = "Dark2") +
+  scale_x_continuous(guide = guide_axis(n.dodge = 1), breaks = årtal) +
+  scale_y_continuous(limits = c(0,NA)) +
+  labs(title = "Andel respondenter per år (alla data)",
+       subtitle = "Som ej angett pojke/flicka som kön",
+       y = 'Andel i %') +
+  theme_minimal() +
+  theme_rise()
+```
+:::
+
+
+### Riskfaktorer
+
+Vi behöver skapa en funktion för att fördela risknivåer på områden.
+```{r}
+riskCalcGGo <- function(df,index){
+  df.sigtuna %>%
+    mutate(riskLevel = case_when(
+      .data[[index]] < rslimits |> select(all_of(index)) |> slice(1) |> pull() ~ "Låg risk",
+      .data[[index]] >= rslimits |> select(all_of(index)) |> slice(1) |> pull() &
+        .data[[index]] < rslimits |> select(all_of(index)) |> slice(2) |> pull() ~ "Något förhöjd risk",
+      .data[[index]] >= rslimits |> select(all_of(index)) |> slice(2) |> pull() ~ "Förhöjd risk")
+    ) %>%
+    group_by(Kommun,Område,ar,Kön,ARSKURS)  %>%
+    count(riskLevel) %>%
+    mutate(Andel = (100 * n / sum(n)) %>% round(digits = 2)) %>%
+    mutate(riskLevel = factor(riskLevel, levels = c('Förhöjd risk','Något förhöjd risk','Låg risk','NA'))) %>%
+    ungroup() %>%
+    add_column(Index = as.character(index)) %>%
+    mutate(År = as.factor(ar)) %>%
+    rename(Årskurs = ARSKURS) %>%
+    filter(!Kön == "<NA>") %>%
+    select(!all_of(c("n","ar")))
+}
+
+df.risk.g.ak.omr <- data.frame(matrix(ncol = 4, nrow = 0))
+for (i in rsfaktorer) {
+  df.r1 <- as.data.frame(riskCalcGGo(df, i))
+  df.risk.g.ak.omr <- rbind(df.risk.g.ak.omr, df.r1)
+}
+```
+
+::: panel-tabset
+#### 2022
+```{r}
+#| fig-width: 11
+#| fig-height: 7
+df.risk.g.ak.omr %>% 
+  drop_na(Kön,Område) %>%
+  filter(Årskurs == "Åk 9") %>% 
+  DIDstapel("2022") +
+  facet_grid(Kön~Område) +
+  labs(subtitle = "Åk 9 - enbart de som har data om områdestillhörighet")
+```
+#### 2022 flip
+```{r}
+#| fig-width: 11
+#| fig-height: 7
+fokusKommun <- "Sigtuna"
+df.risk.g.ak.omr %>% 
+  drop_na(Kön,Område) %>%
+  filter(Årskurs == "Åk 9") %>% 
+  DIDstapel("2022") +
+  facet_grid(Kön~Område) +
+  labs(subtitle = "Åk 9 - enbart de som har data om områdestillhörighet") +
+  coord_flip()
+```
+#### 2020
+```{r}
+#| fig-width: 11
+#| fig-height: 7
+fokusKommun <- "Sigtuna"
+df.risk.g.ak.omr %>% 
+  drop_na(Kön,Område) %>%
+  filter(Årskurs == "Åk 9") %>% 
+  DIDstapel("2020") +
+  facet_grid(Område~Kön) +
+  labs(subtitle = "Åk 9 - enbart de som har data om områdestillhörighet") 
+```
+#### 2018
+```{r}
+#| fig-width: 11
+#| fig-height: 7
+fokusKommun <- "Sigtuna"
+df.risk.g.ak.omr %>% 
+  drop_na(Kön,Område) %>%
+  filter(Årskurs == "Åk 9") %>% 
+  DIDstapel("2018") +
+  facet_grid(Område~Kön) +
+  labs(subtitle = "Åk 9 - enbart de som har data om områdestillhörighet") 
+```
+:::
+
+## Visualisering TTS
+
+```{r}
+RISEpalette1 <- colorRampPalette(colors = c("#009ca6", "#e83c63", "#ffe500"))(6)
+#scales::show_col(RISEpalette1)
+
+RISEpalette2 <- colorRampPalette(colors = c("#009ca6", "#e83c63", "#ffe500"))(8)
+#scales::show_col(RISEpalette2)
+
+gender_colors <- c("Pojke" = "#F5A127", "Flicka" = "#009CA6")
+scale_color_gender <- partial(scale_color_manual, values = gender_colors)
+scale_fill_gender <- partial(scale_fill_manual, values = gender_colors)
+
+theme_tts <- function(){
+    theme(strip.text = element_text(size = 14),
+        plot.title = element_text(size = 18),
+        axis.title = element_text(size = 15),
+        plot.subtitle = element_text(size = 15),
+        axis.text = element_text(size = 13),
+        legend.text = element_text(size = 13),
+        legend.title = element_text(size = 13))
+}
+```
+
+```{r}
+library(foreign)
+df.all <- read.spss("~/RISE/SHIC - Data i Dialog - Data i Dialog/data/Sigtuna/TTS/Databas Sigtuna TTS.sav", to.data.frame = TRUE)
+
+df <- df.all
+
+spssLabels <- df %>% 
+  attr('variable.labels') %>% 
+  as.data.frame()
+
+names(df) <- spssLabels$.
+
+itemlabels <- data.frame(itemnr = paste0("q",c(1:34)),
+                         item = names(df[8:41])
+                         ) %>% 
+  mutate(item = str_replace(item, "kännt", "känt"))
+#write.csv(itemlabels, "TTSitemlabels.csv")
+
+names(df)[8:41] <- paste0("q",c(1:34))
+
+df <- df %>%
+  mutate(Årskurs = str_replace(Årskurs, "Elever ", "")) %>%
+  mutate(
+    Årskurs = str_trim(Årskurs, side = "right"),
+    Klass = str_trim(Klass, side = "right"),
+    Skolnamn = str_trim(`Skolans namn`, side = "right"), .after = "Kommun"
+  ) %>%
+  select(!`Skolans namn`) %>%
+  mutate(Stadium = case_when(
+    Årskurs %in% c("Åk 1", "Åk 2", "Åk 3") ~ "Lågstadiet",
+    Årskurs %in% c("Åk 4", "Åk 5", "Åk 6") ~ "Mellanstadiet",
+    Årskurs %in% c("Åk 7", "Åk 8", "Åk 9") ~ "Högstadiet",
+    Årskurs == "Förskoleklass" ~ "Förskoleklass",
+    TRUE ~ NA
+  ), .before = "Årskurs") %>%
+  mutate(
+    Årskurs = factor(Årskurs),
+    Skolnamn = factor(Skolnamn),
+    Klass = factor(Klass),
+    Stadium = factor(Stadium)
+  ) %>%
+  mutate(Kön = car::recode(Kön, "'[Ej svar]'=NA"))
+
+årtal <- c(2017:2022)
+årskurser <- df %>% 
+  distinct(Årskurs) %>% 
+  pull(Årskurs)
+```
+
+Vi behöver titta närmare på Skolnamns-variabeln för att se om den matchar områdesinformationen.
+
+```{r}
+df %>% 
+  distinct(Skolnamn) %>% 
+  arrange(Skolnamn)
+
+sOmråden %>% 
+  arrange(Skolnamn)
+```
+
+Vi behöver koda om.
+
+```{r}
+df <- df %>% 
+  mutate(Skolnamn = car::recode(Skolnamn,"'Sigtunaskolan humanistiska läroverket'='Sigtunaskolan hum. läroverket gr';'Sankt Olofs skola'='St Olofs skola'"))
+
+df <- left_join(df,sOmråden, by = "Skolnamn")
+
+```
+
+::: panel-tabset
+### Antal svar alla åk (kön)
+
+```{r}
+#| fig-width: 11
+#| fig-height: 7
+df %>% 
+  filter(Kön %in% c("Flicka","Pojke")) %>%
+  filter(!is.na(Område)) %>% 
+  group_by(År,Kön,Område) %>% 
+  reframe(Antal = n()) %>% 
+  ggplot(aes(x = År, y = Antal, color = Kön)) + 
+  geom_line(linewidth = 1) +
+  geom_point(size = 3) +
+  scale_color_brewer(type = "qual", palette = "Dark2") +
+  scale_x_continuous(guide = guide_axis(n.dodge = 2), breaks = årtal) +
+  scale_y_continuous(limits = c(0,NA)) +
+  labs(title = "TTS - antal respondenter per år - alla årskurser",
+       subtitle = "Fördelat på kön") +
+  theme_minimal() +
+  theme_rise() +
+  facet_wrap(~Område,
+             scales = "free_x")
+
+```
+
+### Antal svar åk 9 (kön)
+
+```{r}
+#| fig-width: 11
+#| fig-height: 7
+df %>% 
+  filter(Kön %in% c("Flicka","Pojke"),
+         Årskurs == "Åk 9") %>%
+  filter(!is.na(Område)) %>% 
+  group_by(År,Kön,Område) %>% 
+  reframe(Antal = n()) %>% 
+  ggplot(aes(x = År, y = Antal, color = Kön)) + 
+  geom_line(linewidth = 1) +
+  geom_point(size = 3) +
+  scale_color_brewer(type = "qual", palette = "Dark2") +
+  scale_x_continuous(guide = guide_axis(n.dodge = 2), breaks = årtal) +
+  scale_y_continuous(limits = c(0,NA)) +
+  labs(title = "TTS - antal respondenter per år - alla årskurser",
+       subtitle = "Fördelat på kön") +
+  theme_minimal() +
+  theme_rise() +
+  facet_wrap(~Område,
+             scales = "free_x")
+
+```
+
+### Antal svar alla åk (skola)
+
+```{r}
+#| fig-width: 11
+#| fig-height: 7
+df %>% 
+  filter(Kön %in% c("Flicka","Pojke")) %>%
+  filter(!is.na(Område)) %>% 
+  group_by(År,Område,Skolnamn) %>% 
+  reframe(Antal = n()) %>% 
+  ggplot(aes(x = År, y = Antal, color = Skolnamn)) + 
+  geom_line(linewidth = 1) +
+  geom_point(size = 3) +
+  #scale_color_brewer(type = "qual", palette = "Dark2") +
+  scale_x_continuous(guide = guide_axis(n.dodge = 2), breaks = årtal) +
+  scale_y_continuous(limits = c(0,NA)) +
+  labs(title = "TTS - antal respondenter per år - alla årskurser",
+       subtitle = "Fördelat på skolor") +
+  theme_minimal() +
+  theme_rise() +
+  facet_wrap(~Område,
+             scales = "free_x")
+
+```
+
+### Antal svar åk 9 (skola)
+
+```{r}
+#| fig-width: 11
+#| fig-height: 7
+df %>% 
+  filter(Kön %in% c("Flicka","Pojke"),
+         Årskurs == "Åk 9") %>%
+  filter(!is.na(Område)) %>% 
+  group_by(År,Område,Skolnamn) %>% 
+  reframe(Antal = n()) %>% 
+  ggplot(aes(x = År, y = Antal, color = Skolnamn)) + 
+  geom_line(linewidth = 1) +
+  geom_point(size = 3) +
+  #scale_color_brewer(type = "qual", palette = "Dark2") +
+  scale_x_continuous(guide = guide_axis(n.dodge = 2), breaks = årtal) +
+  scale_y_continuous(limits = c(0,NA)) +
+  labs(title = "TTS - antal respondenter per år - alla årskurser",
+       subtitle = "Fördelat på skolor") +
+  theme_minimal() +
+  theme_rise() +
+  facet_wrap(~Område,
+             scales = "free_x")
+
+```
+
+### Andel svar över tid som ej angivit pojke/flicka som kön
+```{r}
+#| fig-width: 11
+#| fig-height: 7
+df %>% 
+  #filter(!Kön %in% c("Pojke","Flicka")) %>%
+  mutate(Kön = car::recode(Kön,"NA='Annat/Vill ej svara'")) %>% 
+  group_by(År,Kön) %>% 
+  summarise(Antal = n()) %>% 
+  mutate(Andel = Antal * 100 / sum(Antal)) %>% 
+  ggplot(aes(x = År, y = Andel, color = Kön)) + 
+  geom_line(linewidth = 1) +
+  geom_point(size = 11) +
+  geom_text(aes(label = round(Andel,1)), color = "white") +
+  scale_color_brewer(type = "qual", palette = "Dark2") +
+  scale_x_continuous(guide = guide_axis(n.dodge = 1), breaks = årtal) +
+  scale_y_continuous(limits = c(0,NA)) +
+  labs(title = "Andel respondenter per år (Sigtuna)",
+       subtitle = "Som ej angett pojke/flicka som kön",
+       y = 'Andel i %') +
+  theme_minimal() +
+  theme_rise()
+```
+:::
+::::

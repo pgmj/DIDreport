@@ -231,7 +231,7 @@ DIDkoladaPlot <- function(data) {
                 linetype = 2) +
     geom_line(data = filter({{data}}, Kommun %in% jmfKommun),
               alpha = 0.5, linewidth = 0.8, linetype = 3) +
-    geom_point(data = filter({{data}}, Kommun %in% fokusKommun),
+    geom_point(data = filter({{data}}, Kommun %in% jmfKommun),
                alpha = 0.5, size = 2) +
     geom_line(data = filter({{data}}, Kommun == fokusKommun),
               alpha = 1) +

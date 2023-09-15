@@ -1,0 +1,306 @@
+---
+title: "Data i dialog"
+subtitle: "Visualisering av data från Skolverket"
+title-block-banner: "#009ca6"
+title-block-banner-color: "#FFFFFF"
+author:
+  name: Magnus Johansson
+  affiliation: RISE Research Institutes of Sweden
+  affiliation-url: https://www.ri.se/sv/vad-vi-gor/expertiser/kategoriskt-baserade-matningar
+  orcid: 0000-0003-1669-592X
+date: last-modified
+date-format: iso
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    toc-title: "Innehållsförteckning"
+    embed-resources: true
+    standalone: true
+    page-layout: full
+    mainfont: 'Lato'
+    monofont: 'Roboto Mono'
+    code-overflow: wrap
+    code-tools: false
+    code-fold: true
+    number-sections: true
+    fig-dpi: 96
+    layout-align: left
+    linestretch: 1.6
+    theme: materia
+    link-external-newwindow: true
+    fig-cap-location: bottom
+    css: styles.css
+execute:
+  echo: true
+  warning: false
+  message: false
+  cache: false
+editor_options:
+  chunk_output_type: console
+---
+
+```{r}
+årtal <- c(2006,2008,2010,2012,2014,2016,2018,2020,2022)
+
+fokusKommun <- "Sigtuna"
+jmfKommun <- c("Järfälla","Sigtuna")
+source("DIDreportSetup.R")
+source("DIDreportFunctions.R")
+
+### set up color palette based on RISE guidelines
+RISEprimGreen <- "#009ca6"
+RISEprimRed <- "#e83c63"
+RISEprimYellow <- "#ffe500"
+RISEprimGreenMid <- "#8dc8c7"
+RISEprimRedMid <- "#f5a9ab"
+RISEprimYellowMid <- "#ffee8d"
+RISEprimGreenLight <- "#ebf5f0"
+RISEprimRedLight <- "#fde8df"
+RISEprimYellowLight <- "#fff7dd"
+RISEcompPurple <- "#482d55"
+RISEcompGreenDark <- "#0e4e65"
+RISEgrey1 <- "#f0f0f0"
+RISEgrey2 <- "#c8c8c8"
+RISEgrey3 <- "#828282"
+RISEgrey4 <- "#555555"
+
+### colors specifically for DID application
+DIDcolorsOriginal <- c('#D55E00','#F0E442','#009E73','#999999')
+DIDcolors <- lighten(DIDcolorsOriginal, amount = 0.1, space = "HLS")
+DIDred <- "#D55E00"
+DIDorange <- "#E69F00"
+DIDgreen <- "#009E73"
+DIDyellow <- "#F0E442"
+
+demogr.skolverket <- read_parquet("Skolverket/skolverketDemografi.parquet")
+sigtuna.skolverket <- read_parquet("Skolverket/2023-08-21_SkolverketData_Sigtuna.parquet")
+
+```
+
+## Variabler
+
+```{r}
+sigtuna.skolverket %>% 
+  distinct(variable)
+```
+
+Vi behöver ordna svenska beteckningar på dessa variabler.
+
+```{r}
+itemlabels <- data.frame(
+  variable = sigtuna.skolverket %>% 
+    distinct(variable) %>% 
+    pull(variable),
+  description = c("Antal specialpedagoger",
+                  "Elever per lärare",
+                  "Andel legitimerade lärare",
+                  "Totalt antal elever",
+                  "Elever per specialpedagog",
+                  "Andel elever i 6:e klass med fullständiga betyg",
+                  "Medelvärde nationella prov svenska 6:e klass",
+                  "Medelvärde nationella prov engelska 6:e klass",
+                  "Medelvärde nationella prov matematik 6:e klass",
+                  "Medelvärde nationella prov SVA 6:e klass",
+                  "Medelvärde nationella prov svenska 9:e klass",
+                  "Medelvärde nationella prov engelska 9:e klass",
+                  "Medelvärde nationella prov matematik 9:e klass",
+                  "Medelvärde nationella prov SVA 9:e klass",
+                  "Andel elever i 9:e klass med fullständiga betyg",
+                  "Medelvärde meritvärde",
+                  "Andel elever i 9:e klass behöriga till yrkesprogram",
+                  "Andel elever i 9:e klass behöriga till estetiskt program",
+                  "Andel elever i 9:e klass behöriga till sam/ek/hum",
+                  "Andel elever i 9:e klass behöriga till natur/teknik"
+                  )
+)
+
+sigtuna.skolverket <- left_join(sigtuna.skolverket,itemlabels, by = "variable")
+#write_csv(itemlabels, "Skolverket/SkolverketItemlabels.csv")
+```
+
+## Skolor och områden
+
+Det finns tre skoltyper i data:
+
+```{r}
+sigtuna.skolverket %>% 
+  distinct(type)
+```
+
+Vi börjar med grundskolan (type == "gr").
+
+```{r}
+gr.sigtuna.skolverket <- sigtuna.skolverket %>% 
+  filter(type == "gr")
+#write_parquet(gr.sigtuna.skolverket, "Skolverket/SkolverketSigtunaGrundskolor.parquet")
+
+```
+
+Sigtuna har uppgett att de vill använda en områdesindelning enligt nedan.
+
+```{r}
+sOmråden <- data.frame(
+  stringsAsFactors = FALSE,
+                        Område = c("Centrala Märsta","Ekilla och Tingvalla","Sigtuna",
+                                   "Sigtuna","Sigtuna","Sigtuna","Sigtuna",
+                                   "Steninge","Valsta","Valsta"),
+                      Skolnamn = c("Centralskolan","Ekillaskolan","St Olofs skola",
+                                   "Sigtunaskolan hum. läroverket gr",
+                                   "Sigtunaskolan hum. läroverket gy",
+                                   "Sigtunaskolan hum. läroverket int gr",
+                                   "Sigtunaskolan hum. läroverket int gy","Steningehöjdens skola",
+                                   "Arlandagymnasiet","Valstaskolan")
+            )
+kbl_rise(sOmråden)
+```
+
+Vi inför en områdesvariabel i Skolverkets data utifrån detta. Först behöver vi se om/hur skolnamnen matchar, och koda om efter behov.
+
+```{r}
+gr.sigtuna.skolverket %>% 
+  distinct(Skolenhetsnamn) %>% 
+  arrange(Skolenhetsnamn) %>% 
+  kbl_rise()
+```
+
+Vi ser här att det finns med en skola som saknas i både TTS(?) och Stockholmsenkäten, "Skolan Bergius", som läggs till under "Centrala Märsta" utifrån mailväxling.
+
+```{r}
+sOmråden <- rbind(sOmråden,c("Centrala Märsta","Skolan Bergius"))
+```
+
+Omkodningar enligt nedan.
+
+```{r}
+gr.sigtuna.skolverket <- gr.sigtuna.skolverket %>% 
+  rename(Skolnamn = Skolenhetsnamn) %>% 
+  mutate(Skolnamn = car::recode(Skolnamn,"'Sigtunaskolan hum. läroverket, gr'='Sigtunaskolan hum. läroverket gr';'Sigtunaskolan hum. läroverket, int gr'='Sigtunaskolan hum. läroverket int gr'")) %>% 
+  mutate(Skolnamn = gsub(":","",Skolnamn))
+```
+
+Nu kan vi lägga till områdesvariabeln i data.
+
+```{r}
+gr.sigtuna.skolverket <- left_join(gr.sigtuna.skolverket,sOmråden, by = "Skolnamn")
+```
+
+Och räkna fram oviktade och viktade medelvärden för respektive område och variabel.
+
+```{r}
+gr.sigtuna.skolverket %>% 
+  filter(variable == "totalNumberOfPupils") %>% 
+  distinct(timePeriod)
+```
+
+Men data saknar tyvärr information om antal elever förutom för 2022. Vi kanske kan importera den informationen från Skolverkets demografiska data.
+
+```{r}
+demogr.skolverket %>% 
+  filter(skolkommun == "Sigtuna") %>% 
+  distinct(skola) %>% 
+  kbl_rise()
+```
+
+Verkar vara NÄSTAN samma som tidigare...
+
+```{r}
+sigtuna.demogr <- demogr.skolverket %>% 
+  filter(skolkommun == "Sigtuna") %>% 
+  rename(Skolnamn = skola,
+         År = year,
+         studentN = elever_arskurs_1_9) %>% #distinct(Skolnamn) %>% kbl_rise()
+  mutate(Skolnamn = car::recode(Skolnamn,"'Sigtunaskolan hum. läroverket, gr'='Sigtunaskolan hum. läroverket gr';'Sigtunaskolan hum. läroverket, int gr*'='Sigtunaskolan hum. läroverket int gr'")) %>% 
+  mutate(Skolnamn = gsub(":","",Skolnamn)) %>% 
+  select(År,Skolnamn,studentN)
+
+gr.sigtuna.skolverket <- gr.sigtuna.skolverket %>% 
+  rename(År = timePeriod)
+
+gr.sigtuna.skolverket <- left_join(gr.sigtuna.skolverket,sigtuna.demogr, by = c("År","Skolnamn"))
+```
+
+För skojs skull kan vi jämföra Skolverket egna data om antal elever för 2022, baserat på deras två datakällor för grundskolan.
+
+```{r}
+gr.sigtuna.skolverket %>%
+  filter(variable == "totalNumberOfPupils") %>%
+  # Skolnamn %in% sOmråden$Skolnamn) %>%
+  select(variable, value, studentN, Skolnamn, År) %>%
+  mutate(Differens = sqrt((value - studentN) ^ 2), .after = "studentN") %>%
+  rename(
+    SkolverketAPI = value,
+    SkolverketDemografi = studentN
+  ) %>%
+  arrange(desc(Differens)) %>%
+  kbl_rise() %>%
+  column_spec(
+    column = 4,
+    bold = T
+  )
+
+```
+
+
+
+```{r}
+gr.omr.sigtuna.sv <- gr.sigtuna.skolverket %>% 
+  drop_na(Område) %>% 
+  group_by(År,Område,description) %>%
+  summarise(unwMean = mean(value, na.rm = T),
+            wMean = weighted.mean(value, studentN/sum(studentN), na.rm = T)) %>% 
+  ungroup()
+  
+```
+
+
+## Visualisering
+
+```{r}
+DIDskolverketPlot <- function(data) {
+  data %>%
+    ggplot(aes(x = År, y = wMean, group = Område, color = Område)) +
+    geom_smooth(method = "loess",
+                span = 8,
+                aes(group = 1),
+                alpha = 0.17,
+                color = "darkblue",
+                linewidth = 0,
+                linetype = 2) +
+    #geom_line(data = filter({{data}}, Kommun %in% jmfKommun),
+    #          alpha = 0.5, linewidth = 0.8, linetype = 3) +
+    #geom_point(data = filter({{data}}, Kommun %in% fokusKommun),
+    #           alpha = 0.5, size = 2) +
+    geom_line() +
+    geom_point() +
+    scale_x_continuous(guide = guide_axis(n.dodge = 2),
+                       breaks = årtal) +
+    #scale_y_continuous(limits = c(0, 100)) +
+    scale_color_brewer(type = "qual", palette = "Dark2") +
+    ylab("") +
+    xlab("") +
+    labs(title = "Skolverkets data för grundskolan") +
+    facet_wrap(~description,
+               ncol = 2,
+               scales = "free",
+               labeller = labeller(description = label_wrap_gen(22))) +
+    theme_rise() +
+    theme(legend.position = "top") +
+    labs(caption = "Ljusgrått fält visar 95% konfidensintervall trendlinje för samtliga områden.\nDatakälla: Skolverket")
+}
+
+
+gr.omr.sigtuna.sv %>%
+  filter(description %in% c("Antal specialpedagoger",
+                            "Elever per lärare",
+                            "Elever per specialpedagog",
+                            "Medelvärde meritvärde")) %>% 
+  DIDskolverketPlot()
+#  scale_y_continuous(limits = c(0, 100))
+```
+
+
+
+
+
+

@@ -1,0 +1,21 @@
+variable,description
+specialTeacherPositions,Antal specialpedagoger
+studentsPerTeacherQuota,Elever per lärare
+certifiedTeachersQuota,Andel legitimerade lärare
+totalNumberOfPupils,Totalt antal elever
+specialEducatorsQuota,Elever per specialpedagog
+ratioOfPupilsIn6thGradeWithAllSubjectsPassed,Andel elever i 6:e klass med fullständiga betyg
+averageResultNationalTestsSubjectSVE6thGrade,Medelvärde nationella prov svenska 6:e klass
+averageResultNationalTestsSubjectENG6thGrade,Medelvärde nationella prov engelska 6:e klass
+averageResultNationalTestsSubjectMA6thGrade,Medelvärde nationella prov matematik 6:e klass
+averageResultNationalTestsSubjectSVA6thGrade,Medelvärde nationella prov SVA 6:e klass
+averageResultNationalTestsSubjectSVE9thGrade,Medelvärde nationella prov svenska 9:e klass
+averageResultNationalTestsSubjectENG9thGrade,Medelvärde nationella prov engelska 9:e klass
+averageResultNationalTestsSubjectMA9thGrade,Medelvärde nationella prov matematik 9:e klass
+averageResultNationalTestsSubjectSVA9thGrade,Medelvärde nationella prov SVA 9:e klass
+ratioOfPupilsIn9thGradeWithAllSubjectsPassed,Andel elever i 9:e klass med fullständiga betyg
+averageGradesMeritRating9thGrade,Medelvärde meritvärde
+ratioOfPupils9thGradeEligibleForNationalProgramYR,Andel elever i 9:e klass behöriga till yrkesprogram
+ratioOfPupils9thGradeEligibleForNationalProgramES,Andel elever i 9:e klass behöriga till estetiskt program
+ratioOfPupils9thGradeEligibleForNationalProgramSAEKHU,Andel elever i 9:e klass behöriga till sam/ek/hum
+ratioOfPupils9thGradeEligibleForNationalProgramNATE,Andel elever i 9:e klass behöriga till natur/teknik

@@ -55,17 +55,18 @@ df.values <- get_values(
 # selection or when new data is available. Otherwise, skip ahead and read
 # downloaded datafile instead
 
-# df.values <- get_values(
-#   kpi = c(
-#     "U09808", "U09800", "N09805", "N09890", "N02904", "N07907",
-#     "N07914", "U07452", "U07417", "N17625", "N15428",
-#     "N15816", "N17461", "N11821", "N11050", "N11052", "N11051",
-#     "N15813", "N17538", "N15030", "N17813", "N00943", "N00945"
-#   ),
-#   municipality = munic$id,
-#   period = 2006:2022, simplify = TRUE
-# )
-#write_parquet(df.values, glue("{Sys.Date()}_KOLADA_data_raw.parquet"))
+df.values <- get_values(
+  kpi = c(
+    "U09808", "U09800", "N09805", "N09890", "N02904", "N07907",
+    "N07914", "U07452", "U07417", "N17625", "N15428",
+    "N15816", "N17461", "N11821", "N11050", "N11052", "N11051",
+    "N15813", "N17538", "N15030", "N17813", "N00943", "N00945",
+    "N09811"
+  ),
+  municipality = munic$id,
+  period = 2006:2023, simplify = TRUE
+)
+write_parquet(df.values, glue("KOLADA/{Sys.Date()}_KOLADA_data_raw.parquet"))
 
 ## Read data from disk -------------------------------------------------------
 
@@ -112,5 +113,5 @@ df.values %>%
   distinct(kpi,KPI) %>%
   kbl()
 
-write_parquet(df.values, glue("{Sys.Date()}_KOLADA_skolinsp_tryggNöjd.parquet"))
+write_parquet(df.values, glue("KOLADA/{Sys.Date()}_KOLADA_data_ready.parquet"))
 

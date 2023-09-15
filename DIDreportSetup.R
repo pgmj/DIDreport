@@ -1,5 +1,22 @@
 # Import data -------------------------------------------------------------
 
+library(ggplot2)
+library(tidyverse)
+library(arrow)
+library(colorspace)
+library(formattable)
+library(geomtextpath)
+library(readxl)
+library(visNetwork)
+library(networkD3)
+library(vctrs)
+library(ggiraph)
+library(gt)
+library(gtExtras)
+library(RISEkbmRasch)
+library(janitor)
+library(ggh4x)
+
 ### some commands exist in multiple packages, here we define preferred ones that are frequently used
 select <- dplyr::select
 count <- dplyr::count
@@ -10,6 +27,9 @@ rename <- dplyr::rename
 df <- read_parquet("../DIDapp/data/2023-05-07_ScoredRev.parquet")
 df <- df %>%
   rename(Kommun = DIDkommun)
+
+df.raw <- read_parquet("../data/2023-09-12_Sthlmsenk_all_raw.parquet")
+df$F70raw <- df.raw$F70
 
 allaKommuner <- df %>%
   distinct(Kommun) %>%
@@ -439,7 +459,7 @@ df <- df %>%
 
 # KOLADA new --------------------------------------------------------------
 
-KOLADA <- read_parquet("KOLADA/2023-03-28_KOLADA_data_ready.parquet")
+KOLADA <- read_parquet("KOLADA/2023-09-12_KOLADA_data_ready.parquet")
 
 kpi_mean <- KOLADA %>%
   group_by(KPI, kpi, År) %>%

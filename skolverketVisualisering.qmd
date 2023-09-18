@@ -208,15 +208,18 @@ Verkar vara NÄSTAN samma som tidigare...
 sigtuna.demogr <- demogr.skolverket %>% 
   filter(skolkommun == "Sigtuna") %>% 
   rename(Skolnamn = skola,
-         År = year,
          studentN = elever_arskurs_1_9) %>% #distinct(Skolnamn) %>% kbl_rise()
+  mutate(År = year - 1) %>%  # 2022/2023 är kodat som 2023 i data, pga jämförbarhet m Sthlmsenkäten som samlas in på vårterminen
   mutate(Skolnamn = car::recode(Skolnamn,"'Sigtunaskolan hum. läroverket, gr'='Sigtunaskolan hum. läroverket gr';'Sigtunaskolan hum. läroverket, int gr*'='Sigtunaskolan hum. läroverket int gr'")) %>% 
   mutate(Skolnamn = gsub(":","",Skolnamn)) %>% 
   select(År,Skolnamn,studentN)
 
 gr.sigtuna.skolverket <- gr.sigtuna.skolverket %>% 
   rename(År = timePeriod)
+```
 
+
+```{r}
 gr.sigtuna.skolverket <- left_join(gr.sigtuna.skolverket,sigtuna.demogr, by = c("År","Skolnamn"))
 ```
 
@@ -241,7 +244,7 @@ gr.sigtuna.skolverket %>%
 
 ```
 
-
+Differensen verkar komma sig av att API-data är avrundade till tiotal.
 
 ```{r}
 gr.omr.sigtuna.sv <- gr.sigtuna.skolverket %>% 
@@ -288,8 +291,43 @@ DIDskolverketPlot <- function(data) {
     theme(legend.position = "top") +
     labs(caption = "Ljusgrått fält visar 95% konfidensintervall trendlinje för samtliga områden.\nDatakälla: Skolverket")
 }
-
-
+```
+:::: column-page-left
+::: panel-tabset
+### Lärare/specped
+```{r}
+gr.omr.sigtuna.sv %>%
+  filter(description %in% c("Andel legitimerade lärare",
+                            "Antal specialpedagoger",
+                            "Elever per lärare",
+                            "Elever per specialpedagog")) %>% 
+  DIDskolverketPlot()
+#  scale_y_continuous(limits = c(0, 100))
+```
+### Andel elever med behörighet
+```{r}
+gr.omr.sigtuna.sv %>%
+  filter(description %in% c("Andel elever i 6:e klass med fullständiga betyg",
+                            "Andel elever i 9:e klass med fullständiga betyg",
+                            "Andel elever i 9:e klass behöriga till yrkesprogram",
+                            "Medelvärde meritvärde")) %>% 
+  DIDskolverketPlot()
+#  scale_y_continuous(limits = c(0, 100))
+```
+### Medelvärde nationella prov
+```{r}
+gr.omr.sigtuna.sv %>%
+  filter(description %in% c("Medelvärde nationella prov matematik 6:e klass",
+                            "Medelvärde nationella prov matematik 9:e klass",
+                            "Medelvärde nationella prov svenska 6:e klass",
+                            "Medelvärde nationella prov svenska 9:e klass",
+                            "Medelvärde nationella prov engelska 6:e klass",
+                            "Medelvärde nationella prov engelska 9:e klass")) %>% 
+  DIDskolverketPlot()
+#  scale_y_continuous(limits = c(0, 100))
+```
+### 1
+```{r}
 gr.omr.sigtuna.sv %>%
   filter(description %in% c("Antal specialpedagoger",
                             "Elever per lärare",
@@ -298,9 +336,8 @@ gr.omr.sigtuna.sv %>%
   DIDskolverketPlot()
 #  scale_y_continuous(limits = c(0, 100))
 ```
-
-
-
+:::
+::::
 
 
 

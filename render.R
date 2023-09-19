@@ -18,9 +18,9 @@ DIDparams <- read_excel("DIDreportParameters.xls")
 walk(1:nrow(DIDparams), function(i) {
   this <- DIDparams[i,]
 
-  outfile <- glue("{format(Sys.Date(), '%Y-%m')}_DIDrapport_{this$fokusKommun}.html")
+  outfile <- glue("DIDrapport3_{this$fokusKommun}.html")
 
-  quarto_render(input = "DIDreport2.qmd",
+  quarto_render(input = "DIDreport3.qmd",
                 execute_params = list("fokusKommun" = this$fokusKommun,
                                       "jmfKommun" = this$jmfKommun %>% strsplit(", ") %>% unlist(),
                                       "years" = this$years %>% strsplit(",") %>% unlist() %>% as.numeric()

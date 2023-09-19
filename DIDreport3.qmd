@@ -56,9 +56,9 @@ editor_options:
 #                    levels = c(fokusKommun,params$jmfKommun))
 
 ## for testing/dev:
-fokusKommun <- "Järfälla"
-jmfKommun <- factor(c(fokusKommun,"Huddinge", "Sigtuna", "Botkyrka"),
-                   levels = c(fokusKommun,"Huddinge", "Sigtuna", "Botkyrka"))
+fokusKommun <- "Vallentuna"
+jmfKommun <- factor(c(fokusKommun,"Österåker", "Danderyd", "Täby"),
+                   levels = c(fokusKommun,"Österåker", "Danderyd", "Täby"))
 
 # years of interest
 #yearsIn <- params$years
@@ -404,9 +404,10 @@ Både åk 9 och gy 2 tillsammans.
 ```{r}
 df.risk.gender %>% 
   filter(!is.na(Kön)) %>% 
-  DIDstapel("2022") +
+  DIDstapel("2022",tpathsize = 3.3) +
   facet_wrap(~Kön) +
-  labs(subtitle = "Både åk 9 och gy 2")
+  labs(subtitle = "Både åk 9 och gy 2") +
+  coord_flip() 
 ```
 #### 2020
 ```{r}
@@ -414,7 +415,8 @@ df.risk.gender %>%
   filter(!is.na(Kön)) %>% 
   DIDstapel("2020") +
   facet_wrap(~Kön) +
-  labs(subtitle = "Både åk 9 och gy 2")
+  labs(subtitle = "Både åk 9 och gy 2") +
+  coord_flip()
 ```
 #### 2018
 ```{r}
@@ -422,7 +424,8 @@ df.risk.gender %>%
   filter(!is.na(Kön)) %>% 
   DIDstapel("2018") +
   facet_wrap(~Kön) +
-  labs(subtitle = "Både åk 9 och gy 2")
+  labs(subtitle = "Både åk 9 och gy 2") +
+  coord_flip()
 ```
 #### 2016
 ```{r}
@@ -430,7 +433,8 @@ df.risk.gender %>%
   filter(!is.na(Kön)) %>% 
   DIDstapel("2016") +
   facet_wrap(~Kön) +
-  labs(subtitle = "Både åk 9 och gy 2")
+  labs(subtitle = "Både åk 9 och gy 2") +
+  coord_flip()
 ```
 :::
 

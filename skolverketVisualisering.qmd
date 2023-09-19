@@ -296,16 +296,18 @@ DIDskolverketPlot <- function(data) {
 ::: panel-tabset
 ### Lärare/specped
 ```{r}
+#| fig-height: 8
 gr.omr.sigtuna.sv %>%
   filter(description %in% c("Andel legitimerade lärare",
                             "Antal specialpedagoger",
                             "Elever per lärare",
                             "Elever per specialpedagog")) %>% 
-  DIDskolverketPlot()
-#  scale_y_continuous(limits = c(0, 100))
+  DIDskolverketPlot() +
+  scale_y_continuous(limits = c(0, NA))
 ```
 ### Andel elever med behörighet
 ```{r}
+#| fig-height: 8
 gr.omr.sigtuna.sv %>%
   filter(description %in% c("Andel elever i 6:e klass med fullständiga betyg",
                             "Andel elever i 9:e klass med fullständiga betyg",
@@ -316,6 +318,7 @@ gr.omr.sigtuna.sv %>%
 ```
 ### Medelvärde nationella prov
 ```{r}
+#| fig-height: 10
 gr.omr.sigtuna.sv %>%
   filter(description %in% c("Medelvärde nationella prov matematik 6:e klass",
                             "Medelvärde nationella prov matematik 9:e klass",
@@ -323,18 +326,8 @@ gr.omr.sigtuna.sv %>%
                             "Medelvärde nationella prov svenska 9:e klass",
                             "Medelvärde nationella prov engelska 6:e klass",
                             "Medelvärde nationella prov engelska 9:e klass")) %>% 
-  DIDskolverketPlot()
-#  scale_y_continuous(limits = c(0, 100))
-```
-### 1
-```{r}
-gr.omr.sigtuna.sv %>%
-  filter(description %in% c("Antal specialpedagoger",
-                            "Elever per lärare",
-                            "Elever per specialpedagog",
-                            "Medelvärde meritvärde")) %>% 
-  DIDskolverketPlot()
-#  scale_y_continuous(limits = c(0, 100))
+  DIDskolverketPlot() +
+  scale_y_continuous(limits = c(0, 20))
 ```
 :::
 ::::

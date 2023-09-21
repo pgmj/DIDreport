@@ -535,16 +535,16 @@ KOLADA %>%
 ### Riskfaktorer åk 9 & gy 2
 
 ::: panel-tabset
-#### Kön
-```{r}
-DIDareaPlot("Vantrivsel i skolan")
-```
-
 #### Kön/Årskurs
 ```{r}
 #| fig-height: 7
 DIDareaPlot2("Vantrivsel i skolan")  +
   theme(legend.justification = c(0.0, 1.0))
+```
+
+#### Kön
+```{r}
+DIDareaPlot("Vantrivsel i skolan")
 ```
 
 #### Förhöjd risk
@@ -967,11 +967,6 @@ RSfigur("Kamrater och fritid", rs = "Skyddsfaktor")
 ## Närsamhälle
 
 ::: panel-tabset
-#### Kön
-```{r}
-DIDareaPlot("Närsamhälle")
-```
-
 #### Kön/Årskurs
 ```{r}
 #| fig-height: 7
@@ -979,14 +974,10 @@ DIDareaPlot2("Närsamhälle") +
   theme(legend.justification = c(0.0, 1.0))
 ```
 
-#### Förhöjd risk
-```{r}
-DIDline90("Närsamhälle")
-```
-
 #### Förhöjd risk per årskurs
 ```{r}
-DIDline90åk("Närsamhälle")
+DIDline90åk("Närsamhälle") +
+  labs(subtitle = "Närsamhälle")
 ```
 
 
@@ -1090,21 +1081,11 @@ KOLADA %>%
 ## Utagerande
 
 ::: panel-tabset
-### Kön
-```{r}
-DIDareaPlot("Utagerande")
-```
-
 ### Kön/Årskurs
 ```{r}
 #| fig-height: 7
 DIDareaPlot2("Utagerande") +
   theme(legend.justification = c(0.0, 1.0))
-```
-
-### Förhöjd risk
-```{r}
-DIDline90("Utagerande")
 ```
 
 ### Förhöjd risk per årskurs
@@ -1130,28 +1111,16 @@ itemlabels.final %>%
 ## Psykiska/psykosomatiska besvär
 
 ::: panel-tabset
-### Kön
-```{r}
-DIDareaPlot("Psykiska/ psykosomatiska besvär")
-```
-
 ### Kön/Årskurs
 ```{r}
 #| fig-height: 7
 DIDareaPlot2("Psykiska/ psykosomatiska besvär") +
   theme(legend.justification = c(0.0, 1.0))
 ```
-
-### Förhöjd risk
-```{r}
-DIDline90("Psykiska/ psykosomatiska besvär")
-```
-
 ### Förhöjd risk per årskurs
 ```{r}
 DIDline90åk("Psykiska/ psykosomatiska besvär")
 ```
-
 ### Medelvärden
 ```{r}
 DIDmedelSDg(sums.indexGG, "Psykiska/ psykosomatiska besvär") +
@@ -1164,6 +1133,10 @@ itemlabels.final %>%
   filter(Index == "PsykSomBesv") %>% 
   select(!Index) %>% 
   kbl_rise(width = 60)
+```
+### Riskfaktorer
+```{r}
+RSfigurUtfall("Psyk. ohälsa")
 ```
 :::
 
@@ -1422,7 +1395,12 @@ KOLADA %>%
   ) %>% 
   DIDkoladaPlot()
 ```
+### Riskfaktorer kriminalitet
+```{r}
+RSfigurUtfall("Kriminalitet")
+```
 :::
+
 
 ## ANDTS/substansbruk
 
@@ -1561,5 +1539,34 @@ itemlabels.final %>%
   filter(Index == "Wellbeing") %>% 
   select(!Index) %>% 
   kbl_rise(width = 60)
+```
+:::
+
+## Riskfaktorer preventionsstjärnan
+
+Samlade riskfaktorer fördelat på spetsar i preventionsstjärnan. Alla kontexter är sammanslagna. Dessa figurer finns inte med i kunskapssammanställningen om risk- och skyddsfaktorer, men är skapade utifrån samma underlag.
+
+Några figurer blir konstiga, riskfaktorer hamnar på fel sida i figuren. Felsökning pågår.
+
+::: panel-tabset
+### Kriminalitet
+```{r}
+RSfigurUtfall("Kriminalitet")
+```
+### Psyk. ohälsa
+```{r}
+RSfigurUtfall("Psyk. ohälsa")
+```
+### Utanförskap
+```{r}
+RSfigurUtfall("Utanförskap")
+```
+### Missbruk/ANDTS
+```{r}
+RSfigurUtfall("Missbruk/ANDTS")
+```
+### Våld
+```{r}
+RSfigurUtfall("Våld")
 ```
 :::

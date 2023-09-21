@@ -765,6 +765,75 @@ RSfigur <- function(kontext, rs = "Riskfaktor") {
 
 }
 
+RSfigurUtfall <- function(utfall, rs = "Riskfaktor") {
+  lst.kontext <- subset(lst.data, Spets == utfall & RSfaktor == rs)
+  #lst.kontext <- subset(lst.data, Spets == "Psyk. ohälsa" & RSfaktor == "Riskfaktor")
+
+  # koden nedan är lånad från nedanstående källor, och modifierad:
+  # https://www.r-graph-gallery.com/322-custom-colours-in-sankey-diagram
+  # https://medium.com/@emtiazahmed.cs/sankey-diagram-step-by-step-using-r-b3e7bea53224
+  # https://christophergandrud.github.io/networkD3/
+
+  # extrahera vektorer med unika Spetsar & RS-faktorer
+  spetsar <- lst.kontext %>%
+    distinct(Spets) %>%
+    dplyr::rename(label = Spets)
+  faktorer <- lst.kontext %>%
+    distinct(Faktor) %>%
+    dplyr::rename(label = Faktor)
+
+  faktor_kontext <- lst.kontext %>% distinct(Faktor,Kontext)
+
+  # sammanfoga dem
+  rsfaktorer <- full_join(faktorer, spetsar, by = "label")
+  rsfaktorer <- rsfaktorer %>% rowid_to_column("id")
+
+  # skapa table som visar hur många gånger varje rsfaktor kopplas till en spets
+  per_route <- lst.kontext %>%
+    group_by(Faktor, Spets) %>%
+    dplyr::summarise(count = n()) %>%
+    ungroup()
+
+  # ta fram variabler för nätverksmodeller och liknande visualisering
+  edges <- per_route %>%
+    left_join(rsfaktorer, by = c("Faktor" = "label")) %>%
+    dplyr::rename(from = id)
+  edges <- edges %>%
+    left_join(rsfaktorer, by = c("Spets" = "label")) %>%
+    dplyr::rename(to = id)
+
+  edges <- faktor_kontext %>%
+    rename(group = Kontext) %>%
+    left_join(edges,., by = "Faktor")
+
+  edges <- select(edges, from, to, count,group)
+  edges <- mutate(edges, width = count + 1)
+  nodes_d3 <- mutate(rsfaktorer, id = id - 1)
+  edges_d3 <- mutate(edges, from = from - 1, to = to - 1)
+  #edges_d3$group <- per_route$Spets
+  nodes_d3$nodecolor <- c("allsamecolor")
+  nodes_d3 <- faktor_kontext %>%
+    rename(label = Faktor,
+           group = Kontext) %>%
+    left_join(nodes_d3,., by = "label")
+
+  # färgsättning av flöden (edges) utifrån spetsarna och rätblocken intill faktorer & spetsar i diagrammet
+  # kulörer lånade bl.a. från http://opencolor.tools/palettes/wesanderson/
+  my_color <- 'd3.scaleOrdinal() .domain(["allsamecolor","Individ","Familj","Kamrater och fritid","Samhälle","Skola"])
+              .range(["white","lightblue", "#F5CDB6", "#F7B0AA", "#76A08A", "#FDDDA4", "#FCD16B"])'
+  # färgkod #FCD16B för skyddsfaktorer (förvalt i koden ovanför) och #D8A49B för riskfaktorer
+  # ändra "#FCD16B" på rad 91 till "#D8A49B" för att byta färg på rätblocken
+
+  # skapa ett interaktivt Sankey-diagram där spetsarna i preventionsstjärnan finns till höger.
+  sankeyNetwork(
+    Links = edges_d3, Nodes = nodes_d3, Source = "from", Target = "to",
+    NodeID = "label", Value = "count", fontSize = 20, unit = "Antal",
+    fontFamily = "sans-serif", LinkGroup = "group", colourScale = my_color,
+    nodeWidth = 13, NodeGroup = "nodecolor", nodePadding = 18
+  )
+  #"lightblue", "#F5CDB6", "#F7B0AA", "#FDDDA4", "#76A08A", "#FCD16B", "#D8A49B","darkgrey"
+}
+
 
 # Skolinspektionen single item --------------------------------------------
 # other possible values of svarskategorier are: "viss", "inte", "vetinte"

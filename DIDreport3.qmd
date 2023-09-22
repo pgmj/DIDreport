@@ -1551,22 +1551,27 @@ Några figurer blir konstiga, riskfaktorer hamnar på fel sida i figuren. Felsö
 ::: panel-tabset
 ### Kriminalitet
 ```{r}
+#| fig-height: 7
 RSfigurUtfall("Kriminalitet")
 ```
 ### Psyk. ohälsa
 ```{r}
+#| fig-height: 7
 RSfigurUtfall("Psyk. ohälsa")
 ```
 ### Utanförskap
 ```{r}
+#| fig-height: 7
 RSfigurUtfall("Utanförskap")
 ```
 ### Missbruk/ANDTS
 ```{r}
+#| fig-height: 7
 RSfigurUtfall("Missbruk/ANDTS")
 ```
 ### Våld
 ```{r}
+#| fig-height: 7
 RSfigurUtfall("Våld")
 ```
 :::

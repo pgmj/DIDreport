@@ -1,0 +1,811 @@
+---
+title: "Järfälla"
+subtitle: "Bortfallsanalys & LUPP"
+title-block-banner: "#009ca6"
+title-block-banner-color: "#FFFFFF"
+author: 
+  name: Magnus Johansson
+  affiliation: RISE Research Institutes of Sweden
+  affiliation-url: https://www.ri.se/sv/vad-vi-gor/expertiser/kategoriskt-baserade-matningar
+  orcid: 0000-0003-1669-592X
+date: last-modified
+date-format: iso
+format: 
+  html:
+    toc: true
+    toc-depth: 4
+    toc-title: "Innehållsförteckning"
+    embed-resources: true
+    standalone: true
+    mainfont: 'Lato'
+    monofont: 'Roboto Mono'
+    code-overflow: wrap
+    code-fold: true
+    number-sections: true
+    linestretch: 1.6
+    theme: materia
+    css: styles.css
+execute:
+  echo: true
+  warning: false
+  message: false
+  cache: false
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+library(tidyverse)
+library(janitor)
+library(haven)
+library(readxl)
+library(tidyverse)
+library(arrow)
+library(colorspace)
+library(formattable)
+library(ggiraph)
+library(gt)
+library(gtExtras)
+library(RISEkbmRasch)
+library(ggh4x)
+
+### some commands exist in multiple packages, here we define preferred ones that are frequently used
+select <- dplyr::select
+count <- dplyr::count 
+recode <- car::recode
+rename <- dplyr::rename
+
+# import LUPP data for 2020
+df.lupp2020 <- read_spss("~/RISE/SHIC - Data i Dialog - Data i Dialog/data/Järfälla/LUPP/Järfälla 2020 13-16 år.sav") 
+  clean_names()
+
+df.lupp2017 <- read_spss("~/RISE/SHIC - Data i Dialog - Data i Dialog/data/Järfälla/LUPP/2017/LUPP 2017 Järfälla 13-16 år.sav") %>% 
+  clean_names()
+
+setdiff(names(df.lupp2020),names(df.lupp2017))
+# 26 variables are missing/differing, so let's focus on those we are most interested in and identify them manually
+
+### the line below was used to search for variables
+df.lupp2020 %>% select(contains("stämmer")) %>% names()
+f2_names <- df.lupp2020 %>% select(starts_with("f2")) %>% names()
+f6_names <- df.lupp2020 %>% select(starts_with("f6")) %>% names()
+e1_names <- df.lupp2020 %>% select(starts_with("e1")) %>% names()
+a6_names <- df.lupp2020 %>% select(starts_with("a6")) %>% names()
+a5_names <- df.lupp2020 %>% select(starts_with("a5")) %>% names()
+c3_names <- df.lupp2020 %>% select(starts_with("c3")) %>% names()
+b2_names <- df.lupp2020 %>% select(starts_with("b2")) %>% names()
+
+itemlabels <- data.frame(itemnr = c("c1_vadheterdenskoladugari",
+  "e3_underdesenastesexmanadernahardublivitmobbadtrakasseradellerut",
+                      "h6_hurserdupaframtiden",
+                      "f1_underdesenastesexmanadernahurbedomerdudinhalsa_hurdumarellerk",
+                      f2_names,
+                      f6_names,
+                      e1_names,
+                      a6_names,
+                      a5_names,
+                      c3_names,
+                      b2_names,
+                      "a7_ivilkengrad_arduoroligfordinaforaldrarsekonomi",
+                      "b6_ardumedlem_inagonforening",
+                      "a2_vadstammerbastinpadig"
+                      )) %>% 
+  filter(!str_detect(itemnr,"e1b|e1c|f6b|f6c")) %>% 
+  arrange(itemnr)
+#kbl_rise(itemlabels)
+
+df.lupp2017 <- df.lupp2017 %>% 
+  select(any_of(itemlabels$itemnr)) %>% 
+  add_column(År = "2017")
+
+df.lupp2020 <- df.lupp2020 %>%
+  select(any_of(itemlabels$itemnr)) %>% 
+  add_column(År = "2020")
+
+#setdiff(names(df.lupp2020),names(df.lupp2017))
+# 3 variables missing from 2017
+
+# set up itemlabels object structure to shorten variable names
+itemlabels <- itemlabels %>% 
+  separate(itemnr, c("itemnr","item"), sep = "_", extra = "merge") %>% 
+  add_row(itemnr = "År", item = "Årtal data samlades in") 
+
+# add a number to each item to give them unique names
+itemlabels$itemnr <- paste0(itemlabels$itemnr,"_",c(1:nrow(itemlabels)))
+
+df.lupp <- plyr::rbind.fill(df.lupp2020,df.lupp2017)
+
+
+names(df.lupp) <- itemlabels$itemnr
+
+df.lupp <- df.lupp %>% 
+  rename(År = År_43,
+         Skola = c1_13,
+         Kön = a2_44)
+### import info on number of pupils/class/gender distribution. This data was manually retrieved by the municipality
+skoldata.järfälla <- read_excel("~/RISE/SHIC - Data i Dialog - Data i Dialog/data/Järfälla/Stockholmsenkäten Järfälla Elevantal åk 9 2022-2008 omstrukturerad manuellt.xlsx", sheet = 2) %>% 
+  clean_names() %>% 
+  rename(Skolnamn = enhet,
+         Område = kommundel)
+
+glimpse(skoldata.järfälla)
+```
+
+
+## Demografi Stockholmsenkäten
+
+```{r}
+df <- read_parquet("../DIDapp/data/2023-05-07_ScoredRev.parquet")
+df <- df %>%
+  rename(Kommun = DIDkommun) %>% 
+  filter(Kommun == "Järfälla",
+         ARSKURS == "Åk 9",
+         Skolkommun == "Järfälla") %>% 
+  mutate(Skolnamn = str_squish(Skolnamn))
+```
+
+Sätt samman en dataframe med motsvarande variabler utifrån Sthlmsenkätens data, så vi kan jämföra
+
+```{r}
+järfällaSkolor <- skoldata.järfälla %>% 
+  mutate(Skolnamn = str_squish(Skolnamn)) %>% 
+  distinct(Skolnamn) %>% 
+  arrange(Skolnamn) %>% 
+  pull(Skolnamn)
+
+sthlmsenkSkolor <- df %>% 
+  distinct(Skolnamn) %>% 
+  arrange(Skolnamn) %>% 
+  pull(Skolnamn)
+
+intersect(järfällaSkolor,sthlmsenkSkolor)
+```
+
+Bara fem av skolorna verkar matcha mot Stockholmsenkäten vid en automatiserad jämförelse. Vi får kolla manuellt efter de tre saknade och koda om beteckningar vid behov.
+
+```{r}
+setdiff(järfällaSkolor,sthlmsenkSkolor)
+```
+
+
+```{r}
+df %>% 
+  distinct(Skolnamn) %>% 
+  arrange(Skolnamn) %>% 
+  filter(str_detect(Skolnamn,"Eng|Tall|Vittra|eng|tall|vittra"))
+
+```
+
+```{r}
+df <- df %>% 
+  mutate(Skolnamn = car::recode(Skolnamn, "'Internationella Engelska Skolan Järfälla'='IES Järfälla'"))
+
+skoldata.järfälla <- skoldata.järfälla %>% 
+  mutate(Skolnamn = car::recode(Skolnamn,"'Int. Engelska'='IES Järfälla';'Vittra'='Vittra Järfälla'"))
+```
+
+
+
+```{r}
+df %>% 
+  dplyr::filter(Skolnamn %in% järfällaSkolor) %>%
+  rename(År = ar) %>% 
+  count(År) %>% 
+  kbl_rise(width = 30)
+
+df %>% 
+  mutate(Skolnamn = recode(Skolnamn,"''=NA")) %>% 
+  filter(is.na(Skolnamn)) %>% 
+  count(ar)
+```
+
+Hmm, här blir enbart skolor från 2020 och 2022 med, vilket verkar hänga samman med att Skolnamn saknas för åren före det. Vi kanske kan hitta matchande Skolenhetskod och matcha på det?
+
+```{r}
+df %>% 
+  mutate(Skolnamn = recode(Skolnamn,"''=NA")) %>% 
+  filter(is.na(Skolnamn)) %>% 
+  count(ar)
+
+df %>% 
+  mutate(Skolnamn = recode(Skolnamn,"''=NA")) %>% 
+  filter(is.na(Skolnamn)) %>% 
+  group_by(Skolenhetskod) %>% 
+  count(ar)
+
+```
+
+
+```{r}
+df.jf <- skoldata.järfälla %>% 
+  mutate(Flicka = round(antal_elever * flickor_percent/100,0),
+         Pojke = round(antal_elever * pojkar_percent/100,0)) %>% 
+  pivot_longer(cols = c("Flicka","Pojke"),
+               values_to = "n_total",
+               names_to = "Kön") %>% 
+  select(Område,Skolnamn,ar,Kön,n_total)
+```
+
+```{r}
+responses <- df %>% 
+  dplyr::filter(Skolnamn %in% järfällaSkolor) %>% 
+  group_by(ar,Skolnamn,Kön) %>% 
+  count(Kön) %>% 
+  left_join(.,df.jf, by = c("Skolnamn","ar","Kön")) %>% 
+  mutate(n_missing = n_total - n,
+         p_responserate = round(n/n_total*100,1))
+
+# responses %>% 
+#   rename(År = ar) %>%
+#   group_by(År) %>%
+#   summarise(n = sum(n_total, na.rm = T)) %>% 
+#   kbl_rise(30)
+```
+
+
+
+::: panel-tabset
+### Fördelat på kön
+```{r}
+responses %>% 
+  rename(År = ar) %>% 
+  drop_na(Kön) %>% 
+  ggplot(aes(x = År, y = p_responserate, color = Kön)) + 
+  geom_line(linewidth = 1) +
+  geom_point(size = 6) +
+  geom_text(aes(label = p_responserate),
+            color = "white",
+            size = 2) +
+  scale_color_brewer(type = "qual", palette = "Dark2") +
+  scale_x_continuous(guide = guide_axis(n.dodge = 1), breaks = årtal) +
+  scale_y_continuous(limits = c(0,100)) +
+  labs(title = "Svarsfrekvens per år och skola",
+       subtitle = "Fördelat på kön",
+       y = "Svarsfrekvens i %") +
+  theme_minimal() +
+  theme_rise() +
+  facet_wrap(~Skolnamn) +
+  coord_cartesian(clip = "off")
+  
+
+```
+### Fördelat på årskurs
+```{r}
+responsesARSKURS <- df %>% 
+  filter(Kommun == fokusKommun,
+         !Kön == "<NA>",
+         !is.na(ARSKURS)) %>% 
+  rename(År = ar,
+         Årskurs = ARSKURS) %>% 
+  group_by(År,Årskurs) %>% 
+  reframe(Antal = n()) %>% 
+  ggplot(aes(x = År, y = Antal, color = Årskurs)) + 
+  geom_line(linewidth = 1) +
+  geom_point_interactive(aes(tooltip = Antal),
+                         size = 3) +
+  scale_color_brewer(type = "qual", palette = "Set1") +
+  scale_x_continuous(guide = guide_axis(n.dodge = 1), breaks = årtal) +
+  scale_y_continuous(limits = c(0,NA)) +
+  labs(title = "Antal respondenter per år",
+       subtitle = "Fördelat på årskurs") +
+  theme_minimal() +
+  theme_rise() +
+  theme(text = element_text(family = "Lato"))
+
+girafe(ggobj = responsesARSKURS)
+
+```
+
+
+## LUPP dataimport
+
+26 variables are missing/differing between 2017 and 2020 data, so let's focus on those we are most interested in and identify them manually.
+
+Dessa items saknas i 2017 men finns i 2020:
+
+- "a7_ivilkengrad_arduoroligfordinaforaldrarsekonomi"               
+- "b6_ardumedlem_inagonforening"                                    
+- "f1_underdesenastesexmanadernahurbedomerdudinhalsa_hurdumarellerk"
+
+```{r}
+df.lupp %>% 
+  count(År,Skola)
+```
+
+```{r}
+#| layout-ncol: 2
+skolkoderLUPP <- attr(df.lupp$Skola, "labels") %>% 
+  as.data.frame(nm = "Skola") %>% 
+  rownames_to_column("Skolnamn")
+
+df.lupp <- left_join(df.lupp, skolkoderLUPP, by = "Skola")
+df.lupp %>% 
+  count(År,Skolnamn) %>% 
+  arrange(År,desc(n)) %>% 
+  pivot_wider(values_from = "n",
+              names_from = "År") %>%
+  kbl_rise() %>% 
+  add_header_above(header = c(" " = 1, "Antal svar" = 2))
+
+df.lupp %>% 
+  count(År,Skolnamn) %>% 
+  arrange(År,desc(n)) %>% 
+  ggplot(aes(x = reorder(Skolnamn,n), y = n, fill = År)) +
+  geom_col(position = "dodge") +
+  theme_rise() +
+  scale_fill_brewer(type = "qual", palette = "Dark2") +
+  scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
+  labs(title = "Antal respondenter per år och skola",
+       subtitle = "LUPP",
+       x = "Skola",
+       y = "Antal respondenter")
+
+df.lupp %>% 
+  count(År) %>% 
+  kbl_rise(20)
+
+```
+
+### Fritidsfrågor
+
+```{r}
+itemlabels <- read_csv("LUPPitemlabels.csv") %>% 
+  select(!itemold)
+
+itemlabels %>% 
+  filter(str_detect(itemnr,"^b2|^b6")) %>% 
+  kbl_rise()
+```
+
+```{r}
+# visualisera fritidsfrågor
+  
+df.lupp %>% 
+  select(starts_with(c("b2")),År,Skolnamn) %>%
+  mutate(across(starts_with(c("b2")), ~ as_factor(.x))) %>%
+  pivot_longer(cols = starts_with(c("b2")),
+               names_to = "itemnr",
+               values_to = "svar") %>%
+  left_join(itemlabels, by = "itemnr") %>%
+  drop_na(svar,Skolnamn) %>%
+  group_by(År,item) %>%
+  count(svar) %>%
+  mutate(Andel = round(n/sum(n)*100),1) %>%
+  ggplot(aes(x = svar, y = Andel, fill = År)) +
+  geom_col(position = "dodge") +
+  facet_grid(~item,
+             scales = "free_x",
+             labeller = labeller(item = label_wrap_gen(22))) +
+  scale_x_discrete(drop = FALSE, guide = guide_axis(n.dodge = 1),
+                   labels = ~ stringr::str_wrap(.x, width = 8)) +
+  theme_rise() + 
+  scale_fill_brewer(type = "qual", palette = "Dark2") +
+  labs(title = "Frågor om fritid",
+       subtitle = "LUPP",
+       x = "Svarskategori",
+       y = "Andel respondenter i %") +
+  scale_y_continuous(limits = c(0,100)) 
+         
+
+```
+
+```{r}
+# subset fritidsfrågor för Rasch-analys
+recode_vec <- setNames(itemlabels$itemnr, itemlabels$item)
+
+fritid <- df.lupp %>% 
+  select(starts_with(c("b2","b6"))) %>% 
+  mutate(across(starts_with(c("b2","b6")), ~ .x -1 )) %>% 
+  rename(any_of(recode_vec)) %>% 
+  na.omit()
+
+RItileplot(fritid)
+
+```
+
+```{r}
+RIitemfitPCM(fritid, 300, 5)
+
+RIresidcorr(fritid, 0.2)
+
+RIloadLoc(fritid)
+
+```
+
+
+## Stockholmsenkäten dataimport
+```{r}
+årtal <- c(2006,2008,2010,2012,2014,2016,2018,2020,2022)
+
+fokusKommun <- "Järfälla"
+jmfKommun <- c(fokusKommun, "Botkyrka","Sigtuna","Huddinge")
+source("DIDreportSetup.R")
+source("DIDreportFunctions.R")
+
+### set up color palette based on RISE guidelines
+RISEprimGreen <- "#009ca6"
+RISEprimRed <- "#e83c63"
+RISEprimYellow <- "#ffe500"
+RISEprimGreenMid <- "#8dc8c7"
+RISEprimRedMid <- "#f5a9ab"
+RISEprimYellowMid <- "#ffee8d"
+RISEprimGreenLight <- "#ebf5f0"
+RISEprimRedLight <- "#fde8df"
+RISEprimYellowLight <- "#fff7dd"
+RISEcompPurple <- "#482d55"
+RISEcompGreenDark <- "#0e4e65"
+RISEgrey1 <- "#f0f0f0"
+RISEgrey2 <- "#c8c8c8"
+RISEgrey3 <- "#828282"
+RISEgrey4 <- "#555555"
+
+### colors specifically for DID application
+DIDcolorsOriginal <- c('#D55E00','#F0E442','#009E73','#999999')
+DIDcolors <- lighten(DIDcolorsOriginal, amount = 0.1, space = "HLS")
+DIDred <- "#D55E00"
+DIDorange <- "#E69F00"
+DIDgreen <- "#009E73"
+DIDyellow <- "#F0E442"
+```
+
+### Utbildningsnivå föräldrar
+```{r}
+stapelDemografi("Vilken högsta utbildning har din mamma/pappa?")
+```
+
+Vi vill titta på samband mellan föräldrarnas utbildningsnivå och psykiska/psykosomatiska besvär.
+
+Först tar vi fram medelvärden för pojkar och flickor baserat på alla data vi har från alla år.
+
+```{r}
+psy.mean.pojkar <- df.all %>% 
+  filter(Kön == "Pojke") %>%
+  pull(PsykSomBesv) %>% 
+  mean(na.rm = TRUE)
+
+psy.mean.flickor <- df.all %>% 
+  filter(Kön == "Flicka") %>%
+  pull(PsykSomBesv) %>% 
+  mean(na.rm = TRUE)
+```
+
+```{r}
+df %>% 
+  filter(ARSKURS == "Åk 9",
+         Kommun == "Järfälla") %>% 
+  drop_na(Kön,ARSKURS,`Vilken högsta utbildning har din mamma/pappa?`, `Psykiska/ psykosomatiska besvär`) %>%
+  ggplot(aes(x = `Vilken högsta utbildning har din mamma/pappa?`, y = `Psykiska/ psykosomatiska besvär`)) +
+  geom_hline(yintercept = psy.mean.pojkar, linetype = "dashed", color = "black") +
+  geom_hline(yintercept = psy.mean.flickor, linetype = "dashed", color = "orange") +
+  geom_boxplot(width = 0.4, fill = "#009CA6", alpha = 0.7, notch = TRUE, outlier.shape = NA) +
+  scale_x_discrete(labels = ~ stringr::str_wrap(.x, width = 12)) +
+  labs(title = "Järfälla - Psykiska/ psykosomatiska besvär & föräldrars utbildningsnivå",
+       subtitle = "Flickor och pojkar i årskurs 9. Högre mätvärden = mer besvär",
+       y = "Mätvärde psykiska/ psykosomatiska besvär",
+       x = "Svarskategori",
+       caption = "Streckade horisontell linje indikerar medelvärde för pojkar (svart) och flickor (orange).") +
+  theme_rise() +
+  facet_wrap(~Kön)
+```
+
+#### Statistisk analys
+
+Enbart åk 9 och enbart Järfälla.
+
+```{r}
+library(lme4)
+library(easystats)
+library(sjPlot)
+library(marginaleffects)
+
+m1 <- df %>% 
+  filter(ARSKURS == "Åk 9",
+         Kommun == "Järfälla") %>% 
+  drop_na(Kön,ARSKURS,`Vilken högsta utbildning har din mamma/pappa?`, `Psykiska/ psykosomatiska besvär`) %>% 
+  rename(utb_nivå = `Vilken högsta utbildning har din mamma/pappa?`,
+         psy_besv = `Psykiska/ psykosomatiska besvär`,
+         årskurs = ARSKURS,
+         kön = Kön) %>%
+  lm(psy_besv ~ utb_nivå + kön, data = .)
+
+check_model(m1)
+tab_model(m1)
+avg_slopes(m1)
+tidy(m1, conf.int = T)
+
+plot_predictions(m1, condition = "utb_nivå") +
+  theme_rise()
+```
+
+Interaktion mellan kön och utbildningsnivå?
+
+```{r}
+m2 <- df %>% 
+  filter(ARSKURS == "Åk 9",
+         Kommun == "Järfälla") %>% 
+  drop_na(Kön,ARSKURS,`Vilken högsta utbildning har din mamma/pappa?`, `Psykiska/ psykosomatiska besvär`) %>% 
+  rename(utb_nivå = `Vilken högsta utbildning har din mamma/pappa?`,
+         psy_besv = `Psykiska/ psykosomatiska besvär`,
+         årskurs = ARSKURS,
+         kön = Kön) %>%
+  lm(psy_besv ~ utb_nivå + utb_nivå*kön, data = .)
+
+check_model(m2)
+tab_model(m2)
+avg_slopes(m2)
+tidy(m2, conf.int = T)
+
+plot_predictions(m2, condition = "utb_nivå") +
+  theme_rise()
+```
+
+Testa modell för flickor/pojkar separat
+
+```{r}
+m1f <- df %>% 
+  filter(ARSKURS == "Åk 9",
+         Kön == "Flicka",
+         Kommun == "Järfälla") %>% 
+  drop_na(Kön,ARSKURS,`Vilken högsta utbildning har din mamma/pappa?`, `Psykiska/ psykosomatiska besvär`) %>% 
+  rename(utb_nivå = `Vilken högsta utbildning har din mamma/pappa?`,
+         psy_besv = `Psykiska/ psykosomatiska besvär`,
+         årskurs = ARSKURS,
+         kön = Kön) %>%
+  lm(psy_besv ~ utb_nivå, data = .)
+
+check_model(m1f)
+tab_model(m1f)
+avg_slopes(m1f)
+tidy(m1f, conf.int = T)
+
+plot_predictions(m1f, condition = "utb_nivå") +
+  theme_rise() +
+  labs(y = "Effekt på mätvärde psykiska/ psykosomatiska besvär",
+       x = "Svarskategori utbildningsnivå",
+       title = "Flickor")
+```
+
+```{r}
+m1p <- df %>% 
+  filter(ARSKURS == "Åk 9",
+         Kön == "Pojke",
+         Kommun == "Järfälla") %>% 
+  drop_na(Kön,ARSKURS,`Vilken högsta utbildning har din mamma/pappa?`, `Psykiska/ psykosomatiska besvär`) %>% 
+  rename(utb_nivå = `Vilken högsta utbildning har din mamma/pappa?`,
+         psy_besv = `Psykiska/ psykosomatiska besvär`,
+         årskurs = ARSKURS,
+         kön = Kön) %>%
+  lm(psy_besv ~ utb_nivå, data = .)
+
+check_model(m1p)
+tab_model(m1p)
+avg_slopes(m1p)
+tidy(m1p, conf.int = T)
+
+plot_predictions(m1p, condition = "utb_nivå") +
+  theme_rise() +
+  labs(y = "Mätvärde psykiska/ psykosomatiska besvär (pojkar)",
+       x = "Svarskategori utbildningsnivå",)
+```
+
+### Skoltrivsel & psykiska besvär
+
+Enbart åk 9.
+
+```{r}
+df %>% 
+  filter(ARSKURS == "Åk 9",
+         Kommun == "Järfälla") %>% 
+  drop_na(Kön,ARSKURS,`Vantrivsel i skolan`, `Psykiska/ psykosomatiska besvär`) %>%
+  ggplot(aes(x = `Vantrivsel i skolan`, y = `Psykiska/ psykosomatiska besvär`)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = T, color = RISEprimGreen, fill = RISEprimGreenMid) +
+
+  labs(title = "Psykiska/ psykosomatiska besvär & Vantrivsel i skolan",
+       subtitle = str_wrap("Flickor och pojkar i årskurs 9 i Järfälla. Högre mätvärden = mer besvär. Brantare linje = starkare samband."),
+       y = "Psykiska/ psykosomatiska besvär",
+       x = "Vantrivsel i skolan") +
+  theme_rise() +
+  facet_wrap(~Kön)
+```
+
+#### Statistik 
+```{r}
+m3 <- df %>% 
+  filter(ARSKURS == "Åk 9",
+         Kommun == "Järfälla") %>% 
+  drop_na(Kön,ARSKURS,`Vantrivsel i skolan`, `Psykiska/ psykosomatiska besvär`) %>% 
+  rename(vantrivsel_skola = `Vantrivsel i skolan`,
+         psy_besv = `Psykiska/ psykosomatiska besvär`,
+         årskurs = ARSKURS,
+         kön = Kön) %>%
+  lm(psy_besv ~ vantrivsel_skola + kön, data = .)
+
+check_model(m3)
+tab_model(m3)
+avg_slopes(m3)
+tidy(m3, conf.int = T)
+
+# run separate m3 models for Kön == Flicka and Kön == Pojke
+m3f <- df %>% 
+  filter(ARSKURS == "Åk 9",
+         Kön == "Flicka",
+         Kommun == "Järfälla") %>% 
+  drop_na(Kön,ARSKURS,`Vantrivsel i skolan`, `Psykiska/ psykosomatiska besvär`) %>% 
+  rename(vantrivsel_skola = `Vantrivsel i skolan`,
+         psy_besv = `Psykiska/ psykosomatiska besvär`,
+         årskurs = ARSKURS,
+         kön = Kön) %>%
+  lm(psy_besv ~ vantrivsel_skola, data = .)
+
+check_model(m3f)
+tab_model(m3f)
+avg_slopes(m3f)
+tidy(m3f, conf.int = T)
+
+m3p <- df %>% 
+  filter(ARSKURS == "Åk 9",
+         Kön == "Pojke",
+         Kommun == "Järfälla") %>% 
+  drop_na(Kön,ARSKURS,`Vantrivsel i skolan`, `Psykiska/ psykosomatiska besvär`) %>% 
+  rename(vantrivsel_skola = `Vantrivsel i skolan`,
+         psy_besv = `Psykiska/ psykosomatiska besvär`,
+         årskurs = ARSKURS,
+         kön = Kön) %>%
+  lm(psy_besv ~ vantrivsel_skola, data = .)
+
+check_model(m3p)
+tab_model(m3p)
+avg_slopes(m3p)
+tidy(m3p, conf.int = T)
+```
+
+#### Fördelning på skolor
+
+```{r}
+df %>% 
+  filter(ARSKURS == "Åk 9",
+         Kommun == "Järfälla",
+         ar > 2010) %>%
+  mutate(År = factor(ar)) %>% 
+  drop_na(Kön,ARSKURS,SkolaNegativ,PsykSomBesv,Skolnamn) %>%
+  ggplot(aes(x = Skolnamn, y = SkolaNegativ)) +
+  geom_boxplot(fill = RISEprimGreenMid, alpha = 0.7) +
+  theme_rise()
+
+```
+
+#### Riskgruppsbaserad
+
+```{r}
+DIDareaPlotJärfälla <- function(faktor) {
+  plotFaktor <- faktor
+  df.plot <- df %>%
+    filter(Kommun == fokusKommun) %>%
+    mutate(
+      Risknivå = case_when(
+        .data[[plotFaktor]] < rslimits |>
+          select(all_of(plotFaktor)) |>
+          slice(1) |>
+          pull() ~ "Låg risk",
+        .data[[plotFaktor]] >= rslimits |>
+          select(all_of(plotFaktor)) |>
+          slice(1) |>
+          pull() &
+          .data[[plotFaktor]] < rslimits |>
+          select(all_of(plotFaktor)) |>
+          slice(2) |>
+          pull() ~ "Något förhöjd risk",
+        .data[[plotFaktor]] >= rslimits |>
+          select(all_of(plotFaktor)) |>
+          slice(2) |>
+          pull() ~ "Förhöjd risk",
+        TRUE ~ "Otillräckliga svar"
+      )
+    )
+
+  df.plot %>%
+    filter(Kön %in% c("Pojke", "Flicka"),
+           ARSKURS == "Åk 9",
+           Skolkommun == "Järfälla") %>%
+    mutate(Skolnamn = str_squish(Skolnamn)) %>%
+    mutate(Risknivå = factor(Risknivå, levels = c("Förhöjd risk", "Något förhöjd risk", "Låg risk", "Otillräckliga svar"))) %>%
+    group_by(ar, Kön, Skolnamn) %>%
+    count(Risknivå, .drop = FALSE) %>%
+    mutate(Andel = (100 * n / sum(n)) %>% round(digits = 1)) %>%
+    ggplot(aes(x = ar, y = Andel)) +
+    geom_area(aes(fill = Risknivå),
+              position = "stack",
+              alpha = 0.9
+    ) +
+    scale_fill_manual(values = DIDcolorsRYGG) +
+    #scale_color_manual(values = c("#D55E00", "#F0E442", "#009E73", "lightgrey")) +
+    geom_hline(yintercept = 90, color = "black", linetype = 2, linewidth = 0.66) +
+    geom_hline(yintercept = 75, color = RISEprimRed, linetype = 2, linewidth = 0.66) +
+    scale_y_continuous(breaks = c(0, 20, 40, 60, 80, 100)) +
+    scale_x_continuous(breaks = årtal, guide = guide_axis(n.dodge = 2)) +
+    xlab("Årtal") +
+    ylab("Andel i %") +
+    labs(
+      title = paste0(plotFaktor, " - ", fokusKommun),
+      subtitle = "Endast åk 9",
+      caption = "Svart streckad linje = referensvärde för 10% med högst indexvärde.\n
+      Röd linje = referensvärde för 25% med högst indexvärde.\n
+                         Datakälla: Stockholmsenkäten."
+    ) +
+    facet_grid(Kön~Skolnamn) +
+    theme_minimal() +
+    theme_rise() +
+    theme(plot.caption = element_text(lineheight = 0.45))
+}
+
+DIDareaPlotJärfälla("Vantrivsel i skolan")
+```
+
+
+### Vistelsetid & psykiska besvär
+```{r}
+stapelDemografi("Hur länge har du bott i Sverige?")
+```
+
+```{r}
+df %>% 
+  filter(ARSKURS == "Åk 9",
+         Kommun == "Järfälla") %>% 
+  drop_na(Kön,ARSKURS,`Hur länge har du bott i Sverige?`, `Psykiska/ psykosomatiska besvär`) %>%
+  ggplot(aes(x = `Hur länge har du bott i Sverige?`, y = `Psykiska/ psykosomatiska besvär`)) +
+  geom_hline(yintercept = psy.mean.pojkar, linetype = "dashed", color = "black") +
+  geom_hline(yintercept = psy.mean.flickor, linetype = "dashed", color = "orange") +
+  geom_boxplot(width = 0.4, fill = "#009CA6", alpha = 0.7, notch = TRUE, outlier.shape = NA) +
+  scale_x_discrete(labels = ~ stringr::str_wrap(.x, width = 12)) +
+  labs(title = "Järfälla - Psykiska/ psykosomatiska besvär & vistelsetid",
+       subtitle = "Flickor och pojkar i årskurs 9. Högre mätvärden = mer besvär",
+       y = "Mätvärde psykiska/ psykosomatiska besvär",
+       x = "Svarskategori",
+       caption = "Streckade horisontell linje indikerar medelvärde för pojkar (svart) och flickor (orange).") +
+  theme_rise() +
+  facet_wrap(~Kön)
+```
+
+```{r}
+m4p <- df %>% 
+  filter(ARSKURS == "Åk 9",
+         Kön == "Pojke",
+         Kommun == "Järfälla") %>% 
+  drop_na(Kön,ARSKURS,`Hur länge har du bott i Sverige?`, `Psykiska/ psykosomatiska besvär`) %>% 
+  rename(vistelsetid = `Hur länge har du bott i Sverige?`,
+         psy_besv = `Psykiska/ psykosomatiska besvär`,
+         årskurs = ARSKURS,
+         kön = Kön) %>%
+  lm(psy_besv ~ vistelsetid, data = .)
+
+check_model(m4p)
+tab_model(m4p)
+avg_slopes(m4p)
+tidy(m4p, conf.int = T)
+
+plot_predictions(m4p, condition = "vistelsetid") +
+  theme_rise() +
+  labs(y = "Predicerat mätvärde psykiska/ psykosomatiska besvär",
+       x = "Svarskategori utbildningsnivå",
+       title = "Pojkar",
+       subtitle = "Årskurs 9 i Järfälla")
+
+# same as above but for Kön == Flicka
+m4f <- df %>% 
+  filter(ARSKURS == "Åk 9",
+         Kön == "Flicka",
+         Kommun == "Järfälla") %>% 
+  drop_na(Kön,ARSKURS,`Hur länge har du bott i Sverige?`, `Psykiska/ psykosomatiska besvär`) %>% 
+  rename(vistelsetid = `Hur länge har du bott i Sverige?`,
+         psy_besv = `Psykiska/ psykosomatiska besvär`,
+         årskurs = ARSKURS,
+         kön = Kön) %>%
+  lm(psy_besv ~ vistelsetid, data = .)
+
+check_model(m4f)
+tab_model(m4f)
+avg_slopes(m4f)
+tidy(m4f, conf.int = T)
+```
+

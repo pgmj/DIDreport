@@ -24,8 +24,8 @@ recode <- car::recode
 rename <- dplyr::rename
 
 ## Stockholmsenkäten --------------------------------------
-df <- read_parquet("../DIDapp/data/2023-05-07_ScoredRev.parquet")
-df <- df %>%
+df.all <- read_parquet("../DIDapp/data/2023-05-07_ScoredRev.parquet")
+df <- df.all %>%
   rename(Kommun = DIDkommun)
 
 df.raw <- read_parquet("../data/2023-09-12_Sthlmsenk_all_raw.parquet")

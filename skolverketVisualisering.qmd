@@ -316,7 +316,7 @@ gr.omr.sigtuna.sv %>%
   DIDskolverketPlot()
 #  scale_y_continuous(limits = c(0, 100))
 ```
-### Medelvärde nationella prov
+  ### Medelvärde nationella prov
 ```{r}
 #| fig-height: 10
 gr.omr.sigtuna.sv %>%

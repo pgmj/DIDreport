@@ -56,7 +56,7 @@ recode <- car::recode
 rename <- dplyr::rename
 
 # import LUPP data for 2020
-df.lupp2020 <- read_spss("~/RISE/SHIC - Data i Dialog - Data i Dialog/data/Järfälla/LUPP/Järfälla 2020 13-16 år.sav") 
+df.lupp2020 <- read_spss("~/RISE/SHIC - Data i Dialog - Data i Dialog/data/Järfälla/LUPP/Järfälla 2020 13-16 år.sav") %>% 
   clean_names()
 
 df.lupp2017 <- read_spss("~/RISE/SHIC - Data i Dialog - Data i Dialog/data/Järfälla/LUPP/2017/LUPP 2017 Järfälla 13-16 år.sav") %>% 
@@ -119,9 +119,9 @@ df.lupp <- plyr::rbind.fill(df.lupp2020,df.lupp2017)
 names(df.lupp) <- itemlabels$itemnr
 
 df.lupp <- df.lupp %>% 
-  rename(År = År_43,
-         Skola = c1_13,
-         Kön = a2_44)
+  rename(År = År_44,
+         Skola = c1_14,
+         Kön = a2_1)
 ### import info on number of pupils/class/gender distribution. This data was manually retrieved by the municipality
 skoldata.järfälla <- read_excel("~/RISE/SHIC - Data i Dialog - Data i Dialog/data/Järfälla/Stockholmsenkäten Järfälla Elevantal åk 9 2022-2008 omstrukturerad manuellt.xlsx", sheet = 2) %>% 
   clean_names() %>% 
@@ -139,6 +139,15 @@ df <- read_parquet("../DIDapp/data/2023-05-07_ScoredRev.parquet")
 df <- df %>%
   rename(Kommun = DIDkommun) %>% 
   filter(Kommun == "Järfälla",
+         ARSKURS == "Åk 9",
+         Skolkommun == "Järfälla") %>% 
+  mutate(Skolnamn = str_squish(Skolnamn))
+
+library(foreign)
+df <- read.spss("~/RISE/SHIC - Data i Dialog - Data i Dialog/data/Järfälla/NYsthlmsenkät/Stockholmsenkäten_2006-2022_Järfälla.sav", to.data.frame = T)
+
+df <- df %>% 
+  filter(#Kommun == "Järfälla",
          ARSKURS == "Åk 9",
          Skolkommun == "Järfälla") %>% 
   mutate(Skolnamn = str_squish(Skolnamn))
@@ -235,11 +244,11 @@ responses <- df %>%
   mutate(n_missing = n_total - n,
          p_responserate = round(n/n_total*100,1))
 
-# responses %>% 
-#   rename(År = ar) %>%
-#   group_by(År) %>%
-#   summarise(n = sum(n_total, na.rm = T)) %>% 
-#   kbl_rise(30)
+responses %>%
+  rename(År = ar) %>%
+  group_by(År) %>%
+  summarise(n = sum(n_total, na.rm = T)) %>%
+  kbl_rise(30)
 ```
 
 

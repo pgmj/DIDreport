@@ -10,8 +10,8 @@ author:
   orcid: 0000-0003-1669-592X
 date: last-modified
 params:
-  fokusKommun: "Haninge"
-  jmfKommun: "Täby"
+  fokusKommun: "Lidingö"
+  jmfKommun: "Danderyd"
   years: 2020
 format: 
   html:
@@ -56,9 +56,9 @@ editor_options:
 #                    levels = c(fokusKommun,params$jmfKommun))
 
 ## for testing/dev:
-fokusKommun <- "Haninge"
-jmfKommun <- factor(c(fokusKommun,"Botkyrka", "Huddinge", "Södertälje"),
-                   levels = c(fokusKommun,"Botkyrka", "Huddinge", "Södertälje"))
+fokusKommun <- "Lidingö"
+jmfKommun <- factor(c(fokusKommun,"Täby", "Danderyd", "Stockholm"),
+                   levels = c(fokusKommun,"Täby", "Danderyd", "Stockholm"))
 
 # Botkyrka, Huddinge, Södertälje
 # years of interest
@@ -482,22 +482,7 @@ itemlabels.final %>%
   select(!Index) %>% 
   kbl_rise(width = 60)
 ```
-#### Riskfaktorer samband
-
-```{r}
-#| fig-width: 6
-#| fig-cap: "För mera information om figuren och forskningen bakom den, se kunskapssammanställningen [Risk- och skyddsfaktorer – vad vet vi och vad kan göras med kunskapen?](http://ri.diva-portal.org/smash/record.jsf?pid=diva2%3A1656234&dswid=3419) (Johansson, 2021)."
-RSfigur("Familj")
-```
 :::
-
-### Skyddsfaktorer
-
-```{r}
-#| fig-width: 6
-#| fig-cap: "För mera information om figuren och forskningen bakom den, se kunskapssammanställningen [Risk- och skyddsfaktorer – vad vet vi och vad kan göras med kunskapen?](http://ri.diva-portal.org/smash/record.jsf?pid=diva2%3A1656234&dswid=3419) (Johansson, 2021)."
-RSfigur("Familj", rs = "Skyddsfaktor")
-```
 
 ### KOLADA
 
@@ -570,13 +555,6 @@ itemlabels.final %>%
   filter(Index == "SkolaNegativ") %>% 
   select(!Index) %>% 
   kbl_rise(width = 60)
-```
-#### Riskfaktorer samband
-
-```{r}
-#| fig-width: 6
-#| fig-cap: "För mera information om figuren och forskningen bakom den, se kunskapssammanställningen [Risk- och skyddsfaktorer – vad vet vi och vad kan göras med kunskapen?](http://ri.diva-portal.org/smash/record.jsf?pid=diva2%3A1656234&dswid=3419) (Johansson, 2021)."
-RSfigur("Skola")
 ```
 :::
 
@@ -678,13 +656,6 @@ DIDmobbadÅK(2016,"Gy 2")
 :::
 
 ### Skyddsfaktorer
-
-```{r}
-#| fig-width: 6
-#| fig-cap: "För mera information om figuren och forskningen bakom den, se kunskapssammanställningen [Risk- och skyddsfaktorer – vad vet vi och vad kan göras med kunskapen?](http://ri.diva-portal.org/smash/record.jsf?pid=diva2%3A1656234&dswid=3419) (Johansson, 2021)."
-
-RSfigur("Skola", rs = "Skyddsfaktor")
-```
 
 ::: panel-tabset
 ```{r}
@@ -899,16 +870,6 @@ KOLADA %>%
 
 ## Kamrater och fritid
 
-### Riskfaktorer
-
-```{r}
-#| fig-width: 6
-#| fig-cap: "För mera information om figuren och forskningen bakom den, se kunskapssammanställningen [Risk- och skyddsfaktorer – vad vet vi och vad kan göras med kunskapen?](http://ri.diva-portal.org/smash/record.jsf?pid=diva2%3A1656234&dswid=3419) (Johansson, 2021)."
-
-RSfigur("Kamrater och fritid")
-```
-
-
 ### KOLADA
 
 ::: panel-tabset
@@ -956,15 +917,6 @@ KOLADA %>%
 ```
 :::
 
-### Skyddsfaktorer
-
-```{r}
-#| fig-width: 6
-#| fig-cap: "För mera information om figuren och forskningen bakom den, se kunskapssammanställningen [Risk- och skyddsfaktorer – vad vet vi och vad kan göras med kunskapen?](http://ri.diva-portal.org/smash/record.jsf?pid=diva2%3A1656234&dswid=3419) (Johansson, 2021)."
-
-RSfigur("Kamrater och fritid", rs = "Skyddsfaktor")
-```
-
 ## Närsamhälle
 
 ::: panel-tabset
@@ -994,14 +946,6 @@ itemlabels.final %>%
   filter(Index == "Community") %>% 
   select(!Index) %>% 
   kbl_rise(width = 60)
-```
-### Riskfaktorer samband
-
-```{r}
-#| fig-width: 6
-#| fig-cap: "För mera information om figuren och forskningen bakom den, se kunskapssammanställningen [Risk- och skyddsfaktorer – vad vet vi och vad kan göras med kunskapen?](http://ri.diva-portal.org/smash/record.jsf?pid=diva2%3A1656234&dswid=3419) (Johansson, 2021)."
-
-RSfigur("Samhälle")
 ```
 :::
 
@@ -1050,14 +994,6 @@ KOLADA %>%
 
 ```
 :::
-
-### Skyddsfaktorer    
-
-```{r}
-#| fig-width: 6
-#| fig-cap: "För mera information om figuren och forskningen bakom den, se kunskapssammanställningen [Risk- och skyddsfaktorer – vad vet vi och vad kan göras med kunskapen?](http://ri.diva-portal.org/smash/record.jsf?pid=diva2%3A1656234&dswid=3419) (Johansson, 2021)."
-RSfigur("Samhälle", rs = "Skyddsfaktor")
-```
 
 ### KOLADA barnbokslån
 
@@ -1134,10 +1070,6 @@ itemlabels.final %>%
   filter(Index == "PsykSomBesv") %>% 
   select(!Index) %>% 
   kbl_rise(width = 60)
-```
-### Riskfaktorer
-```{r}
-RSfigurUtfall("Psyk. ohälsa")
 ```
 :::
 
@@ -1396,10 +1328,6 @@ KOLADA %>%
   ) %>% 
   DIDkoladaPlot()
 ```
-### Riskfaktorer kriminalitet
-```{r}
-RSfigurUtfall("Kriminalitet")
-```
 :::
 
 
@@ -1575,4 +1503,62 @@ RSfigurUtfall("Missbruk/ANDTS")
 #| fig-height: 7
 RSfigurUtfall("Våld")
 ```
+:::
+
+## Risk- och skyddsfaktorer per kontext
+
+::: panel-tabset
+### Riskfaktorer familj
+
+```{r}
+#| fig-width: 6
+#| fig-cap: "För mera information om figuren och forskningen bakom den, se kunskapssammanställningen [Risk- och skyddsfaktorer – vad vet vi och vad kan göras med kunskapen?](http://ri.diva-portal.org/smash/record.jsf?pid=diva2%3A1656234&dswid=3419) (Johansson, 2021)."
+RSfigur("Familj")
+```
+
+### Skyddsfaktorer familj
+```{r}
+#| fig-width: 6
+#| fig-cap: "För mera information om figuren och forskningen bakom den, se kunskapssammanställningen [Risk- och skyddsfaktorer – vad vet vi och vad kan göras med kunskapen?](http://ri.diva-portal.org/smash/record.jsf?pid=diva2%3A1656234&dswid=3419) (Johansson, 2021)."
+RSfigur("Familj", rs = "Skyddsfaktor")
+```
+### Riskfaktorer skola
+
+```{r}
+#| fig-width: 6
+#| fig-cap: "För mera information om figuren och forskningen bakom den, se kunskapssammanställningen [Risk- och skyddsfaktorer – vad vet vi och vad kan göras med kunskapen?](http://ri.diva-portal.org/smash/record.jsf?pid=diva2%3A1656234&dswid=3419) (Johansson, 2021)."
+RSfigur("Skola")
+```
+### Skyddsfaktorer skola
+
+```{r}
+#| fig-width: 6
+#| fig-cap: "För mera information om figuren och forskningen bakom den, se kunskapssammanställningen [Risk- och skyddsfaktorer – vad vet vi och vad kan göras med kunskapen?](http://ri.diva-portal.org/smash/record.jsf?pid=diva2%3A1656234&dswid=3419) (Johansson, 2021)."
+
+RSfigur("Skola", rs = "Skyddsfaktor")
+```
+### Riskfaktorer kamrater & fritid
+
+```{r}
+#| fig-width: 6
+#| fig-cap: "För mera information om figuren och forskningen bakom den, se kunskapssammanställningen [Risk- och skyddsfaktorer – vad vet vi och vad kan göras med kunskapen?](http://ri.diva-portal.org/smash/record.jsf?pid=diva2%3A1656234&dswid=3419) (Johansson, 2021)."
+
+RSfigur("Kamrater och fritid")
+```
+### Skyddsfaktorer kamrater & fritid
+
+```{r}
+#| fig-width: 6
+#| fig-cap: "För mera information om figuren och forskningen bakom den, se kunskapssammanställningen [Risk- och skyddsfaktorer – vad vet vi och vad kan göras med kunskapen?](http://ri.diva-portal.org/smash/record.jsf?pid=diva2%3A1656234&dswid=3419) (Johansson, 2021)."
+
+RSfigur("Kamrater och fritid", rs = "Skyddsfaktor")
+```
+### Skyddsfaktorer närsamhälle
+
+```{r}
+#| fig-width: 6
+#| fig-cap: "För mera information om figuren och forskningen bakom den, se kunskapssammanställningen [Risk- och skyddsfaktorer – vad vet vi och vad kan göras med kunskapen?](http://ri.diva-portal.org/smash/record.jsf?pid=diva2%3A1656234&dswid=3419) (Johansson, 2021)."
+RSfigur("Samhälle", rs = "Skyddsfaktor")
+```
+
 :::

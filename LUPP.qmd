@@ -55,6 +55,9 @@ count <- dplyr::count
 recode <- car::recode
 rename <- dplyr::rename
 
+årtal <- c(2006,2008,2010,2012,2014,2016,2018,2020,2022)
+fokusKommun <- "Järfälla"
+
 # import LUPP data for 2020
 df.lupp2020 <- read_spss("~/RISE/SHIC - Data i Dialog - Data i Dialog/data/Järfälla/LUPP/Järfälla 2020 13-16 år.sav") %>% 
   clean_names()
@@ -256,6 +259,7 @@ responses %>%
 ::: panel-tabset
 ### Fördelat på kön
 ```{r}
+årtal <- c(2006,2008,2010,2012,2014,2016,2018,2020,2022)
 responses %>% 
   rename(År = ar) %>% 
   drop_na(Kön) %>% 
@@ -818,3 +822,472 @@ avg_slopes(m4f)
 tidy(m4f, conf.int = T)
 ```
 
+### Antal substanser åk 9
+```{r}
+#| fig-height: 6
+
+### RISE color palettes
+# the two palettes below have been checked for color blindness compatibility using library(colorblindcheck)
+RISEpalette8 <- c("#009CA6", "#428092", "#84657F", "#C6496C", "#EB5454", "#F18438", "#F8B41C", "#FFE500")
+RISEpalette6 <- c("#009CA6", "#5C758B", "#B94F70", "#EC5D4F", "#F5A127", "#FFE500")
+### palettes can be created using the three RISE primary colors and changing the number at the end:
+# RISEpalette1 <- colorRampPalette(colors = c("#009ca6", "#e83c63", "#ffe500"))(6)
+
+# palettes are used with for example `+ scale_color_manual(values = RISEpalette6, aesthetics = c("fill", "color"))
+
+# gender split colors, replace label based on your dataset
+gender_colors <- c("Pojke" = "#F5A127", "Flicka" = "#009CA6")
+# these can be used in ggplots as `+ scale_color_gender()` or `+ scale_fill_gender()`
+scale_color_gender <- partial(scale_color_manual, values = gender_colors)
+scale_fill_gender <- partial(scale_fill_manual, values = gender_colors)
+
+library(MASS)
+library(marginaleffects)
+library(nnet)
+```
+
+
+```{r}
+df %>%
+  filter(Kön %in% c("Pojke", "Flicka"),
+         ARSKURS == "Åk 9") %>%
+  #drop_na(Senaste4v) %>% 
+  select(Senaste4v, ar, Kön, Föräldraskap) %>%
+  mutate(Senaste4v = recode(Senaste4v,"4:20=3")) %>% 
+  mutate(Senaste4v = factor(Senaste4v,
+         levels = c(3,2,1,0),
+         labels = c("Tre eller fler","Två substanser","En substans","Ej använt")
+  )
+         ) %>% 
+  drop_na(Föräldraskap) %>% 
+  ggplot(aes(x = Senaste4v, y = Föräldraskap, fill = Kön)) +
+  geom_boxplot(width = 0.4,
+               alpha = 0.6, 
+               outlier.shape = NA, notch = TRUE,) +
+  labs(
+    title = paste0("Substansanvändning senaste 4 veckorna & bristande föräldraskap"),
+    subtitle = "Åk 9 enbart - Antal substanser",
+    y = "Bristande föräldraskap"
+  ) +
+  scale_fill_gender() +
+  facet_wrap(~Kön) +
+  theme_minimal() +
+  theme_rise() +
+  theme(legend.background = element_rect(color = "lightgrey")) +
+  coord_cartesian(ylim = c(-2.5, 2.5))
+
+df %>%
+  filter(Kön %in% c("Pojke", "Flicka"),
+         ARSKURS == "Gy 2") %>%
+  #drop_na(Senaste4v) %>% 
+  select(Senaste4v, ar, Kön, Föräldraskap) %>%
+  mutate(Senaste4v = recode(Senaste4v,"4:20=3")) %>% 
+  mutate(Senaste4v = factor(Senaste4v,
+         levels = c(3,2,1,0),
+         labels = c("Tre eller fler","Två substanser","En substans","Ej använt")
+  )
+         ) %>% 
+  drop_na(Föräldraskap) %>% 
+  ggplot(aes(x = Senaste4v, y = Föräldraskap, fill = Kön)) +
+  geom_boxplot(width = 0.4,
+               alpha = 0.6, 
+               outlier.shape = NA, notch = TRUE,) +
+  labs(
+    title = paste0("Substansanvändning senaste 4 veckorna & bristande föräldraskap"),
+    subtitle = "Gy 2 enbart - Antal substanser",
+    y = "Bristande föräldraskap"
+  ) +
+  scale_fill_gender() +
+  facet_wrap(~Kön) +
+  theme_minimal() +
+  theme_rise() +
+  theme(legend.background = element_rect(color = "lightgrey")) +
+  coord_cartesian(ylim = c(-2.5, 2.5))
+
+
+```
+
+### Regressionsanalys
+
+```{r}
+df_fldr_åk9_p <- df %>%
+  filter(Kön == "Pojke",
+         ARSKURS == "Åk 9") %>% 
+  select(Senaste4v, ar, Kön, Föräldraskap,ARSKURS) %>%
+  mutate(Senaste4v = recode(Senaste4v,"4:20=3")) %>% 
+  mutate(Senaste4v = factor(Senaste4v,
+                            levels = c(3,2,1,0),
+                            labels = c("Tre eller fler","Två substanser","En substans","Ej använt")
+  ),
+  Årskurs = factor(ARSKURS)
+  ) %>% 
+  drop_na(Föräldraskap) %>% 
+  mutate(Föräldraskap = datawizard::normalize(Föräldraskap))
+
+df_fldr_åk9_f <- df %>%
+  filter(Kön == "Flicka",
+         ARSKURS == "Åk 9") %>% 
+  select(Senaste4v, ar, Kön, Föräldraskap,ARSKURS) %>%
+  mutate(Senaste4v = recode(Senaste4v,"4:20=3")) %>% 
+  mutate(Senaste4v = factor(Senaste4v,
+                            levels = c(3,2,1,0),
+                            labels = c("Tre eller fler","Två substanser","En substans","Ej använt")
+  ),
+  Årskurs = factor(ARSKURS)
+  ) %>% 
+  drop_na(Föräldraskap) %>% 
+  mutate(Föräldraskap = datawizard::normalize(Föräldraskap))
+
+df_fldr_gy2_p <- df %>%
+  filter(Kön == "Pojke",
+         ARSKURS == "Gy 2") %>% 
+  select(Senaste4v, ar, Kön, Föräldraskap,ARSKURS) %>%
+  mutate(Senaste4v = recode(Senaste4v,"4:20=3")) %>% 
+  mutate(Senaste4v = factor(Senaste4v,
+                            levels = c(3,2,1,0),
+                            labels = c("Tre eller fler","Två substanser","En substans","Ej använt")
+  ),
+  Årskurs = factor(ARSKURS)
+  ) %>% 
+  drop_na(Föräldraskap) %>% 
+  mutate(Föräldraskap = datawizard::normalize(Föräldraskap))
+
+df_fldr_gy2_f <- df %>%
+  filter(Kön == "Flicka",
+         ARSKURS == "Gy 2") %>% 
+  select(Senaste4v, ar, Kön, Föräldraskap,ARSKURS) %>%
+  mutate(Senaste4v = recode(Senaste4v,"4:20=3")) %>% 
+  mutate(Senaste4v = factor(Senaste4v,
+                            levels = c(3,2,1,0),
+                            labels = c("Tre eller fler","Två substanser","En substans","Ej använt")
+  ),
+  Årskurs = factor(ARSKURS)
+  ) %>% 
+  drop_na(Föräldraskap) %>% 
+  mutate(Föräldraskap = datawizard::normalize(Föräldraskap))
+
+# logit.m <- polr(Senaste4v ~ Föräldraskap,
+#                 data = df_fldr_åk9,
+#                 Hess = T,
+#                 method = "logistic")
+# summary(logit.m)
+# avg_slopes(logit.m) %>% 
+#   as.data.frame() %>% 
+#   # plot estimates with confidence intervals
+#   ggplot(aes(x = fct_reorder(group,estimate), y = estimate)) +
+#   geom_pointrange(aes(ymin = conf.low, ymax = conf.high)) +
+#   theme_rise() +
+#   coord_cartesian(ylim = c(-1, 1)) +
+#   labs(
+#     title = paste0("Substansanvändning senaste 4 veckorna & bristande föräldraskap"),
+#     subtitle = "Åk 9 pojkar enbart",
+#     y = "Predicerat värde Bristande föräldraskap",
+#     x = "")
+
+# neural net 
+fldr_åk9p_nnet <- multinom(Senaste4v ~ Föräldraskap,
+                data = df_fldr_åk9_p, trace = FALSE)
+fldr_åk9f_nnet <- multinom(Senaste4v ~ Föräldraskap,
+                data = df_fldr_åk9_f, trace = FALSE)
+fldr_gy2p_nnet <- multinom(Senaste4v ~ Föräldraskap,
+                data = df_fldr_gy2_p, trace = FALSE)
+fldr_gy2f_nnet <- multinom(Senaste4v ~ Föräldraskap,
+                data = df_fldr_gy2_f, trace = FALSE)
+# comparing models
+# library(broom)
+# glance(logit.m)
+# glance(nnet.m)
+
+fldr_åk9p_nnet %>% 
+  avg_slopes(type = "probs") %>% 
+  as.data.frame() %>% 
+  # plot estimates with confidence intervals
+  ggplot(aes(x = fct_reorder(group,estimate), y = estimate)) +
+  geom_pointrange(aes(ymin = conf.low, ymax = conf.high)) +
+  theme_rise() +
+  coord_cartesian(ylim = c(-1, 1)) +
+  labs(
+    title = paste0("Substansanvändning senaste 4 veckorna & bristande föräldraskap"),
+    subtitle = "Åk 9 pojkar enbart",
+    y = "Predicerat värde Bristande föräldraskap",
+    x = "")
+
+
+fldr_åk9f_nnet %>% 
+  avg_slopes(type = "probs") %>% 
+  as.data.frame() %>% 
+  # plot estimates with confidence intervals
+  ggplot(aes(x = fct_reorder(group,estimate), y = estimate)) +
+  geom_pointrange(aes(ymin = conf.low, ymax = conf.high)) +
+  theme_rise() +
+  coord_cartesian(ylim = c(-1, 1)) +
+  labs(
+    title = paste0("Substansanvändning senaste 4 veckorna & bristande föräldraskap"),
+    subtitle = "Åk 9 flickor enbart",
+    y = "Predicerat värde Bristande föräldraskap",
+    x = "")
+
+
+fldr_gy2p_nnet %>% 
+  avg_slopes(type = "probs") %>% 
+  as.data.frame() %>% 
+  # plot estimates with confidence intervals
+  ggplot(aes(x = fct_reorder(group,estimate), y = estimate)) +
+  geom_pointrange(aes(ymin = conf.low, ymax = conf.high)) +
+  theme_rise() +
+  coord_cartesian(ylim = c(-1, 1)) +
+  labs(
+    title = paste0("Substansanvändning senaste 4 veckorna & bristande föräldraskap"),
+    subtitle = "Gy 2 pojkar enbart",
+    y = "Predicerat värde Bristande föräldraskap",
+    x = "")
+
+
+fldr_gy2f_nnet %>% 
+  avg_slopes(type = "probs") %>% 
+  as.data.frame() %>% 
+  # plot estimates with confidence intervals
+  ggplot(aes(x = fct_reorder(group,estimate), y = estimate)) +
+  geom_pointrange(aes(ymin = conf.low, ymax = conf.high)) +
+  theme_rise() +
+  coord_cartesian(ylim = c(-1, 1)) +
+  labs(
+    title = paste0("Substansanvändning senaste 4 veckorna & bristande föräldraskap"),
+    subtitle = "Gy 2 flickor enbart",
+    y = "Predicerat värde Bristande föräldraskap",
+    x = "")
+
+```
+
+### Antal substanser Gy 2
+
+```{r}
+df %>%
+  filter(Kön %in% c("Pojke", "Flicka"),
+         ARSKURS == "Gy 2") %>%
+  #drop_na(Senaste4v) %>% 
+  select(Senaste4v, ar, Kön, Föräldraskap) %>%
+  mutate(Senaste4v = recode(Senaste4v,"4:20=3")) %>% 
+  mutate(Senaste4v = factor(Senaste4v,
+         levels = c(3,2,1,0),
+         labels = c("Tre eller fler","Två substanser","En substans","Ej använt")
+  )
+         ) %>% 
+  drop_na(Föräldraskap) %>% 
+  ggplot(aes(x = Senaste4v, y = Föräldraskap, fill = Kön)) +
+  geom_boxplot(width = 0.4,
+               alpha = 0.6, 
+               outlier.shape = NA, notch = TRUE,) +
+  labs(
+    title = paste0("Substansanvändning senaste 4 veckorna & bristande föräldraskap"),
+    subtitle = "Gy 2 enbart - Antal substanser",
+    y = "Bristande föräldraskap"
+  ) +
+  scale_fill_gender() +
+  facet_wrap(~Kön) +
+  theme_minimal() +
+  theme_rise() +
+  theme(legend.background = element_rect(color = "lightgrey"))
+```
+
+
+### Debutålder ANDT
+
+Här behövs en scatter plot & någon typ av regression, för varje substanstyp.
+
+```{r}
+itemsANDTSdebut <- c("F16","F20","F37","F44","F51")
+itemsANDTSdebut_labels = c("rökning", "snus", "alkohol", "sniffning", "narkotika")
+
+df_debut <- df %>%
+  filter(
+    ARSKURS == "Gy 2",
+    Kön %in% c("Pojke", "Flicka")
+  ) %>%
+  mutate(across(itemsANDTSdebut, ~ recode(.x, "0=11;1=12;2=13;3=14;4=15;5=16;6=17;7=18"))) %>%
+  select(all_of(c(itemsANDTSdebut, "ARSKURS", "ar", "Kön","Föräldraskap"))) %>%
+  rename(
+    rökning = F16,
+    snus = F20,
+    alkohol = F37,
+    sniffning = F44,
+    narkotika = F51
+  )  %>% 
+  mutate(Föräldraskap = datawizard::normalize(Föräldraskap))
+
+df_debut_f <- df_debut %>%
+  filter(Kön == "Flicka")
+
+df_debut_p <- df_debut %>%
+  filter(Kön == "Pojke")
+```
+
+#### Rökning
+
+```{r}
+df_debut %>%
+  ggplot(aes(x = rökning, fill = Kön)) +
+  geom_bar(position = position_dodge(width = 0.9)) +
+  theme_rise() +
+  scale_fill_gender() +
+  labs(
+    title = paste0("Debutålder rökning"),
+    #subtitle = "",
+    y = "Antal",
+    x = "Debutålder rökning"
+  )
+
+df_debut %>%
+  ggplot(aes(x = Föräldraskap, y = rökning, color = Kön)) +
+  geom_point() +
+  geom_smooth(method = "loess") +
+  facet_wrap(~Kön) +
+  theme_rise() +
+  scale_color_gender() +
+  labs(
+    title = paste0("Debutålder rökning & bristande föräldraskap"),
+    #subtitle = "",
+    y = "Debutålder rökning",
+    x = "Bristande föräldraskap"
+  )
+
+```
+
+#### Regressionsanalyser
+
+```{r}
+# linear model
+# lm_f <- lm(rökning ~ Föräldraskap,
+#            data = df_debut_f)
+# lm_p <- lm(rökning ~ Föräldraskap,
+#            data = df_debut_p)
+# check_model(lm_f)
+# # ordered logit
+# logit_f <- polr(factor(rökning) ~ Föräldraskap,
+#                 data = df_debut_f,
+#                 Hess = T,
+#                 method = "logistic")
+# # ordered probit
+# probit_f <- polr(factor(rökning) ~ Föräldraskap,
+#                 data = df_debut_f,
+#                 Hess = T,
+#                 method = "probit")
+# neural net multinomial
+nnet_f <- nnet::multinom(rökning ~ Föräldraskap,
+                data = df_debut_f, trace = FALSE)
+nnet_p <- nnet::multinom(rökning ~ Föräldraskap,
+                data = df_debut_p, trace = FALSE)
+# glance(lm_f)
+# glance(logit_f)
+# glance(probit_f)
+# glance(nnet_f)
+
+nnet_f %>% 
+  avg_slopes(type = "probs") %>% 
+  as.data.frame() %>% 
+  # plot estimates with confidence intervals
+  ggplot(aes(x = group, y = estimate)) +
+  geom_pointrange(aes(ymin = conf.low, ymax = conf.high)) +
+  theme_rise() +
+  coord_cartesian(ylim = c(-1, 1)) +
+  labs(
+    title = paste0("Debutålder rökning & bristande föräldraskap"),
+    subtitle = "Gy 2 flickor enbart",
+    y = "Predicerat värde Bristande föräldraskap",
+    x = "")
+
+nnet_p %>% 
+  avg_slopes(type = "probs") %>% 
+  as.data.frame() %>% 
+  # plot estimates with confidence intervals
+  ggplot(aes(x = group, y = estimate)) +
+  geom_pointrange(aes(ymin = conf.low, ymax = conf.high)) +
+  theme_rise() +
+  coord_cartesian(ylim = c(-1, 1)) +
+  labs(
+    title = paste0("Debutålder rökning & bristande föräldraskap"),
+    subtitle = "Gy 2 pojkar enbart",
+    y = "Predicerat värde Bristande föräldraskap",
+    x = "")
+
+# library(ordbetareg)
+# # ordered beta regression
+# beta_f <- ordbetareg(rökning ~ Föräldraskap,
+#                 data = df_debut_f,
+#                 cores=4,chains=4,iter=2000)
+# pp_check_ordbeta(beta_f,ndraws = 100)
+```
+
+#### Narkotika
+
+```{r}
+df_debut %>%
+  ggplot(aes(x = narkotika, fill = Kön)) +
+  geom_bar(position = position_dodge(width = 0.9)) +
+  theme_rise() +
+  scale_fill_gender() +
+  labs(
+    title = paste0("Debutålder narkotika"),
+    #subtitle = "",
+    y = "Antal",
+    x = "Debutålder narkotika"
+  )
+
+df_debut %>%
+  ggplot(aes(x = Föräldraskap, y = narkotika, color = Kön)) +
+  geom_point() +
+  geom_smooth(method = "loess") +
+  facet_wrap(~Kön) +
+  theme_rise() +
+  scale_color_gender() +
+  labs(
+    title = paste0("Debutålder narkotika & bristande föräldraskap"),
+    #subtitle = "",
+    y = "Debutålder narkotika",
+    x = "Bristande föräldraskap"
+  )
+
+```
+
+#### Regressionsanalyser
+
+```{r}
+# neural net multinomial
+nnet_f_nark <- nnet::multinom(narkotika ~ Föräldraskap,
+                data = df_debut_f, trace = FALSE)
+nnet_p_nark <- nnet::multinom(narkotika ~ Föräldraskap,
+                data = df_debut_p, trace = FALSE)
+# glance(lm_f)
+# glance(logit_f)
+# glance(probit_f)
+# glance(nnet_f)
+
+nnet_f_nark %>% 
+  avg_slopes(type = "probs") %>% 
+  as.data.frame() %>% 
+  # plot estimates with confidence intervals
+  ggplot(aes(x = group, y = estimate)) +
+  geom_pointrange(aes(ymin = conf.low, ymax = conf.high)) +
+  theme_rise() +
+  coord_cartesian(ylim = c(-1, 1)) +
+  labs(
+    title = paste0("Debutålder narkotika & bristande föräldraskap"),
+    subtitle = "Gy 2 flickor enbart",
+    y = "Predicerat värde Bristande föräldraskap",
+    x = "")
+
+nnet_p_nark %>% 
+  avg_slopes(type = "probs") %>% 
+  as.data.frame() %>% 
+  # plot estimates with confidence intervals
+  ggplot(aes(x = group, y = estimate)) +
+  geom_pointrange(aes(ymin = conf.low, ymax = conf.high)) +
+  theme_rise() +
+  coord_cartesian(ylim = c(-1, 1)) +
+  labs(
+    title = paste0("Debutålder narkotika & bristande föräldraskap"),
+    subtitle = "Gy 2 pojkar enbart",
+    y = "Predicerat värde Bristande föräldraskap",
+    x = "")
+
+```

@@ -9,6 +9,8 @@ title.size <- 12
 legend.size <- 10
 stript.size <- 10
 
+årtal <- c(2006,2008,2010,2012,2014,2016,2018,2020,2022)
+
 theme_rise <- function(fontfamily = "Lato", axissize = 13, titlesize = 15,
                        margins = 12, axisface = "plain", stripsize = 12,
                        panelDist = 0.6, legendSize = 11, legendTsize = 12) {
@@ -593,7 +595,7 @@ andtsUseShare2 <- function(andts) {
 
 # Mobbning ----------------------------------------------------------------
 
-DIDmobbadAlla <- function(year) {
+DIDmobbadAllaOLD <- function(year) {
 
   mobbadAlla <- df %>%
     filter(Kommun == fokusKommun,
@@ -628,24 +630,90 @@ DIDmobbadAlla <- function(year) {
     theme_rise() +
     labs(title = "Har du känt dig mobbad eller trakasserad i skolan det här läsåret?",
          subtitle = glue("{year}, både åk 9 och gy 2."),
-         caption = "Medelvärde inkluderar alla svar, oavsett angivet kön. Datakälla: Stockholmsenkäten") +
+         caption = "Datakälla: Stockholmsenkäten") +
     ylab("Andel i %") +
     xlab("") +
     geom_text(aes(label = round(Andel,1)),
               position = position_dodge(width = 0.9),
               hjust = -0.22, vjust = 0.5, angle = 90, size = 2.7,
+              color = "darkgrey")
+    # annotate("text", y = 95, x = 3,
+    #          label = paste0("Medelvärde ",nejMedel,"%"),
+    #          color = "black") +
+    # geom_curve(x = 3, y = 91,
+    #            xend = 1, yend = nejMedel,
+    #            color = "black",
+    #            curvature = -0.4,
+    #            arrow = arrow())
+}
+
+DIDmobbadAlla <- function(year) {
+
+  df %>%
+    filter(Kommun == fokusKommun,
+           ar == year) %>%
+    drop_na(mobbad) %>%
+    group_by(Kön) %>%
+    count(mobbad, .drop = F) %>%
+    mutate(Andel = 100*n/sum(n)) %>%
+    mutate(mobbad = fct_reorder(mobbad, n)) %>%
+    ggplot(aes(x = Andel, y = mobbad, fill = Kön)) +
+    geom_bar(position=position_dodge(),
+             stat = 'identity') +
+    scale_x_continuous(limits = c(0,100), breaks = c(0,20,40,60,80,100)) +
+    scale_y_discrete(labels = ~ stringr::str_wrap(.x, width = 30)) +
+    scale_color_manual(values = RISEpalette1[c(1,5)],
+                       aesthetics = c("fill","color"),
+                       labels = c("Flicka","Pojke","Annat/ej svar")) +
+    theme_minimal() +
+    theme_rise() +
+    labs(title = str_wrap("Har du känt dig mobbad eller trakasserad i skolan det här läsåret?", 50),
+         subtitle = glue("{year}, både åk 9 och gy 2."),
+         caption = "Datakälla: Stockholmsenkäten") +
+    ylab("Andel i %") +
+    xlab("") +
+    geom_text(aes(label = paste0(round(Andel,1),"% (n = ",n,")")),
+              position = position_dodge(width = 0.9),
+              hjust = -0.22, vjust = 0.5, size = 2.7,
               color = "darkgrey") +
-    annotate("text", y = 95, x = 3,
-             label = paste0("Medelvärde ",nejMedel,"%"),
-             color = "black") +
-    geom_curve(x = 3, y = 91,
-               xend = 1, yend = nejMedel,
-               color = "black",
-               curvature = -0.4,
-               arrow = arrow())
+    coord_cartesian(clip = "off")
 }
 
 DIDmobbadÅK <- function(year, årskurs) {
+
+  df %>%
+    filter(Kommun == fokusKommun,
+           ar == year,
+           ARSKURS == årskurs) %>%
+    drop_na(mobbad) %>%
+    group_by(Kön) %>%
+    count(mobbad, .drop = F) %>%
+    mutate(Andel = 100*n/sum(n)) %>%
+    mutate(mobbad = fct_reorder(mobbad, n)) %>%
+    ggplot(aes(x = Andel, y = mobbad, fill = Kön)) +
+    geom_bar(position=position_dodge(),
+             stat = 'identity') +
+    scale_x_continuous(limits = c(0,100), breaks = c(0,20,40,60,80,100)) +
+    scale_y_discrete(labels = ~ stringr::str_wrap(.x, width = 30)) +
+    scale_color_manual(values = RISEpalette1[c(1,5)],
+                       aesthetics = c("fill","color"),
+                       labels = c("Flicka","Pojke","Annat/ej svar")) +
+    theme_minimal() +
+    theme_rise() +
+    labs(title = str_wrap("Har du känt dig mobbad eller trakasserad i skolan det här läsåret?", 50),
+         subtitle = glue("{year}, endast svar från {årskurs}."),
+         caption = "Datakälla: Stockholmsenkäten") +
+    ylab("Andel i %") +
+    xlab("") +
+    geom_text(aes(label = paste0(round(Andel,1),"% (n = ",n,")")),
+              position = position_dodge(width = 0.9),
+              hjust = -0.22, vjust = 0.5, size = 2.7,
+              color = "darkgrey") +
+    coord_cartesian(clip = "off")
+}
+
+
+DIDmobbadÅKold <- function(year, årskurs) {
 
   mobbadAlla <- df %>%
     filter(Kommun == fokusKommun,

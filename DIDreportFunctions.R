@@ -358,34 +358,6 @@ set_girafe_defaults(
                mono = "Lato"))
 init_girafe_defaults()
 
-# DIDline90old <- function(faktor){
-#   plotFaktor <- faktor
-#   df.plot <- sums.index %>%
-#     filter(Faktor == plotFaktor) %>%
-#     filter(Kommun %in% jmfKommun) %>%
-#     filter(Kön %in% c("Flicka", "Pojke")) %>%
-#     filter(!År < 2006) %>%
-#     mutate(År = as.factor(År))
-# #   didline90 <-
-#   ggplot(df.plot, aes(x = År, y = n.90, group = Kön, color = Kön, tooltip = n)) + # make plot, with area color
-#     geom_line(linewidth = 1) +
-#     geom_point(size = 3) +
-#     #geom_point_interactive(size = 3) +
-#     scale_y_continuous(limits = c(0, 30)) +
-#     scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
-#     scale_color_manual(values = RISEpalette1[c(1,5)]) +
-#     geom_hline(yintercept = 10, color = "darkgrey", linetype = 2, linewidth = 0.4, alpha = 0.7) +
-#     ggtitle("Andel i grupp \"förhöjd risk\"") +
-#     xlab("") +
-#     ylab(paste0(plotFaktor)) +
-#     labs(caption = "Datakälla: Stockholmsenkäten.") +
-#     facet_wrap(~Kommun, labeller = labeller(Kommun = label_wrap_gen(12))) +
-#     theme_minimal() +
-#     theme_rise()
-#
-#   #girafe(ggobj = didline90)
-# }
-
 DIDline90 <- function(faktor){
 
   plotFaktor <- faktor
@@ -420,6 +392,36 @@ DIDline90åk <- function(faktor){
 
   plotFaktor <- faktor
 
+  df.risk.gender.arskurs %>%
+    filter(Index == plotFaktor,
+           Kommun %in% jmfKommun,
+           Kön %in% c("Flicka", "Pojke"),
+           riskLevel == "Förhöjd risk") %>%
+    drop_na(Årskurs) %>%
+
+    ggplot(aes(x = År, y = Andel, group = Kön, color = Kön)) +
+    geom_line(linewidth = 1.2) +
+    geom_point(size = 8) +
+    geom_text(aes(label = n), color = "white", size = 4) +
+    scale_y_continuous(limits = c(0, 30)) +
+    scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
+    scale_color_manual(values = RISEpalette1[c(1,5)]) +
+    geom_hline(yintercept = 10, color = "darkgrey", linetype = 2, linewidth = 0.4, alpha = 0.7) +
+    xlab("") +
+    ylab(paste0(plotFaktor)) +
+    labs(title = "Andel i grupp \"förhöjd risk\"",
+         subtitle = "Antal elever visas i vit text i punkterna",
+         caption = "Datakälla: Stockholmsenkäten.") +
+    facet_grid(Årskurs~Kommun, labeller = labeller(Kommun = label_wrap_gen(12))) +
+    theme_minimal() +
+    theme_rise()
+
+}
+
+DIDline90åkOLD <- function(faktor){
+
+  plotFaktor <- faktor
+
   df.plot <- df.risk.gender.arskurs %>%
     filter(Index == plotFaktor) %>%
     filter(Kommun %in% jmfKommun) %>%
@@ -443,7 +445,6 @@ DIDline90åk <- function(faktor){
     theme_minimal() +
     theme_rise()
 
-  #girafe(ggobj = didline90)
 }
 
 # Demografi ---------------------------------------------------------------
@@ -1010,4 +1011,68 @@ DIDskolinspG <- function(KPI,kön) {
          caption = "Källa: Skolinspektionens skolenkät") +
     coord_cartesian(clip = "off")
 } # Kön recoded to either "Flickor" or "Pojkar".
+
+# Skolverket databas ------------------------------------------------------
+
+# for comparisons
+DIDskolverketPlot <- function(data) {
+  data %>%
+    filter(Kommun %in% c(fokusKommun, jmfKommun)) %>%
+    ggplot(aes(x = År, y = Medelvärde, group = Kommun, color = Kommun)) +
+    geom_smooth(method = "loess",
+                span = 8,
+                aes(group = 1),
+                alpha = 0.17,
+                color = "darkblue",
+                linewidth = 0,
+                linetype = 2) +
+    geom_line(data = filter({{data}}, Kommun %in% jmfKommun),
+              alpha = 0.6, linewidth = 1, linetype = 3) +
+    geom_line(data = filter({{data}}, Kommun %in% fokusKommun),
+              alpha = 0.9, linewidth = 0.9, linetype = 1) +
+    geom_point(data = filter({{data}}, Kommun %in% fokusKommun),
+               alpha = 0.9, size = 2.1) +
+    scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
+    #scale_y_continuous(limits = c(0, 100)) +
+    scale_color_brewer(type = "qual", palette = "Dark2") +
+    #scale_color_manual(values = RISEpalette6) +
+    ylab("") +
+    xlab("") +
+    facet_wrap(~description,
+               ncol = 2,
+               scales = "free",
+               labeller = labeller(description = label_wrap_gen(22))) +
+    theme_rise() +
+    theme(legend.position = "top") +
+    labs(caption = "Ljusgrått fält visar 95% konfidensintervall trendlinje för samtliga kommuner i regionen.\nDatakälla: Skolverket",
+         title = "Skolverket: jämförelse mellan fokus- och jämförelsekommun",
+         subtitle = "Datapunkter är medelvärden från kommunens skolor")
+}
+
+# for details about fokusKommun
+DIDskolverketPlotSingle <- function(data) {
+  data %>%
+    filter(Kommun == fokusKommun) %>%
+    ggplot(aes(x = År, y = Medelvärde, group = Kommun, color = Kommun)) +
+    geom_line(aes(y = Median),
+              alpha = 0.6, linewidth = 1, linetype = 3) +
+    geom_line(alpha = 1, linewidth = 1, linetype = 1) +
+    geom_point(alpha = 1, size = 2.2) +
+    geom_ribbon(aes(ymin = Lägsta, ymax = Högsta, color = NULL),
+                alpha = 0.1) +
+    scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
+    #scale_y_continuous(limits = c(0, 100)) +
+    scale_color_brewer(type = "qual", palette = "Dark2") +
+    ylab("") +
+    xlab("") +
+    facet_wrap(~description,
+               ncol = 2,
+               scales = "free",
+               labeller = labeller(description = label_wrap_gen(22))) +
+    theme_rise() +
+    theme(legend.position = "none") +
+    labs(caption = "Datakälla: Skolverket",
+         title = paste0("Skolverket - ",fokusKommun),
+         subtitle = str_wrap("Punkter och dragen linje är medelvärde från kommunens skolor. Prickad linje är medianvärde. Ljusgrått fält visar högsta och lägsta värde"))
+}
 

@@ -48,8 +48,6 @@ if (fokusKommun == "Alla") {
     filter(Kommun %in% jmfKommun)
 }
 
-
-
 # remove data from before 2006 for Södertälje, due to lack of comparisons
 df <- df %>%
   filter(!ar < 2006)
@@ -72,6 +70,90 @@ itemresponses <- read_excel("../DIDapp/data/SthlmsEnk_04psfRespCats.xls", sheet 
 sthlm.index <- itemlabels.final %>%
   distinct(Index) %>%
   pull()
+
+## Skolverket data --------------------------------------------------------
+skolverket <- read_parquet("Skolverket/2023-08-21_SkolverketData-all_municipalities_in_Stockholm_and_Uppsala.parquet") %>%
+  filter(str_detect(Kommunkod,"^01"))
+
+# item labels
+itemlabelsSV <- data.frame(
+  variable = skolverket %>%
+    distinct(variable) %>%
+    pull(variable),
+  description = c("Antal specialpedagoger",
+                  "Elever per lärare",
+                  "Andel legitimerade lärare",
+                  "Totalt antal elever",
+                  "Elever per specialpedagog",
+                  "Andel elever i 6:e klass med fullständiga betyg",
+                  "Medelvärde nationella prov svenska 6:e klass",
+                  "Medelvärde nationella prov engelska 6:e klass",
+                  "Medelvärde nationella prov matematik 6:e klass",
+                  "Medelvärde nationella prov SVA 6:e klass",
+                  "Medelvärde nationella prov svenska 9:e klass",
+                  "Medelvärde nationella prov engelska 9:e klass",
+                  "Medelvärde nationella prov matematik 9:e klass",
+                  "Medelvärde nationella prov SVA 9:e klass",
+                  "Andel elever i 9:e klass med fullständiga betyg",
+                  "Medelvärde meritvärde",
+                  "Andel elever i 9:e klass behöriga till yrkesprogram",
+                  "Andel elever i 9:e klass behöriga till estetiskt program",
+                  "Andel elever i 9:e klass behöriga till sam/ek/hum",
+                  "Andel elever i 9:e klass behöriga till natur/teknik"
+  )
+)
+
+skolverket <- left_join(skolverket,itemlabelsSV, by = "variable")
+
+# grundskola
+gr.skolverket <- skolverket %>%
+  filter(type == "gr")
+
+viz.gr.skolverket <- gr.skolverket %>%
+  mutate(År = factor(timePeriod)) %>%
+  rename(Kommun = Kommunnamn) %>%
+  group_by(Kommun, År, description) %>%
+  summarise(Medelvärde = mean(value, na.rm = TRUE),
+            Median = median(value, na.rm = TRUE),
+            IQR = IQR(value, na.rm = TRUE),
+            SD = sd(value, na.rm = TRUE),
+            SE = sd(value, na.rm = TRUE)/sqrt(n()),
+            Högsta = max(value, na.rm = TRUE),
+            Lägsta = min(value, na.rm = TRUE),
+            Antal_skolor = n())
+
+# demographic data from manual download (not available in database/API)
+demogr.skolverket <- read_parquet("Skolverket/skolverketDemografi.parquet") %>%
+  filter(str_detect(kommun_kod,"^01"))
+# get summary data for school years 7 and 9
+demogr.skolverket.long <- demogr.skolverket %>%
+  select(year, skola, skolkommun, elever_arskurs_7, elever_arskurs_9, typ_av_huvudman) %>%
+  pivot_longer(c(elever_arskurs_7,elever_arskurs_9),
+               values_to = "antal_elever",
+               names_to = "arskurs") %>%
+  group_by(year, skolkommun, arskurs) %>%
+  summarise(antal_elever = sum(antal_elever, na.rm = TRUE)) %>%
+  ungroup() %>%
+  mutate(arskurs = factor(arskurs, labels = c("Åk 7", "Åk 9")),
+         year = factor(year))
+
+sthlm_tmp <- df %>%
+  drop_na(Kommun,ARSKURS) %>%
+  rename(År = ar,
+         Årskurs = ARSKURS) %>%
+  group_by(År,Kommun,Årskurs) %>%
+  summarise(antal_svar = n()) %>%
+  ungroup() %>%
+  mutate(År = factor(År))
+
+svarsfrekvenser <- demogr.skolverket.long %>%
+  rename(År = year,
+         Kommun = skolkommun,
+         Årskurs = arskurs) %>%
+  mutate(Kommun = factor(Kommun)) %>%
+  right_join(.,sthlm_tmp, by = c("År","Kommun","Årskurs")) %>%
+  drop_na(antal_elever) %>%
+  mutate(svarsfrekvens = round(100*antal_svar/antal_elever,1))
 
 ## Skolinspektionen --------------------------------------------------------
 
@@ -419,7 +501,7 @@ riskCalcGG <- function(df,index){
     mutate(År = as.factor(ar)) %>%
     rename(Årskurs = ARSKURS) %>%
     filter(!Kön == "<NA>") %>%
-    select(!all_of(c("n","ar")))
+    select(!ar)
 }
 
 df.risk.gender.arskurs <- data.frame(matrix(ncol = 4, nrow = 0))

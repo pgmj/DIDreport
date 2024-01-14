@@ -417,11 +417,6 @@ DIDareaPlot("Föräldraskap") +
 
 #### Förhöjd risk
 ```{r}
-DIDline90("Föräldraskap")
-```
-
-#### Förhöjd risk per årskurs
-```{r}
 DIDline90åk("Föräldraskap")
 ```
 
@@ -478,17 +473,7 @@ DIDareaPlot2("Vantrivsel i skolan")  +
   theme(legend.justification = c(0.0, 1.0))
 ```
 
-#### Kön
-```{r}
-DIDareaPlot("Vantrivsel i skolan")
-```
-
 #### Förhöjd risk
-```{r}
-DIDline90("Vantrivsel i skolan")
-```
-
-#### Förhöjd risk per årskurs
 ```{r}
 DIDline90åk("Vantrivsel i skolan")
 ```
@@ -820,6 +805,83 @@ KOLADA %>%
 ```
 :::
 
+## Skolverkets databas
+
+:::: column-page-left
+::: panel-tabset
+### Lärare/specped jämförelse
+```{r}
+#| fig-height: 8
+viz.gr.skolverket %>%
+  filter(description %in% c("Andel legitimerade lärare",
+                            "Elever per lärare",
+                            "Elever per specialpedagog")) %>% 
+  DIDskolverketPlot() +
+  scale_y_continuous(limits = c(0, NA))
+```
+
+### Lärare/specped fokuskommun
+```{r}
+#| fig-height: 8
+viz.gr.skolverket %>%
+  filter(description %in% c("Andel legitimerade lärare",
+                            "Elever per lärare",
+                            "Elever per specialpedagog")) %>% 
+  DIDskolverketPlotSingle() +
+  scale_y_continuous(limits = c(0, NA))
+```
+### Behörighet & meritvärde jämförelse
+```{r}
+#| fig-height: 8
+viz.gr.skolverket %>%
+  filter(description %in% c("Andel elever i 9:e klass med fullständiga betyg",
+                            "Andel elever i 9:e klass behöriga till yrkesprogram",
+                            "Medelvärde meritvärde")) %>% 
+  DIDskolverketPlot() +
+  scale_y_continuous(limits = c(0, NA))
+```
+
+### Behörighet & meritvärde fokuskommun
+```{r}
+#| fig-height: 8
+viz.gr.skolverket %>%
+  filter(description %in% c("Andel elever i 9:e klass med fullständiga betyg",
+                            "Andel elever i 9:e klass behöriga till yrkesprogram",
+                            "Medelvärde meritvärde")) %>% 
+  DIDskolverketPlotSingle() +
+  scale_y_continuous(limits = c(0, NA))
+```
+### Nationella prov jämförelse
+```{r}
+#| fig-height: 10
+viz.gr.skolverket %>%
+  filter(description %in% c("Medelvärde nationella prov matematik 6:e klass",
+                            "Medelvärde nationella prov matematik 9:e klass",
+                            "Medelvärde nationella prov svenska 6:e klass",
+                            "Medelvärde nationella prov svenska 9:e klass",
+                            "Medelvärde nationella prov engelska 6:e klass",
+                            "Medelvärde nationella prov engelska 9:e klass")) %>% 
+  DIDskolverketPlot() +
+  scale_y_continuous(limits = c(0, NA))
+```
+
+### Nationella prov fokuskommun
+```{r}
+#| fig-height: 10
+viz.gr.skolverket %>%
+  filter(description %in% c("Medelvärde nationella prov matematik 6:e klass",
+                            "Medelvärde nationella prov matematik 9:e klass",
+                            "Medelvärde nationella prov svenska 6:e klass",
+                            "Medelvärde nationella prov svenska 9:e klass",
+                            "Medelvärde nationella prov engelska 6:e klass",
+                            "Medelvärde nationella prov engelska 9:e klass")) %>% 
+  DIDskolverketPlotSingle() +
+  scale_y_continuous(limits = c(0, NA))
+```
+:::
+::::
+
+
 ### Skolinspektionen - trygghet & nöjdhet
 
 {{< include _skolinsp.qmd >}}
@@ -883,7 +945,7 @@ DIDareaPlot2("Närsamhälle") +
   theme(legend.justification = c(0.0, 1.0))
 ```
 
-#### Förhöjd risk per årskurs
+#### Förhöjd risk
 ```{r}
 DIDline90åk("Närsamhälle") +
   labs(subtitle = "Närsamhälle")
@@ -974,7 +1036,7 @@ DIDareaPlot2("Utagerande") +
   theme(legend.justification = c(0.0, 1.0))
 ```
 
-### Förhöjd risk per årskurs
+### Förhöjd risk
 ```{r}
 DIDline90åk("Utagerande")
 ```
@@ -997,7 +1059,7 @@ itemlabels.final %>%
 DIDareaPlot2("Psykiska/ psykosomatiska besvär") +
   theme(legend.justification = c(0.0, 1.0))
 ```
-### Förhöjd risk per årskurs
+### Förhöjd risk
 ```{r}
 DIDline90åk("Psykiska/ psykosomatiska besvär")
 ```
@@ -1005,6 +1067,34 @@ DIDline90åk("Psykiska/ psykosomatiska besvär")
 ```{r}
 itemlabels.final %>% 
   filter(Index == "PsykSomBesv") %>% 
+  select(!Index) %>% 
+  kbl_rise(width = 60)
+```
+:::
+
+### Välbefinnande
+
+Nytt index taget från olika delar av Stockholmsenkäten, se fliken med enkätfrågor i indexet.
+
+::: panel-tabset
+#### Uppdelat på kön
+```{r}
+DIDmedelSDg(sums.index,"Välbefinnande") + 
+  facet_wrap(~Kön) +
+  labs(caption = "Datakälla: Stockholmsenkäten")
+```
+
+#### Kön/Årskurs
+```{r}
+DIDmedelSDg(sums.indexGG, "Välbefinnande") + 
+  facet_grid(Årskurs~Kön) +
+  labs(caption = "Datakälla: Stockholmsenkäten")
+```
+
+#### Enkätfrågor i indexet
+```{r}
+itemlabels.final %>% 
+  filter(Index == "Wellbeing") %>% 
   select(!Index) %>% 
   kbl_rise(width = 60)
 ```
@@ -1379,32 +1469,6 @@ df %>%
   ylab("Medelvärde debutålder") +
   theme_minimal() +
   theme_rise()
-```
-:::
-
-## Välbefinnande
-
-::: panel-tabset
-### Uppdelat på kön
-```{r}
-DIDmedelSDg(sums.index,"Välbefinnande") + 
-  facet_wrap(~Kön) +
-  labs(caption = "Datakälla: Stockholmsenkäten")
-```
-
-### Kön/Årskurs
-```{r}
-DIDmedelSDg(sums.indexGG, "Välbefinnande") + 
-  facet_grid(Årskurs~Kön) +
-  labs(caption = "Datakälla: Stockholmsenkäten")
-```
-
-#### Enkätfrågor i indexet
-```{r}
-itemlabels.final %>% 
-  filter(Index == "Wellbeing") %>% 
-  select(!Index) %>% 
-  kbl_rise(width = 60)
 ```
 :::
 

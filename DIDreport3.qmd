@@ -50,15 +50,15 @@ editor_options:
 # These are read by the script render.R, which in turn generates reports
 
 # which municipality to focus this report on?
-#fokusKommun <- params$fokusKommun
+fokusKommun <- params$fokusKommun
 # # which municipalities should be included in comparisons?
-#jmfKommun <- factor(c(fokusKommun,params$jmfKommun),
-#                    levels = c(fokusKommun,params$jmfKommun))
+jmfKommun <- factor(c(fokusKommun,params$jmfKommun),
+                    levels = c(fokusKommun,params$jmfKommun))
 
 ## for testing/dev:
-fokusKommun <- "Järfälla" 
-jmfKommun <- factor(c(fokusKommun,"Södertälje", "Huddinge", "Botkyrka"),
-                   levels = c(fokusKommun,"Södertälje", "Huddinge", "Botkyrka"))
+#fokusKommun <- "Järfälla"
+#jmfKommun <- factor(c(fokusKommun,"Södertälje", "Huddinge", "Botkyrka"),
+#                  levels = c(fokusKommun,"Södertälje", "Huddinge", "Botkyrka"))
 
 # Botkyrka, Huddinge, Södertälje
 # years of interest
@@ -409,12 +409,6 @@ DIDareaPlot2("Föräldraskap") +
   theme(legend.justification = c(0.0, 1.0))
 ```
 
-#### Kön
-```{r}
-DIDareaPlot("Föräldraskap") + 
-  ggtitle(paste0("Bristande föräldraskap - ",fokusKommun))
-```
-
 #### Förhöjd risk
 ```{r}
 DIDline90åk("Föräldraskap")
@@ -425,7 +419,7 @@ DIDline90åk("Föräldraskap")
 itemlabels.final %>% 
   filter(Index == "Parenting") %>% 
   select(!Index) %>% 
-  kbl_rise(width = 60)
+  kbl_rise(tbl_width = 60)
 ```
 :::
 
@@ -483,7 +477,7 @@ DIDline90åk("Vantrivsel i skolan")
 itemlabels.final %>% 
   filter(Index == "SkolaNegativ") %>% 
   select(!Index) %>% 
-  kbl_rise(width = 60)
+  kbl_rise(tbl_width = 60)
 ```
 :::
 
@@ -691,11 +685,11 @@ if (fokusKommun %in% c("Stockholm","Vallentuna","Vaxholm")) {
 itemlabels.final %>% 
   filter(Index == "SkolaPositiv") %>% 
   select(!Index) %>% 
-  kbl_rise(width = 60)
+  kbl_rise(tbl_width = 60)
 ```
 #### Enkätfrågor Skolinspektionen
 ```{r}
-kbl_rise(si.items, width = 60)
+kbl_rise(si.items, tbl_width = 60)
 # note that all SI items have merged the top 3 response categories (top = highest risk)
 ```
 :::
@@ -805,11 +799,11 @@ KOLADA %>%
 ```
 :::
 
-## Skolverkets databas
+### Skolverkets databas
 
 :::: column-page-left
 ::: panel-tabset
-### Lärare/specped jämförelse
+#### Lärare/specped jämförelse
 ```{r}
 #| fig-height: 8
 viz.gr.skolverket %>%
@@ -820,7 +814,7 @@ viz.gr.skolverket %>%
   scale_y_continuous(limits = c(0, NA))
 ```
 
-### Lärare/specped fokuskommun
+#### Lärare/specped fokuskommun
 ```{r}
 #| fig-height: 8
 viz.gr.skolverket %>%
@@ -830,7 +824,7 @@ viz.gr.skolverket %>%
   DIDskolverketPlotSingle() +
   scale_y_continuous(limits = c(0, NA))
 ```
-### Behörighet & meritvärde jämförelse
+#### Behörighet & meritvärde jämförelse
 ```{r}
 #| fig-height: 8
 viz.gr.skolverket %>%
@@ -841,7 +835,7 @@ viz.gr.skolverket %>%
   scale_y_continuous(limits = c(0, NA))
 ```
 
-### Behörighet & meritvärde fokuskommun
+#### Behörighet & meritvärde fokuskommun
 ```{r}
 #| fig-height: 8
 viz.gr.skolverket %>%
@@ -851,7 +845,7 @@ viz.gr.skolverket %>%
   DIDskolverketPlotSingle() +
   scale_y_continuous(limits = c(0, NA))
 ```
-### Nationella prov jämförelse
+#### Nationella prov jämförelse
 ```{r}
 #| fig-height: 10
 viz.gr.skolverket %>%
@@ -865,7 +859,7 @@ viz.gr.skolverket %>%
   scale_y_continuous(limits = c(0, NA))
 ```
 
-### Nationella prov fokuskommun
+#### Nationella prov fokuskommun
 ```{r}
 #| fig-height: 10
 viz.gr.skolverket %>%
@@ -956,7 +950,7 @@ DIDline90åk("Närsamhälle") +
 itemlabels.final %>% 
   filter(Index == "Community") %>% 
   select(!Index) %>% 
-  kbl_rise(width = 60)
+  kbl_rise(tbl_width = 60)
 ```
 :::
 
@@ -1046,7 +1040,7 @@ DIDline90åk("Utagerande")
 itemlabels.final %>% 
   filter(Index == "Utagerande") %>% 
   select(!Index) %>% 
-  kbl_rise(width = 60)
+  kbl_rise(tbl_width = 60)
 ```
 :::
 
@@ -1068,7 +1062,7 @@ DIDline90åk("Psykiska/ psykosomatiska besvär")
 itemlabels.final %>% 
   filter(Index == "PsykSomBesv") %>% 
   select(!Index) %>% 
-  kbl_rise(width = 60)
+  kbl_rise(tbl_width = 60)
 ```
 :::
 
@@ -1096,7 +1090,7 @@ DIDmedelSDg(sums.indexGG, "Välbefinnande") +
 itemlabels.final %>% 
   filter(Index == "Wellbeing") %>% 
   select(!Index) %>% 
-  kbl_rise(width = 60)
+  kbl_rise(tbl_width = 60)
 ```
 :::
 

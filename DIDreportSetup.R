@@ -36,6 +36,47 @@ allaKommuner <- df %>%
   distinct(Kommun) %>%
   pull(Kommun)
 
+### recoding for Stockholms stadsdelsförvaltningar --------------
+# new since 2024 is 11 stadsdelsförvaltningar according to the recode below
+df <-
+  df %>%
+  mutate(SkolSDOnew = case_when(
+    SkolSDO == "Bromma" ~ "Bromma",
+    SkolSDO == "Enskede-Årsta-Vantör" ~ "Enskede-Årsta-Vantör",
+    SkolSDO == "Farsta" ~ "Farsta",
+    SkolSDO == "Hägersten-Liljeholmen" ~ "Hägersten-Älvsjö",
+    SkolSDO == "Hässelby-Vällingby" ~ "Hässelby-Vällingby",
+    SkolSDO == "Kungsholmen" ~ "Kungsholmen",
+    SkolSDO == "Norrmalm" ~ "Norra innerstaden",
+    SkolSDO == "Rinkeby-Kista" ~ "Järva",
+    SkolSDO == "Skarpnäck" ~ "Skarpnäck",
+    SkolSDO == "Skärholmen" ~ "Skärholmen",
+    SkolSDO == "Spånga-Tensta" ~ "Järva",
+    SkolSDO == "Södermalm" ~ "Södermalm",
+    SkolSDO == "Älvsjö" ~ "Hägersten-Älvsjö",
+    SkolSDO == "Hägersten-Älvsjö" ~ "Hägersten-Älvsjö",
+    SkolSDO == "Östermalm" ~ "Norra innerstaden",
+    TRUE ~ NA_character_
+  ))
+### code to check that the recode above is correct
+# df %>% count(SkolSDO)
+# df %>% count(SkolSDOnew)
+# df %>% filter(is.na(SkolSDOnew)) %>% count(SkolSDO)
+
+# store names of stadsdelsförvaltningar in vector variable
+sthlmStadsdelar <- df %>%
+  distinct(SkolSDOnew) %>%
+  pull(SkolSDOnew)
+# remove NA
+sthlmStadsdelar <- sthlmStadsdelar[-7]
+
+if (fokusKommun %in% sthlmStadsdelar) {
+  df <- df %>%
+    mutate(Kommun = case_when(Kommun == "Stockholm" ~ SkolSDOnew,
+                              TRUE ~ Kommun)
+           )
+}
+
 if (fokusKommun == "Alla") {
   df <- df %>%
     select(!Kommun) %>%
@@ -48,12 +89,12 @@ if (fokusKommun == "Alla") {
     filter(Kommun %in% jmfKommun)
 }
 
-# remove data from before 2006 for Södertälje, due to lack of comparisons
+# remove data from before 2006 due to lack of comparisons
 df <- df %>%
   filter(!ar < 2006)
 
 # define demographic variables of interest
-demogr.vars<-read.csv("../DIDapp/data/SthlmsEnk_demographicVariables.csv")
+demogr.vars <- read.csv("../DIDapp/data/SthlmsEnk_demographicVariables.csv")
 demogr.vars <- demogr.vars$demogr.vars
 
 # final set of items based on psychometric analyses

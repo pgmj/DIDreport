@@ -401,8 +401,8 @@ DIDline90åk <- function(faktor){
 
     ggplot(aes(x = År, y = Andel, group = Kön, color = Kön)) +
     geom_line(linewidth = 1.2) +
-    geom_point(size = 8) +
-    geom_text(aes(label = n), color = "white", size = 4) +
+    geom_point(size = 3) +
+    geom_text(aes(label = n), color = "white", size = 2) +
     scale_y_continuous(limits = c(0, 30)) +
     scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
     scale_color_manual(values = RISEpalette1[c(1,5)]) +

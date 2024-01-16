@@ -29,6 +29,10 @@ df.all <- read_parquet("../data/2023-10-27_ScoredRev.parquet")
 df <- df.all %>%
   rename(Kommun = DIDkommun)
 
+df.allaK <- df %>%
+  select(!Kommun) %>%
+  add_column(Kommun = "Alla")
+
 # df.raw <- read_parquet("../data/2023-09-12_Sthlmsenk_all_raw.parquet")
 # df$F70raw <- df.raw$F70
 
@@ -456,6 +460,15 @@ df <- df %>%
          'Positiv skolanknytning' = SkolaPositiv
   )
 
+df.allaK <- df.allaK %>%
+  rename(Närsamhälle = Community,
+         Föräldraskap = Parenting,
+         'Psykiska/ psykosomatiska besvär' = PsykSomBesv,
+         'Vantrivsel i skolan' = SkolaNegativ,
+         Välbefinnande = Wellbeing,
+         'Positiv skolanknytning' = SkolaPositiv
+  )
+
 rslimits <- rslimits %>%
   rename(Närsamhälle = Community,
          Föräldraskap = Parenting,
@@ -549,6 +562,12 @@ df.risk.gender.arskurs <- data.frame(matrix(ncol = 4, nrow = 0))
 for (i in rsfaktorer) {
   df.r1 <- as.data.frame(riskCalcGG(df, i))
   df.risk.gender.arskurs <- rbind(df.risk.gender.arskurs, df.r1)
+}
+
+df.risk.gender.arskurs.alla <- data.frame(matrix(ncol = 4, nrow = 0))
+for (i in rsfaktorer) {
+  df.r1 <- as.data.frame(riskCalcGG(df.allaK, i))
+  df.risk.gender.arskurs.alla <- rbind(df.risk.gender.arskurs.alla, df.r1)
 }
 
 # rename demographic variables for use in selectInput() later

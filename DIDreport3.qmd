@@ -10,7 +10,7 @@ author:
   orcid: 0000-0003-1669-592X
 date: last-modified
 params:
-  fokusKommun: "Järfälla"
+  fokusKommun: "Vallentuna"
   jmfKommun: "Danderyd"
   years: 2020
 format: 
@@ -50,17 +50,18 @@ editor_options:
 # These are read by the script render.R, which in turn generates reports
 
 # which municipality to focus this report on?
-fokusKommun <- params$fokusKommun
+#fokusKommun <- params$fokusKommun
 # # which municipalities should be included in comparisons?
-jmfKommun <- factor(c(fokusKommun,params$jmfKommun),
-                    levels = c(fokusKommun,params$jmfKommun))
+#jmfKommun <- factor(c(fokusKommun,params$jmfKommun),
+#                    levels = c(fokusKommun,params$jmfKommun))
 
 ## for testing/dev:
-#fokusKommun <- "Järfälla"
-#jmfKommun <- factor(c(fokusKommun,"Södertälje", "Huddinge", "Botkyrka"),
-#                  levels = c(fokusKommun,"Södertälje", "Huddinge", "Botkyrka"))
+fokusKommun <- "Vallentuna"
+jmfKommun <- factor(c(fokusKommun,"Österåker", "Danderyd", "Täby"),
+                  levels = c(fokusKommun,"Österåker", "Danderyd", "Täby"))
 
 # Botkyrka, Huddinge, Södertälje
+# Österåker,Danderyd,Täby
 # years of interest
 #yearsIn <- params$years
 yearsIn <- c(2016,2018,2020,2022)
@@ -312,57 +313,104 @@ df %>%
 
 ## Överblick riskfaktorer
 
-### Stapel åk 9 kön
+### Åk 9 kön
 
 Enbart årskurs 9.
 
 ::: panel-tabset
 #### 2022
 ```{r}
+#| fig-height: 4
 df.risk.gender.arskurs %>% 
   filter(!is.na(Kön),
-         Årskurs == "Åk 9") %>% 
-  DIDstapel("2022") +
+         Årskurs == "Åk 9",
+         Kommun == fokusKommun) %>%
+  DIDstapel("2022", tpathsize = 2.9) +
   facet_wrap(~Kön) +
   labs(subtitle = "Enbart åk 9")
+
+df.risk.gender.arskurs.alla %>% 
+  filter(!is.na(Kön),
+         Årskurs == "Åk 9",
+         Kommun == "Alla") %>% 
+  DIDstapel("2022", tpathsize = 2.9) +
+  facet_wrap(~Kön) +
+  labs(title = "Alla kommuner i DID - 2022",
+       subtitle = "Enbart åk 9")
 ```
 #### 2020
 ```{r}
+#| fig-height: 4
 df.risk.gender.arskurs %>% 
   filter(!is.na(Kön),
-         Årskurs == "Åk 9") %>% 
-  DIDstapel("2020") +
+         Årskurs == "Åk 9",
+         Kommun == fokusKommun) %>%
+  DIDstapel("2020", tpathsize = 2.9) +
   facet_wrap(~Kön) +
   labs(subtitle = "Enbart åk 9")
+
+df.risk.gender.arskurs.alla %>% 
+  filter(!is.na(Kön),
+         Årskurs == "Åk 9",
+         Kommun == "Alla") %>% 
+  DIDstapel("2020", tpathsize = 2.9) +
+  facet_wrap(~Kön) +
+  labs(title = "Alla kommuner i DID - 2020",
+       subtitle = "Enbart åk 9")
 ```
 #### 2018
 ```{r}
+#| fig-height: 4
 df.risk.gender.arskurs %>% 
   filter(!is.na(Kön),
-         Årskurs == "Åk 9") %>% 
-  DIDstapel("2018") +
+         Årskurs == "Åk 9",
+         Kommun == fokusKommun) %>% 
+  DIDstapel("2018", tpathsize = 2.9) +
   facet_wrap(~Kön) +
   labs(subtitle = "Enbart åk 9")
+
+df.risk.gender.arskurs.alla %>% 
+  filter(!is.na(Kön),
+         Årskurs == "Åk 9",
+         Kommun == "Alla") %>% 
+  DIDstapel("2018", tpathsize = 2.9) +
+  facet_wrap(~Kön) +
+  labs(title = "Alla kommuner i DID - 2018",
+       subtitle = "Enbart åk 9")
 ```
 #### 2016
 ```{r}
+#| fig-height: 4
 df.risk.gender.arskurs %>% 
   filter(!is.na(Kön),
-         Årskurs == "Åk 9") %>% 
-  DIDstapel("2016") +
+         Årskurs == "Åk 9",
+         Kommun == fokusKommun) %>% 
+  DIDstapel("2016", tpathsize = 2.9) +
   facet_wrap(~Kön) +
   labs(subtitle = "Enbart åk 9")
+
+df.risk.gender.arskurs.alla %>% 
+  filter(!is.na(Kön),
+         Årskurs == "Åk 9",
+         Kommun == "Alla") %>% 
+  DIDstapel("2016", tpathsize = 2.9) +
+  facet_wrap(~Kön) +
+  labs(title = "Alla kommuner i DID - 2016",
+       subtitle = "Enbart åk 9")
 ```
+#### Förklaring riskgrupper
+Kategoriseringen bygger på en statistisk fördelningsmodell och är inte validerad mot externa kriterier. Gränsvärden för kategoriseringen har tagits fram med grund i data från hela Stockholm Stads mätningar från 2006 till 2020, totalt 107 135 elever. För varje mättillfälle (varannat år) har gränsvärden för 75:e och 90:e percentilen räknats fram inom varje index. Sedan har medelvärden för 75:e och 90:e percentilen beräknats, och dessa är de gränsvärden som sedan tillämpas för indelningen i "något förhöjd risk" (mellan 75:e och 90:e percentilgränsen) och "hög risk" (över 90:e percentilgränsen).
 :::
 
-### Stapel kön och årskurs
+### Kön och årskurs
 
 ::: panel-tabset
 #### 2022
 ```{r}
 #| fig-height: 7
 df.risk.gender.arskurs %>% 
-  filter(!is.na(Årskurs)) %>% 
+  filter(!is.na(Årskurs),
+         Kommun == fokusKommun) %>% 
   DIDstapel("2022", tpathsize = 2.7) +
   facet_grid(Årskurs~Kön) +
   theme(legend.justification = c(0.0, 1.0))
@@ -371,7 +419,8 @@ df.risk.gender.arskurs %>%
 ```{r}
 #| fig-height: 7
 df.risk.gender.arskurs %>% 
-  filter(!is.na(Årskurs)) %>% 
+  filter(!is.na(Årskurs),
+         Kommun == fokusKommun) %>% 
   DIDstapel("2020", tpathsize = 2.7) +
   facet_grid(Årskurs~Kön) +
   theme(legend.justification = c(0.0, 1.0))
@@ -380,7 +429,8 @@ df.risk.gender.arskurs %>%
 ```{r}
 #| fig-height: 7
 df.risk.gender.arskurs %>% 
-  filter(!is.na(Årskurs)) %>% 
+  filter(!is.na(Årskurs),
+         Kommun == fokusKommun) %>% 
   DIDstapel("2018", tpathsize = 2.7) +
   facet_grid(Årskurs~Kön) +
   theme(legend.justification = c(0.0, 1.0))
@@ -389,7 +439,8 @@ df.risk.gender.arskurs %>%
 ```{r}
 #| fig-height: 7
 df.risk.gender.arskurs %>% 
-  filter(!is.na(Årskurs)) %>% 
+  filter(!is.na(Årskurs),
+         Kommun == fokusKommun) %>% 
   DIDstapel("2016", tpathsize = 2.7) +
   facet_grid(Årskurs~Kön) +
   theme(legend.justification = c(0.0, 1.0))
@@ -514,31 +565,6 @@ df %>%
   facet_wrap(~ARSKURS)
 ```
 
-
-#### Båda årskurser
-
-:::panel-tabset
-##### 2022
-```{r}
-#| fig-height: 7
-DIDmobbadAlla(2022)
-```
-##### 2020
-```{r}
-#| fig-height: 7
-DIDmobbadAlla(2020)
-```
-##### 2018
-```{r}
-#| fig-height: 7
-DIDmobbadAlla(2018)
-```
-##### 2016
-```{r}
-#| fig-height: 7
-DIDmobbadAlla(2016)
-```
-:::
 
 #### Åk 9
 

@@ -59,7 +59,7 @@ scale_fill_gender <- partial(scale_fill_manual, values = gender_colors)
 DIDstapel <- function(data,årtal, tpathsize = 4) {
   year <- årtal
   data %>%
-    filter(Kommun == fokusKommun) %>%
+    #filter(Kommun == fokusKommun) %>%
     filter(År == year) %>%
     filter(!Index %in% c("Välbefinnande", "Positiv skolanknytning")) %>%
     mutate(riskLevel = car::recode(riskLevel,"NA='För få svar'")) %>%
@@ -418,34 +418,34 @@ DIDline90åk <- function(faktor){
 
 }
 
-DIDline90åkOLD <- function(faktor){
-
-  plotFaktor <- faktor
-
-  df.plot <- df.risk.gender.arskurs %>%
-    filter(Index == plotFaktor) %>%
-    filter(Kommun %in% jmfKommun) %>%
-    filter(Kön %in% c("Flicka", "Pojke")) %>%
-    filter(riskLevel == "Förhöjd risk") %>%
-    filter(!is.na(Årskurs))
-
-  ggplot(df.plot, aes(x = År, y = Andel, group = Kön, color = Kön)) +
-    geom_line(linewidth = 1.2) +
-    geom_point(size = 3) +
-    #geom_point_interactive(aes(tooltip = Andel), size = 3) +
-    scale_y_continuous(limits = c(0, 30)) +
-    scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
-    scale_color_manual(values = RISEpalette1[c(1,5)]) +
-    geom_hline(yintercept = 10, color = "darkgrey", linetype = 2, linewidth = 0.4, alpha = 0.7) +
-    ggtitle("Andel i grupp \"förhöjd risk\"") +
-    xlab("") +
-    ylab(paste0(plotFaktor)) +
-    labs(caption = "Datakälla: Stockholmsenkäten.") +
-    facet_grid(Årskurs~Kommun, labeller = labeller(Kommun = label_wrap_gen(12))) +
-    theme_minimal() +
-    theme_rise()
-
-}
+# DIDline90åkOLD <- function(faktor){
+#
+#   plotFaktor <- faktor
+#
+#   df.plot <- df.risk.gender.arskurs %>%
+#     filter(Index == plotFaktor) %>%
+#     filter(Kommun %in% jmfKommun) %>%
+#     filter(Kön %in% c("Flicka", "Pojke")) %>%
+#     filter(riskLevel == "Förhöjd risk") %>%
+#     filter(!is.na(Årskurs))
+#
+#   ggplot(df.plot, aes(x = År, y = Andel, group = Kön, color = Kön)) +
+#     geom_line(linewidth = 1.2) +
+#     geom_point(size = 3) +
+#     #geom_point_interactive(aes(tooltip = Andel), size = 3) +
+#     scale_y_continuous(limits = c(0, 30)) +
+#     scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
+#     scale_color_manual(values = RISEpalette1[c(1,5)]) +
+#     geom_hline(yintercept = 10, color = "darkgrey", linetype = 2, linewidth = 0.4, alpha = 0.7) +
+#     ggtitle("Andel i grupp \"förhöjd risk\"") +
+#     xlab("") +
+#     ylab(paste0(plotFaktor)) +
+#     labs(caption = "Datakälla: Stockholmsenkäten.") +
+#     facet_grid(Årskurs~Kommun, labeller = labeller(Kommun = label_wrap_gen(12))) +
+#     theme_minimal() +
+#     theme_rise()
+#
+# }
 
 # Demografi ---------------------------------------------------------------
 

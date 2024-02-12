@@ -10,6 +10,7 @@ legend.size <- 10
 stript.size <- 10
 
 årtal <- c(2006,2008,2010,2012,2014,2016,2018,2020,2022)
+årtalKOLADA <- c(2010:2023)
 
 theme_rise <- function(fontfamily = "Lato", axissize = 13, titlesize = 15,
                        margins = 12, axisface = "plain", stripsize = 12,
@@ -84,22 +85,36 @@ DIDstapel <- function(data,årtal, tpathsize = 4) {
     ) +
     labs(title = paste0(fokusKommun, " - ", year),
          caption = "Datakälla: Stockholmsenkäten.") +
-    geom_texthline(
+    geom_hline(
       yintercept = 10, color = "black",
-      linetype = 2, size = 2.5, alpha = 0.6,
-      label = "Förhöjd risk",
-      hjust = 0.05
+      linetype = 2, size = 0.7, alpha = 0.6
     ) +
-    geom_texthline(
+    geom_hline(
       yintercept = 25, color = RISEprimRed,
-      linetype = 2, size = 2.5, alpha = 0.6,
-      label = "Något förhöjd risk",
-      hjust = 0.15
+      linetype = 2, size = 0.7, alpha = 0.6
     ) +
     xlab("") +
     ylab("") +
     theme_minimal() +
-    theme_rise()
+    theme_rise() +
+    annotate(
+      geom = "text",
+      x = 6.1,
+      y = 10,
+      label = "Förhöjd risk",
+      vjust = -0.8,
+      size = 2.7
+    ) +
+    annotate(
+      geom = "text",
+      x = 6.1,
+      y = 25,
+      label = "Något\nförhöjd risk",
+      #hjust = 5,
+      vjust = -0.2,
+      size = 2.7
+    ) +
+    coord_cartesian(clip = "off")
 }
 
 DIDareaPlot <- function(faktor) {
@@ -240,16 +255,15 @@ DIDkoladaPlot <- function(data) {
     geom_point(data = filter({{data}}, Kommun == fokusKommun),
                alpha = 1) +
     scale_x_continuous(guide = guide_axis(n.dodge = 2),
-                       breaks = årtal) +
-    #scale_y_continuous(limits = c(0, 100)) +
+                       breaks = årtalKOLADA) +
     scale_color_brewer(type = "qual", palette = "Dark2") +
     ylab("Andel i %") +
     xlab("") +
     facet_wrap(~KPI,
                ncol = 2,
                scales = "free",
-               labeller = labeller(KPI = label_wrap_gen(22))) +
-    theme_rise() +
+               labeller = labeller(KPI = label_wrap_gen(40))) +
+    theme_rise(stripsize = 10) +
     theme(legend.position = "top") +
     labs(caption = "Ljusgrått fält visar 95% konfidensintervall för en oviktad trendlinje baserad på länets kommuner.\nDatakälla: Kolada")
 }
@@ -264,18 +278,45 @@ DIDkoladaPlotG <- function(data) {
     geom_line(alpha = 0.9, linewidth = 0.8) +
     geom_point(alpha = 0.9, size = 1.6) +
     scale_x_continuous(guide = guide_axis(n.dodge = 2),
-                       breaks = seq(2010, 2022, 2)) +
+                       breaks = årtalKOLADA) +
     scale_y_continuous(limits = c(0, 100)) +
     scale_color_manual(values = RISEpalette1[c(1,5)])  +
     ylab("Andel i %") +
     xlab("") +
     facet_grid(Kommun~KPI,
                #scales = "free",
-               labeller = labeller(KPI = label_wrap_gen(22))) +
+               labeller = labeller(KPI = label_wrap_gen(40))) +
     theme_rise(stripsize = 10) +
     theme(legend.position = "top") +
     labs(caption = "Datakälla: Kolada")
 }
+
+# for details about fokusKommun
+DIDkoladaAlla <- function(data) {
+  data %>%
+    ggplot(aes(x = År, y = Medelvärde)) +
+    geom_line(alpha = 1, linewidth = 1, linetype = 1, color = RISEprimGreen) +
+    geom_point(alpha = 1, size = 2.2, color = RISEprimGreen) +
+    geom_ribbon(aes(ymin = Lägsta, ymax = Högsta, color = NULL),
+                alpha = 0.1) +
+    geom_line(aes(y = Median),
+              alpha = 0.6, linewidth = 1, linetype = 3) +
+    scale_x_continuous(guide = guide_axis(n.dodge = 2),
+                     breaks = årtalKOLADA) +
+    scale_color_brewer(type = "qual", palette = "Dark2") +
+    ylab("") +
+    xlab("") +
+    facet_wrap(~KPI,
+               ncol = 2,
+               scales = "free",
+               labeller = labeller(KPI = label_wrap_gen(40))) +
+    theme_rise(stripsize = 10) +
+    theme(legend.position = "none") +
+    labs(caption = "Datakälla: KOLADA.",
+         title = "Alla kommuner i länet",
+         subtitle = str_wrap("Punkter och dragen linje visar oviktat medelvärde från kommunerna i länet. Prickad linje är medianvärde. Ljusgrått fält visar högsta och lägsta värde inom länets kommuner."))
+}
+
 
 # Mean ~ Time -------------------------------------------------------------
 
@@ -1041,10 +1082,10 @@ DIDskolverketPlot <- function(data) {
     facet_wrap(~description,
                ncol = 2,
                scales = "free",
-               labeller = labeller(description = label_wrap_gen(22))) +
-    theme_rise() +
+               labeller = labeller(description = label_wrap_gen(40))) +
+    theme_rise(stripsize = 10) +
     theme(legend.position = "top") +
-    labs(caption = "Ljusgrått fält visar 95% konfidensintervall trendlinje för samtliga kommuner i regionen.\nDatakälla: Skolverket",
+    labs(caption = "Ljusgrått fält visar 95% konfidensintervall trendlinje för samtliga kommuner i länet.\nDatakälla: Skolverket",
          title = "Skolverket: jämförelse mellan fokus- och jämförelsekommun",
          subtitle = "Datapunkter är medelvärden från kommunens skolor")
 }
@@ -1068,8 +1109,8 @@ DIDskolverketPlotSingle <- function(data) {
     facet_wrap(~description,
                ncol = 2,
                scales = "free",
-               labeller = labeller(description = label_wrap_gen(22))) +
-    theme_rise() +
+               labeller = labeller(description = label_wrap_gen(40))) +
+    theme_rise(stripsize = 10) +
     theme(legend.position = "none") +
     labs(caption = "Datakälla: Skolverket",
          title = paste0("Skolverket - ",fokusKommun),

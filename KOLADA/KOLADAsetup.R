@@ -1,4 +1,4 @@
-library(rKolada)
+library(rKolada) # remotes::install_github("LCHansson/rKolada")
 library(arrow)
 library(tidyverse)
 library(glue)
@@ -64,7 +64,7 @@ df.values <- get_values(
     "N09811"
   ),
   municipality = munic$id,
-  period = 2006:2023, simplify = TRUE
+  period = 2010:2023, simplify = TRUE
 )
 write_parquet(df.values, glue("KOLADA/{Sys.Date()}_KOLADA_data_raw.parquet"))
 
@@ -114,4 +114,3 @@ df.values %>%
   kbl()
 
 write_parquet(df.values, glue("KOLADA/{Sys.Date()}_KOLADA_data_ready.parquet"))
-

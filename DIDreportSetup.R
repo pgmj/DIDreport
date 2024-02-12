@@ -83,7 +83,7 @@ if (fokusKommun %in% sthlmStadsdelar) {
 
 if (fokusKommun == "Alla") {
   df <- df %>%
-    select(!Kommun) %>%
+    rename(DIDkommun = Kommun) %>%
     add_column(Kommun = "Alla")
 
   jmfKommun <- "Alla"
@@ -249,7 +249,7 @@ RSsmf <- function(df, i, j) { # input df, index, and index number
   # j <- match(qc({{i}}),sthlm.index)
   df %>%
     group_by(ar, Kommun) %>%
-    reframe(
+    summarise( # reframe -> summarise
       Medel = mean({{ i }}, na.rm = T), # calculate averages, etc
       StDev = sd({{ i }}, na.rm = T),
       n = n(),
@@ -298,7 +298,8 @@ RSsmfGender <- function(df, i, j) { # input df, index, and index number
   #j <- match(qc({{i}}),sthlm.index)
   df %>%
     group_by(ar,Kommun,Kön) %>%
-    reframe(Medel = mean({{i}}, na.rm = T),
+    summarise( # reframe -> summarise
+            Medel = mean({{i}}, na.rm = T),
             StDev = sd({{i}},  na.rm = T),
             n = n(),
             StErr = StDev/sqrt(n),
@@ -375,7 +376,8 @@ RSsmfGenderG <- function(df, i, j) { # input df, index, and index number
   df %>%
     filter(!is.na(ARSKURS)) %>%
     group_by(ar,Kommun,Kön,ARSKURS) %>%
-    reframe(Medel = mean({{i}}, na.rm = T),
+    summarise( # reframe -> summarise
+            Medel = mean({{i}}, na.rm = T),
             StDev = sd({{i}},  na.rm = T),
             n = n(),
             StErr = StDev/sqrt(n),
@@ -602,11 +604,12 @@ df <- df %>%
 
 # KOLADA new --------------------------------------------------------------
 
-KOLADA <- read_parquet("KOLADA/2023-09-12_KOLADA_data_ready.parquet")
+#KOLADA <- read_parquet("KOLADA/2023-09-12_KOLADA_data_ready.parquet")
+KOLADA <- read_parquet("KOLADA/2024-01-30_KOLADA_data_ready.parquet")
 
 kpi_mean <- KOLADA %>%
   group_by(KPI, kpi, År) %>%
-  summarise_at(vars(Andel), list(Andel = mean)) %>%
+  summarise_at(vars(Andel), list(Andel = mean)) %>% # needs na.rm = TRUE?
   add_column(Kommun = "Medel riket", .before = "KPI") %>%
   add_column(Kön = "Alla")
 
@@ -622,6 +625,17 @@ KommunID <- read_parquet("KOLADA/2023-03-28_KOLADA_Municipality_list.parquet") %
 KOLADA <- KOLADA %>%
   filter(Kommun %in% LänetsKommuner,
          År > 2009)
+
+if (fokusKommun == "Alla") {
+  KOLADA2 <- KOLADA %>%
+    group_by(KPI, kpi, År) %>%
+    summarise(Högsta = max(Andel, na.rm = TRUE),
+              Lägsta = min(Andel, na.rm = TRUE),
+              Medelvärde = mean(Andel, na.rm = TRUE),
+              Median = median(Andel, na.rm = TRUE)
+              ) %>%
+    ungroup()
+}
 
 # RSfigurerRapport --------------------------------------------------------
 

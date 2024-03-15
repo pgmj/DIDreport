@@ -1,0 +1,166 @@
+itemnr,item,Index
+f66a,"Jag gör tvärt emot vad människor säger åt mig att göra, bara för att göra dem arga.",Individfaktorer
+f66b,"Jag gillar att göra spännande och farliga saker, även om det är förbjudet.",Individfaktorer
+f66c,"Jag tål inte att bli provocerad, då kan jag slå till någon.",Individfaktorer
+f66d,Jag ljuger för att få fördelar eller slippa göra jobbiga saker.,Individfaktorer
+f66e,Om jag blir arg på någon drar jag mig inte för att skada honom/henne.,Individfaktorer
+f66f,Jag är ofta ute på natten tillsammans med kamrater.,Individfaktorer
+f66g,Jag struntar i regler som hindrar mig från att göra det jag vill göra.,Individfaktorer
+f66h,Jag tycker det är roligt att lösa svåra problem och uppgifter.,Individfaktorer
+f66i,Jag ser mig själv som en ganska impulsiv person.,Individfaktorer
+f66j,Jag vill gärna vara där det händer spännande saker.,Individfaktorer
+f66k,Jag kan få andra att tro på nästan vad som helst.,Individfaktorer
+f66l,Jag blir ofta osäker när jag ställs inför nya uppgifter.,Individfaktorer
+f66m,Jag tänker oftast efter innan jag talar eller gör saker.,Individfaktorer
+f66n,Jag gör dumma saker även om de är lite farliga.,Individfaktorer
+f66o,Jag vill gärna se hur långt jag kan gå innan folk får nog.,Individfaktorer
+f66p,Det är fel att fuska i skolan.,Individfaktorer
+f66q,"Jag tycker att det är OK att ta något utan att fråga, om man inte blir upptäckt.",Individfaktorer
+f66r,Det händer att jag gör saker utan att tänka mig för.,Individfaktorer
+f66s,Om jag ställs inför en svår uppgift så väljer jag att göra något annat.,Individfaktorer
+f66t,"Den som gör mig arg ger jag mig på, även om han/hon inte slagit mig först.",Individfaktorer
+f66u,"Det är viktigt att vara ärlig mot föräldrarna, även om de blir arga.",Individfaktorer
+f54a,Jag vet vilka regler som gäller på den här skolan.,Skola
+f54b,Jag trivs bra i skolan.,Skola
+f54c,Vi elever är med och planerar vad vi skall göra i undervisningen.,Skola
+f54d,Lärarna berömmer elever som gör något bra i skolan.,Skola
+f54e,Det är hög ljudnivå och stökigt på lektionerna.,Skola
+f54f,Skolarbetet känns meningslöst.,Skola
+f54g,Vi elever får vara med och bestämma över saker som är viktiga för oss.,Skola
+f54h,Lärarna förklarar vad vi får och vad vi inte får göra.,Skola
+f54i,I början av lektionerna tar det minst fem minuter innan arbetet kan börja,Skola
+f54j,Skolan berättar för mina föräldrar om jag gjort något bra.,Skola
+f54k,Elevernas åsikter tas inte på allvar i den här skolan.,Skola
+f54l,Vuxna ingriper om någon blir trakasserad eller mobbad.,Skola
+f54m,Mina lärare ger mig inget beröm om jag jobbar hårt.,Skola
+f54n,Jag ser fram emot att gå till lektionerna.,Skola
+f54o,"Jag är orolig för att utsättas för brott i skolan. (t.ex. stöld, misshandel etc)",Skola
+f54p,De flesta av mina lärare har intressant undervisning.,Skola
+f54q,Skolarbetet gör mig förvirrad.,Skola
+f54r,Om man inte förstår får man direkt hjälp av läraren.,Skola
+F55,Har du varit borta från skolan det här läsåret därför att du var sjuk eller mådde dåligt?,Skola
+F56,Har du skolkat en hel dag från skolan det här läsåret?,Skola
+F59,Har du fuskat på läxförhör eller prov i skolan det här läsåret?,Skola
+F65a,Vad hade du för betyg förra terminen (senast) i svenska?,Skola
+F65b,Vad hade du för betyg förra terminen (senast) i engelska?,Skola
+F65c,Vad hade du för betyg förra terminen (senast) i matematik?,Skola
+F61,Hur ofta har du blivit mobbad eller trakasserad i skolan det här läsåret?,Skola
+F88,Hur ofta har du haft huvudvärk detta läsår?,Psykiska/psykosomatiska besvär
+F89,Känner du dig ledsen och deppig utan att veta varför?,Psykiska/psykosomatiska besvär
+F90,Händer det att du känner dig rädd utan att veta varför?,Psykiska/psykosomatiska besvär
+F91,Hur ofta har du dålig aptit?,Psykiska/psykosomatiska besvär
+F92,Hur mycket skulle du vilja ändra på dig själv?,Psykiska/psykosomatiska besvär
+F93,"Hur ofta har du under detta läsår haft ”nervös mage” (t.ex. magknip, magkramper, orolig mage, illamående, gaser, förstoppning eller diarré)?",Psykiska/psykosomatiska besvär
+F94,Hur ofta tycker du att du inget duger till?,Psykiska/psykosomatiska besvär
+F95,Hur ofta har du under detta läsår haft svårt att somna?,Psykiska/psykosomatiska besvär
+F96,Är du nöjd med ditt utseende?,Psykiska/psykosomatiska besvär
+F97,Känner du dig slö och olustig?,Psykiska/psykosomatiska besvär
+F98,Hur ofta har det hänt under detta läsår att du sovit oroligt och vaknat under natten?,Psykiska/psykosomatiska besvär
+F99,Hur ofta tycker du att det är riktigt härligt att leva?,Psykiska/psykosomatiska besvär
+F79,Vet dina föräldrar/vårdnadshavare var du är när du är ute med kamrater på kvällar?,Föräldraskap
+F80,Vet dina föräldrar/vårdnadshavare vilka kamrater du umgås med på din fritid?,Föräldraskap
+F81,Vet dina föräldrar/vårdnadshavare vad du spenderar dina pengar på?,Föräldraskap
+F82,"Om du har ett personligt problem, kan du be någon av dina föräldrar/vårdnadshavare om hjälp?",Föräldraskap
+f83a,De ger mig beröm när jag gör något bra.,Föräldraskap
+f83b,De hotar med bestraffning för något jag gjort men genomför det inte.,Föräldraskap
+f83c,De brukar uppmuntra och stötta mig.,Föräldraskap
+f83d,Jag vet inte hur de reagerar när jag gjort något de inte gillar.,Föräldraskap
+f83e,De märker när jag gör något bra.,Föräldraskap
+f83f,Det humör de är på bestämmer hur de är mot mig.,Föräldraskap
+f83g,Jag bryr mig om vad mina föräldrar/vårdnadshavare säger.,Föräldraskap
+f83h,Mina föräldrar/vårdnadshavare är en förebild för mig.,Föräldraskap
+F58,Hur skulle dina föräldrar reagera om du hade skolkat?,Föräldraskap
+F70,Brukar du delta i någon ledarledd fritidsaktivitet eller träning?,Kamrater och fritid
+f86a,Motionerar och tränar regelbundet?,Kamrater och fritid
+f86b,Har snattat/klottrat/vandaliserat?,Kamrater och fritid
+f86c,Är med i någon förening?,Kamrater och fritid
+f86d,Röker tobak?,Kamrater och fritid
+f86e,Slåss?,Kamrater och fritid
+f86f,Är duktiga i skolan?,Kamrater och fritid
+f86g,Dricker sig berusad på alkohol?,Kamrater och fritid
+f86h,Använder narkotika?,Kamrater och fritid
+f86i,Skolkar?,Kamrater och fritid
+f86j,"Har rånat, gjort inbrott eller stulit en bil?",Kamrater och fritid
+F100,"Om du går ut ensam sent en kväll i området där du bor, känner du dig då...",Närsamhälle
+f101a,"Vandalism (klotter, olaglig graffiti, förstörelse) är vanligt i bostadsområdet.",Närsamhälle
+f101b,Om en vuxen såg mig göra något olagligt i mitt bostadsområde skulle nog mina föräldrar få reda på det.,Närsamhälle
+f101c,Vuxna skulle ingripa om någon helt öppet försökte sälja narkotika till ungdomar.,Närsamhälle
+f101d,Det finns personer som säljer narkotika i bostadsområdet.,Närsamhälle
+f101e,På vardagskvällar finns det många berusade utomhus i bostadsområdet.,Närsamhälle
+f101f,Så fort jag kan vill jag flytta till ett annat bostadsområde.,Närsamhälle
+f101g,"Det är ovanligt med våldsbrott (misshandel, rån, våldtäkt) i det här bostadsområdet.",Närsamhälle
+f101h,Vuxna skulle ingripa om det blev ett slagsmål framför mitt hus.,Närsamhälle
+f101i,Om jag blev rånad på en allmän plats i bostadsområdet skulle vuxna ingripa.,Närsamhälle
+f101j,Mina grannar brukar heja/hälsa på mig när vi möts.,Närsamhälle
+f101k,Jag trivs bra i mitt bostadsområde.,Närsamhälle
+f101l,Om jag var tvungen att flytta skulle jag sakna bostadsområdet jag bor i.,Närsamhälle
+F67,Tycker du att det är viktigt vad du kommer att jobba med när du blir stor eller spelar det ingen roll?,Framtidstro
+F68,"Om du jämför dina framtidsutsikter med de flesta andras i din ålder, tror du då att dina är sämre, lika bra, eller bättre?",Framtidstro
+F14,Röker du?,ANDTS
+FNY12020,Röker du e-cigaretter?,ANDTS
+F18,Snusar du?,ANDTS
+F34,Hur ofta dricker du vid ett och samma tillfälle alkohol motsvarande minst 18cl sprit?,ANDTS
+F41,Har du sniffat/boffat någon gång?,ANDTS
+F47,Hur många gånger totalt har du använt hasch/marijuana?,ANDTS
+F48,Hur många gånger totalt har du använt annan narkotika än hasch/marijuana?,ANDTS
+f53a,Har du det senaste läsåret varit i kontakt med någon hjälpinstans p.g.a alkohol eller droger?,ANDTS
+f53b,,ANDTS
+f53c,,ANDTS
+f53d,,ANDTS
+f53e,,ANDTS
+f53f,,ANDTS
+F73,Hur mycket pengar har du spelat för de senaste 30 dagarna?,ANDTS
+F16,Hur gammal var du första gången du rökte?,ANDTS
+F20,Hur gammal var du första gången du snusade?,ANDTS
+F37,Hur gammal var du första gången du kände dig berusad?,ANDTS
+F44,Hur gammal var du första gången du sniffade/boffade?,ANDTS
+F51,Hur gammal var du första gången du använde narkotika?,ANDTS
+F17,Får du röka för dina föräldrar?,ANDTS
+F21,Får du snusa för dina föräldrar?,ANDTS
+f22a,Använder någon i din familj tobak (röker eller snusar)?,ANDTS
+f22b,,ANDTS
+f22c,,ANDTS
+f22d,,ANDTS
+f22e,,ANDTS
+f22f,,ANDTS
+F40,Får du dricka alkohol för dina föräldrar?,ANDTS
+FNY22020,Får du satsa pengar på spel för dina föräldrar?,ANDTS
+f36,Hur många gånger har du druckit så mycket alkohol att du känt dig berusad under den senaste 4-veckorsperioden?,ANDTS
+F49,Hur många gånger har du använt narkotika (cannabis eller annan narkotika) den senaste 4-veckors perioden?,ANDTS
+F35,,ANDTS
+F45,,ANDTS
+f75a,Snattat?,Kriminalitet
+f75b,Klottrat/olaglig graffiti?,Kriminalitet
+f75c,Stulit en cykel?,Kriminalitet
+f75d,Stulit en moped eller motorcykel?,Kriminalitet
+f75e,Stulit en bil?,Kriminalitet
+f75f,"Tvingat någon att ge dig pengar, mobiltelefon eller något annat värdefullt?",Kriminalitet
+f75g,"Med avsikt förstört saker som inte var dina (t.ex. Fönsterrutor, gatlampor, cyklar)?",Kriminalitet
+f75h,Använt annans/falsk legitimation?,Kriminalitet
+f75i,Tagit pengar hemma som inte var dina?,Kriminalitet
+f75j,Smitit från betalning (t.ex. bio,Kriminalitet
+f75k,Tvingat någon att ha sex med dig?,Kriminalitet
+f75l,Stulit ur någons ficka?,Kriminalitet
+f75m,Stulit något annat som vi inte frågat om?,Kriminalitet
+f75n,Köpt något som du vet var stulet?,Kriminalitet
+f75o,Sålt något som var stulet?,Kriminalitet
+f75p,Tjuvåkt på tunnelbanan eller pendeltåget?,Kriminalitet
+f75q,"Gjort inbrott i bil, affär, kiosk eller annan byggnad?",Kriminalitet
+f75r,Med avsikt slagit någon så att du tror eller vet att han/hon behövde sjukvård?,Kriminalitet
+f75s,Burit vapen (t.ex. kniv eller knogjärn)?,Kriminalitet
+f78aa,Känt dig allvarligt hotad?,Kriminalitet
+f78ba,Blivit rånad?,Kriminalitet
+f78ca,Blivit bestulen?,Kriminalitet
+f78da,Blivit misshandlad?,Kriminalitet
+f78ea,Blivit tvingad till sex/våldtagen?,Kriminalitet
+f60a,"Nej, jag har inte känt mig mobbad eller trakasserad i skolan det här läsåret",Mobbning
+f60b,"Jag har blivit hånad, förlöjligad, kallad öknamn eller blivit retad på ett obehagligt och sårande sätt",Mobbning
+f60c,Jag har blivit utfrusen av andra elever,Mobbning
+f60d,"Jag har blivit slagen, sparkad, knuffad eller stängd inne",Mobbning
+f60e,Någon elev har spritt lögner eller falska rykten om mig och försökt få andra att tycka illa om mig,Mobbning
+f60f,Jag har blivit fråntagen pengar eller saker eller fått saker förstörda,Mobbning
+f60g,Jag har blivit hotad eller tvingad att göra saker som jag inte ville göra,Mobbning
+f60h,Lärare har psykat eller på annat sätt varit elaka mot mig,Mobbning
+f60i,Jag har mobbats på annat sätt.,Mobbning
+F61,Hur ofta har du blivit mobbad eller trakasserad i skolan det här läsåret?,Mobbning
+F63,Har du blivit mobbad eller trakasserad via internet eller SMS/MMS det här läsåret?,Mobbning

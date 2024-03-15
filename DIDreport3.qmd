@@ -42,26 +42,28 @@ editor_options:
   chunk_output_type: console
 ---
 
-## `r params$fokusKommun` {.unnumbered}
+## Järfälla {.unnumbered}
 
 ```{r}
-
+# `r params$fokusKommun`
 ### Parameters are defined externally in the file DIDparameters.xls
-# These are read by the script render.R, which in turn generates reports
+# These are read by the script render.R, which in turn generates one report for each line in the first sheet of the xls-file.
 
 # which municipality to focus this report on?
 #fokusKommun <- params$fokusKommun
-# # which municipalities should be included in comparisons?
+
+# which municipalities should be included in comparisons?
 #jmfKommun <- factor(c(fokusKommun,params$jmfKommun),
 #                    levels = c(fokusKommun,params$jmfKommun))
 
 ## for testing/dev:
-fokusKommun <- "Vallentuna"
-jmfKommun <- factor(c(fokusKommun,"Österåker", "Danderyd", "Täby"),
-                  levels = c(fokusKommun,"Österåker", "Danderyd", "Täby"))
+fokusKommun <- "Järfälla"
+jmfKommun <- factor(c(fokusKommun,"Botkyrka", "Huddinge", "Södertälje"),
+                   levels = c(fokusKommun,"Botkyrka", "Huddinge", "Södertälje"))
 
-# Botkyrka, Huddinge, Södertälje
-# Österåker,Danderyd,Täby
+# Järfälla	Botkyrka,Huddinge,Södertälje
+# Vallentuna  Österåker,Danderyd,Täby
+# Sigtuna	 Järfälla,Upplands Väsby,Botkyrka
 # years of interest
 #yearsIn <- params$years
 yearsIn <- c(2016,2018,2020,2022)
@@ -140,14 +142,6 @@ pfactors <- c('Välbefinnande','Positiv skolanknytning')
 source("DIDreportSetup.R")
 # import functions to create figures and tables
 source("DIDreportFunctions.R")
-
-# if (fokusKommun == "Alla"){
-#   
-#   df <- df %>% 
-#     mutate(Kommun = "Alla")
-#   
-# }
-
 ```
 
 ## Demografi Stockholmsenkäten
@@ -163,13 +157,14 @@ responsesGender <- df %>%
   rename(År = ar,
          Årskurs = ARSKURS) %>% 
   group_by(År,Kön) %>% 
-  reframe(Antal = n()) %>% 
+  summarise(Antal = n()) %>% 
   ggplot(aes(x = År, y = Antal, color = Kön)) + 
   geom_line(linewidth = 1) +
   geom_point_interactive(aes(tooltip = Antal),
                          size = 3) +
   #geom_point(size = 3) +
-  scale_color_brewer(type = "qual", palette = "Dark2") +
+  #scale_color_brewer(type = "qual", palette = "Dark2") +
+  scale_color_gender() +
   scale_x_continuous(guide = guide_axis(n.dodge = 1), breaks = årtal) +
   scale_y_continuous(limits = c(0,NA)) +
   labs(title = "Antal respondenter per år",
@@ -190,7 +185,7 @@ responsesARSKURS <- df %>%
   rename(År = ar,
          Årskurs = ARSKURS) %>% 
   group_by(År,Årskurs) %>% 
-  reframe(Antal = n()) %>% 
+  summarise(Antal = n()) %>% 
   ggplot(aes(x = År, y = Antal, color = Årskurs)) + 
   geom_line(linewidth = 1) +
   geom_point_interactive(aes(tooltip = Antal),
@@ -249,7 +244,7 @@ responsesKommuner <- df %>%
   rename(År = ar,
          Årskurs = ARSKURS) %>% 
   group_by(År,Kommun) %>% 
-  reframe(Antal = n()) %>% 
+  summarise(Antal = n()) %>% 
   ggplot(aes(x = År, y = Antal, group = Kommun, color = Kommun)) + 
   geom_line(linewidth = 1) +
   geom_point_interactive(aes(tooltip = Antal),

@@ -6,7 +6,7 @@ Här finns källkod för att generera automatiserade rapporter eller lägesbilde
 
 Huvudfilen i detta projekt är `DIDreport3.qmd`, som i sin tur anropar två filer:
 
-- `DIDreportSetup.R` där data importeras och bearbetas
+- `DIDreportSetup.R` där data importeras och bearbetas (se nedan för mer information om förberedande av data)
 - `DIDreportFunctions.R` där alla funktioner som skapar figurer i rapporten definieras
 
 För att automatisera skapandet av rapportfiler för flera kommuner används två filer:
@@ -22,9 +22,11 @@ En stor del av den data som bearbetas och visualiseras är hämtad från skolenk
 
 Data ägs av kommunerna och kan därför ej delas öppet här. Hur data har bearbetats innan den används i koden som återfinns här är [dokumenterat i anslutning till de psykometriska analyserna](https://github.com/pgmj/sthlmsenk?tab=readme-ov-file#om-data).
 
+Mappen `Sthlmsenk` innehåller sammanfattande filer från ovan nämna analyser. Där finns också numrerade .R-filer som används för att ta de olika stegen från en rådatafil till en rapportfil. Detta finns noggrannare dokumenterat i filen INSTRUKTION.md.
+
 ### KOLADA
 
-I mappen `KOLADA` finns filen `KOLADAsetup.R` som dokumenterar hur hämtning av nyckeltal för samtliga kommuner i Stockholms Län görs, hur hämtade data omformateras inför användningen i denna rapport, samt att den färdiga datafilen skrivs till en fil i formatet ".parquet".
+I mappen `KOLADA` finns filen `KOLADAsetup.R` som dokumenterar hur hämtning av nyckeltal för samtliga kommuner i Stockholms Län görs, hur hämtade data omformateras inför användningen i denna rapport, samt att den färdiga datafilen skrivs till en fil i formatet ".parquet", och datumen för datahämtningen anges i filnamnet.
 
 Filformatet ".parquet" kan läsas och skrivas med paketet [`library(arrow)`](https://arrow.apache.org/docs/r/) som möjliggör både hög kompression och mycket snabb läs-/skrivhastighet.
 

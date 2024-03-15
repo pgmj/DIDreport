@@ -22,7 +22,7 @@ En stor del av den data som bearbetas och visualiseras är hämtad från skolenk
 
 Data ägs av kommunerna och kan därför ej delas öppet här. Hur data har bearbetats innan den används i koden som återfinns här är [dokumenterat i anslutning till de psykometriska analyserna](https://github.com/pgmj/sthlmsenk?tab=readme-ov-file#om-data).
 
-Mappen `Sthlmsenk` innehåller sammanfattande filer från ovan nämna analyser. Där finns också numrerade .R-filer som används för att ta de olika stegen från en rådatafil till en rapportfil. Detta finns noggrannare dokumenterat i filen INSTRUKTION.md.
+Mappen `Sthlmsenk` innehåller sammanfattande filer från ovan nämna analyser. Där finns också numrerade .R-filer som används för att ta de olika stegen från en rådatafil till en rapportfil. Detta finns noggrannare dokumenterat i filen [INSTRUKTION.md](https://github.com/pgmj/DIDreport/blob/main/INSTRUKTION.md).
 
 ### KOLADA
 

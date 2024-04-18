@@ -6,7 +6,7 @@ title-block-banner-color: "#FFFFFF"
 author: 
   name: Magnus Johansson
   affiliation: RISE Research Institutes of Sweden
-  affiliation-url: https://www.ri.se/sv/vad-vi-gor/expertiser/kategoriskt-baserade-matningar
+  affiliation-url: https://www.ri.se/shic
   orcid: 0000-0003-1669-592X
 date: last-modified
 params:
@@ -42,7 +42,7 @@ editor_options:
   chunk_output_type: console
 ---
 
-## Järfälla {.unnumbered}
+## `r params$fokusKommun` {.unnumbered}
 
 ```{r}
 # `r params$fokusKommun`
@@ -50,16 +50,15 @@ editor_options:
 # These are read by the script render.R, which in turn generates one report for each line in the first sheet of the xls-file.
 
 # which municipality to focus this report on?
-#fokusKommun <- params$fokusKommun
-
+fokusKommun <- params$fokusKommun
 # which municipalities should be included in comparisons?
-#jmfKommun <- factor(c(fokusKommun,params$jmfKommun),
-#                    levels = c(fokusKommun,params$jmfKommun))
+jmfKommun <- factor(c(fokusKommun,params$jmfKommun),
+                   levels = c(fokusKommun,params$jmfKommun))
 
-## for testing/dev:
-fokusKommun <- "Järfälla"
-jmfKommun <- factor(c(fokusKommun,"Botkyrka", "Huddinge", "Södertälje"),
-                   levels = c(fokusKommun,"Botkyrka", "Huddinge", "Södertälje"))
+## for testing/dev replace rows above with these (comment out/in):
+# fokusKommun <- "Järfälla"
+# jmfKommun <- factor(c(fokusKommun,"Botkyrka", "Huddinge", "Södertälje"),
+#                    levels = c(fokusKommun,"Botkyrka", "Huddinge", "Södertälje"))
 
 # Järfälla	Botkyrka,Huddinge,Södertälje
 # Vallentuna  Österåker,Danderyd,Täby
@@ -536,7 +535,7 @@ I Stockholmsenkäten handlar frågorna om mobbning primärt om mobbning i skolan
 ```{r}
 df %>% 
   filter(Kommun == fokusKommun) %>%
-  drop_na(mobbad,ARSKURS) %>% 
+  drop_na(ARSKURS) %>% 
   group_by(ar,ARSKURS,Kön) %>% 
   count(mobbad, .drop = F) %>% 
   mutate(Andel = 100*n/sum(n)) %>% 
@@ -544,19 +543,21 @@ df %>%
   filter(mobbad == "Nej") %>% 
   mutate(Andel = 100 - Andel) %>% 
   ggplot(aes(x = ar, y = Andel, color = Kön, group = Kön)) +
-  geom_point(size = 3, alpha = 0.9) +
+  geom_point(size = 5, alpha = 0.9) +
   geom_line(linewidth = 1.3, alpha = 0.9) +
-  scale_color_manual(values = RISEpalette1[c(1,5)],
+  geom_text(aes(label = n), color = "white", size = 2.7) +
+  scale_color_manual('',values = RISEpalette1[c(1,5)],
                      aesthetics = c("fill","color"),
                      labels = c("Flicka","Pojke","Annat/ej svar")) +
   scale_x_continuous("Årtal", guide = guide_axis(n.dodge = 2), breaks = årtal) +
   scale_y_continuous(limits = c(0,100), breaks = c(0,20,40,60,80,100)) +
-  theme_minimal() +
   theme_rise() +
+  theme(legend.position = "top") +
   labs(title = "Andel elever som känt sig mobbade eller trakasserade",
-       subtitle = "Andel som svarat annat än 'Nej' på frågan\n'Har du känt dig mobbad eller trakasserad i skolan det här läsåret?'") +
-  ylab("Andel i %") +
-  xlab("") +
+       subtitle = "Andel som svarat annat än 'Nej' på frågan\n'Har du känt dig mobbad eller trakasserad i skolan det här läsåret?'",
+       caption = "Antal elever visas i vit text i punkterna. Datakälla: Stockholmsenkäten.",
+       y = "Andel i %",
+       x = "") +
   facet_wrap(~ARSKURS)
 ```
 
@@ -610,6 +611,78 @@ DIDmobbadÅK(2018,"Gy 2")
 DIDmobbadÅK(2016,"Gy 2")
 ```
 :::
+
+#### Mobbat andra i skolan
+
+```{r}
+df.raw %>% 
+  filter(DIDkommun == fokusKommun,
+         ARSKURS %in% c("Åk 9","Gy 2"),
+         Kön %in% c("Pojke","Flicka","Annan könstillhörighet"),
+         ar > 2006) %>%
+  mutate(ARSKURS = droplevels(ARSKURS),
+         Kön = droplevels(Kön)) %>% 
+  mutate(F62 = car::recode(F62,"'Ja ungefär en gång i veckan'='Ja, ungefär en gång i veckan';
+                           'Ja flera gånger i veckan'='Ja, flera gånger i veckan'")) %>% 
+  group_by(ar,ARSKURS,Kön) %>% 
+  count(F62, .drop = F) %>% 
+  mutate(Andel = 100*n/sum(n)) %>% 
+  ungroup() %>% 
+  filter(str_detect(F62,"Ja")) %>% 
+
+  ggplot(aes(x = ar, y = Andel, color = F62, group = F62)) +
+  geom_point(size = 5, alpha = 0.85) +
+  geom_line(linewidth = 1.3, alpha = 0.85) +
+  geom_text(aes(label = n), color = "white", size = 2.7) +
+  scale_color_brewer('',palette = "Dark2") +
+  scale_x_continuous("Årtal", guide = guide_axis(n.dodge = 2), breaks = årtal) +
+  scale_y_continuous(limits = c(0,NA), breaks = c(0,5,10,15,20,25)) +
+  theme_rise() +
+  theme(legend.position = "top",
+        legend.text = element_text(size = 9)) +
+  labs(title = str_wrap("Andel elever som varit med om att mobba eller trakassera andra elever i skolan det här läsåret"),
+       subtitle = "Antal elever visas i vit text i punkterna.",
+       caption = "Datakälla: Stockholmsenkäten.",
+       y = "Andel i %",
+       x = "") +
+  facet_grid(ARSKURS~Kön)
+```
+
+#### Mobbat andra via internet/SMS
+
+```{r}
+df.raw %>% 
+  filter(DIDkommun == fokusKommun,
+         ARSKURS %in% c("Åk 9","Gy 2"),
+         Kön %in% c("Pojke","Flicka","Annan könstillhörighet"),
+         ar > 2006) %>%
+  mutate(ARSKURS = droplevels(ARSKURS),
+         Kön = droplevels(Kön)) %>% 
+  group_by(ar,ARSKURS,Kön) %>% 
+  count(F64, .drop = F) %>% 
+  mutate(Andel = 100*n/sum(n)) %>% 
+  ungroup() %>% 
+  filter(F64 == "Ja") %>% 
+
+  ggplot(aes(x = ar, y = Andel, color = Kön, group = Kön)) +
+  geom_point(size = 5, alpha = 0.9) +
+  geom_line(linewidth = 1.3, alpha = 0.9) +
+  geom_text(aes(label = n), color = "white", size = 2.7) +
+  scale_color_manual('',values = RISEpalette1[c(1,5)],
+                    aesthetics = c("fill","color"),
+                    labels = c("Flicka","Pojke","Annan könstillhörighet")) +
+  scale_x_continuous("Årtal", guide = guide_axis(n.dodge = 2), breaks = årtal) +
+  scale_y_continuous(limits = c(0,25), breaks = c(0,5,10,15,20,25)) +
+  theme_rise() +
+  theme(legend.position = "top") +
+  labs(title = str_wrap("Andel elever som varit med om att mobba eller trakassera andra elever via internet eller SMS/MMS det här läsåret"),
+       subtitle = "Antal elever visas i vit text i punkterna.",
+       caption = "Datakälla: Stockholmsenkäten.",
+       y = "Andel i %",
+       x = "") +
+  facet_wrap(~ARSKURS)
+```
+
 
 ### Skyddsfaktorer
 

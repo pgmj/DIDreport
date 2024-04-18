@@ -24,7 +24,11 @@ demogr.vars <- demogr.vars$demogr.vars
 
 # all analyzed items
 allAnalyzedItems <- read.csv("Sthlmsenk/allitems.csv")
-
+allAnalyzedItemsADD <- data.frame(itemnr = c("F62","F64"),
+                                  item = c("Har du varit med om att mobba eller trakassera andra elever i skolan det här läsåret?",
+                                           "Har du varit med om att mobba eller trakassera andra elever via internet eller SMS/MMS det här läsåret?"),
+                                  Index = c(NA,NA))
+allAnalyzedItems <- rbind(allAnalyzedItems,allAnalyzedItemsADD)
 ##### NOTE:
 ### when comparing datafiles in order to enable binding them together, the function
 ### janitor::compared_df_cols() will be very useful and is not (yet) used in the code below
@@ -271,10 +275,10 @@ df.botkyrka <- df.botkyrka %>%
 
 ## Haninge -----------------------------------------------------------------
 
-# haninge <- read.spss("/Volumes/Framtidens socialtjänst/Data från Haninge/Stockholmsenkäten 2002-2022 Haninge.sav", to.data.frame = TRUE)
-# df.haninge <- haninge %>%
-#   select(any_of(c(demogr.vars,allAnalyzedItems$itemnr,"SkolID_gammal","SkolSDO"))) %>%
-#   add_column(DIDkommun = "Haninge")
+haninge <- read.spss("/Volumes/rise/Gemensam/Framtidens socialtjänst/Data från Haninge/Stockholmsenkäten 2002-2022 Haninge.sav", to.data.frame = TRUE)
+df.haninge <- haninge %>%
+  select(any_of(c(demogr.vars,allAnalyzedItems$itemnr,"SkolID_gammal","SkolSDO"))) %>%
+  add_column(DIDkommun = "Haninge")
 
 
 
@@ -332,9 +336,10 @@ df <- rbind(df.sthlm,
             df.sigtuna,
             df.lidingö,
             df.botkyrka,
-            #df.haninge,
+            df.haninge,
             df.sundbyberg)
 
+#write_parquet(df,paste0(datafolder,"DID_klart/2024-04-17_DataPreRecode.parquet"))
 # create data frame with 0 rows and named variables as a template
 #names <- data.frame(matrix(ncol = length(names(df)), nrow = 0))
 # provide column names

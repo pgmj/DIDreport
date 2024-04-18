@@ -25,7 +25,10 @@ rename <- dplyr::rename
 
 ## Stockholmsenkäten --------------------------------------
 #df.all <- read_parquet("../DIDapp/data/2023-05-07_ScoredRev.parquet")
-df.all <- read_parquet("../data/2023-10-27_ScoredRev.parquet")
+
+datafolder <- "~/Library/CloudStorage/OneDrive-SharedLibraries-RISE/SHIC - Data i Dialog - Data i Dialog/data/"
+
+df.all <- read_parquet(paste0(datafolder,"DID_klart/2023-10-27_ScoredRev.parquet"))
 df <- df.all %>%
   rename(Kommun = DIDkommun)
 
@@ -33,7 +36,7 @@ df.allaK <- df %>%
   select(!Kommun) %>%
   add_column(Kommun = "Alla")
 
-# df.raw <- read_parquet("../data/2023-09-12_Sthlmsenk_all_raw.parquet")
+df.raw <- read_parquet(paste0(datafolder,"DID_klart/2024-04-17_DataPreRecode.parquet"))
 # df$F70raw <- df.raw$F70
 
 allaKommuner <- df %>%
@@ -98,18 +101,18 @@ df <- df %>%
   filter(!ar < 2006)
 
 # define demographic variables of interest
-demogr.vars <- read.csv("../DIDapp/data/SthlmsEnk_demographicVariables.csv")
+demogr.vars <- read.csv("Sthlmsenk/didapp_data/SthlmsEnk_demographicVariables.csv")
 demogr.vars <- demogr.vars$demogr.vars
 
 # final set of items based on psychometric analyses
-itemlabels.final <- read_excel("../DIDapp/data/2023-05-07_allItemInfo.xls") %>%
+itemlabels.final <- read_excel("Sthlmsenk/didapp_data/2023-05-07_allItemInfo.xls") %>%
   select(itemnr,item,Index)
 
 # list of all items included in analyses (even those discarded)
-allitems <- read.csv("../DIDapp/data/SthlmsEnk_allitems.csv")
+allitems <- read.csv("Sthlmsenk/didapp_data/SthlmsEnk_allitems.csv")
 
 # list of item responses for Psykiska/ psykosomatiska besvär, for use in the "persona" visualization
-itemresponses <- read_excel("../DIDapp/data/SthlmsEnk_04psfRespCats.xls", sheet = "04psf")
+itemresponses <- read_excel("Sthlmsenk/didapp_data/SthlmsEnk_04psfRespCats.xls", sheet = "04psf")
 
 # create vector with all index names
 sthlm.index <- itemlabels.final %>%
@@ -203,7 +206,7 @@ svarsfrekvenser <- demogr.skolverket.long %>%
 ## Skolinspektionen --------------------------------------------------------
 
 # read data from processed file with Rasch based scores
-df.si <- read_parquet("../DIDapp/data/SkolinspAk5Scored_2022-12-20.parquet")
+df.si <- read_parquet("Sthlmsenk/didapp_data/SkolinspAk5Scored_2022-12-20.parquet")
 # this data is also based on higher score = higher risk
 
 # some functions are based on the SthlmsEnkät labeling of year as "ar"
@@ -213,7 +216,7 @@ df.si <- df.si %>%
          ar = vec_cast(ar, double()))
 #
 # # read item info
-si.items <- read_csv("../DIDapp/data/SkolinspFinalItems_2022-12-20.csv")
+si.items <- read_csv("Sthlmsenk/didapp_data/SkolinspFinalItems_2022-12-20.csv")
 # note that all SI items have merged the top 3 response categories (top = highest risk)
 
 # Cutoff values SthlmsEnk -------------------------------------------------------------
@@ -221,19 +224,17 @@ si.items <- read_csv("../DIDapp/data/SkolinspFinalItems_2022-12-20.csv")
 # percentiles based on 2006-2020 data for all of Stockholm Stad (~ 110k responses)
 # each year's 70th and 90th percentile value was used to calculate an average (not weighted in any way)
 # see script "file 04 Distributions and risk limits.R" in https://github.com/pgmj/sthlmsenk/tree/main/OtherScripts
-#rslimits <- read.csv("../../DIDapp/data/SthlmsEnk_rslimitsNoRev2022-12-06.csv")
-rslimits <- read_csv("../DIDapp/data/2023-05-07_rslimitsNoRev.csv")
+rslimits <- read_csv("Sthlmsenk/didapp_data/2023-05-07_rslimitsNoRev.csv")
 
 # read cutoffs for protective factors
-#rslimits.prot <- read_csv("data/2022-12-16_protective.csv")
-rslimits.prot <- read_csv("../DIDapp/data/2023-05-07_protective.csv")
+rslimits.prot <- read_csv("Sthlmsenk/didapp_data/2023-05-07_protective.csv")
 
 rslimits <- cbind(rslimits,rslimits.prot)
 rslimits <- rslimits %>%
   relocate(SkolaPositiv, .after = SkolaNegativ)
 
 # for Skolinspektionen ÅK5
-rslimits.si <- read_csv("../DIDapp/data/2022-12-20_SkolinspLimits.csv")
+rslimits.si <- read_csv("Sthlmsenk/didapp_data/2022-12-20_SkolinspLimits.csv")
 rslimits$`Positiv skolanknytning åk 5` <- rslimits.si$`Positiv skolanknytning åk 5`
 
 # vector of years to be included in year selection inputs
@@ -480,8 +481,7 @@ rslimits <- rslimits %>%
          'Positiv skolanknytning' = SkolaPositiv
   )
 
-#rslimits.prot <- read_csv("../../DIDapp/data/2022-12-16_protective.csv")
-rslimits.prot <- read_csv("../DIDapp/data/2023-01-17_rslimitsProt.csv")
+rslimits.prot <- read_csv("Sthlmsenk/didapp_data/2023-01-17_rslimitsProt.csv")
 
 rslimits.prot <- rslimits.prot %>%
   rename(Välbefinnande = Wellbeing,
@@ -640,7 +640,7 @@ if (fokusKommun == "Alla") {
 # RSfigurerRapport --------------------------------------------------------
 
 ## For sankey diagrams
-lst.data <- read_excel("../DIDapp/data/RISE LST RS-faktorer tabeller OSF.xlsx")
+lst.data <- read_excel("Sthlmsenk/didapp_data/RISE LST RS-faktorer tabeller OSF.xlsx")
 rskontext <- c("Individ","Familj","Kamrater och fritid","Skola","Samhälle")
 
 

@@ -1,0 +1,157 @@
+itemnr_old,itemnr_new,item_new
+ar,ar,År
+Hemkommun,Hemkommun,Hemkommun
+Skolkommun,Skolkommun,Skolkommun
+Skolenhetskod,Skolenhetskod,Skolenhetskod
+Skolnamn,Skolnamn,Skolans namn
+ARSKURS,ARSKURS,Årskurs
+Kön,NA,NA
+F3_Omkodad,F3_Omkodad,Vilket stadsdelsområde i Stockholm eller vilken kommun bor du i?
+f4a,F4a,Mamma
+f4b,F4b,Pappa
+f4c,F4c,Bonus-/styvförälder
+f4d,F4d,Syskon
+f4e,F4e,Mamma och pappa växelvis
+f4f,F4f,Andra släktingar
+f4g,F4g,Fosterföräldrar
+f4h,F4h,Annan
+f4i,F4i,Jag bor ensam
+F5,F1,Hur gammal är du?
+F5,F2,"Är du pojke, flicka eller har du en annan könstillhörighet? Med annan könstillhörighet menar vi personer som inte är eller känner sig som varken pojke eller flicka."
+F5,F5,Hur länge har du bott i Sverige?
+F5,F7,Vad bor du i för typ av bostad? (Ange den bostad där du är mest)
+F5,F9,Hur mycket pengar har du ungefär till fritid och nöjen varje månad?
+F5,F15,Röker du e-cigaretter (elektronisk cigarett som omvandlar vätska till vattenånga)?
+F5,F25,Hur mycket folköl dricker du ungefär vid varje tillfälle?
+F5,F35,Hur ofta dricker du vid ett och samma tillfälle alkohol motsvarande minst: cl sprit (en halv kvarting) eller en helflaska vin eller fyra stora flaskor stark cider/alkoläsk eller fyra burkar starköl eller sex burkar folköl?
+F5,F45,Hur gammal var du första gången du sniffade/boffade?
+F5,F50,Hur många gånger har du använt narkotika (cannabis eller annan narkotika) den senaste -veckorsperioden?
+F5,F52,Hur gammal var du första gången du använde narkotika?
+F5,F53,Har du någon gång haft möjlighet att pröva narkotika?
+F5,F56,Har du varit borta från skolan det här läsåret därför att du var sjuk eller mådde dåligt?
+F5,F57,Har du skolkat en hel dag från skolan det här läsåret?
+F5,F58,Hur gammal var du första gången du skolkade en hel dag?
+F5,F59,Hur skulle dina föräldrar/vårdnadshavare reagera om du hade skolkat?
+F5,F65,"Har du varit med om att mobba, kränka eller trakassera andra elever via sociala medier, internet eller SMS/MMS det här läsåret?"
+F5,F95,"Hur ofta har du under detta läsår haft ""nervös mage"" (t.ex. magknip, magkramper, orolig mage, illamående, gaser, förstoppning eller diarré)?"
+f6a,F6a,Vilken högsta utbildning har dina föräldrar/vårdnadshavare? - Mamma
+f6b,F6b,Vilken högsta utbildning har dina föräldrar/vårdnadshavare? - Pappa
+F7,F1,Hur gammal är du?
+F7,F2,"Är du pojke, flicka eller har du en annan könstillhörighet? Med annan könstillhörighet menar vi personer som inte är eller känner sig som varken pojke eller flicka."
+F7,F5,Hur länge har du bott i Sverige?
+F7,F7,Vad bor du i för typ av bostad? (Ange den bostad där du är mest)
+F7,F9,Hur mycket pengar har du ungefär till fritid och nöjen varje månad?
+F7,F17,Hur gammal var du första gången du rökte?
+F7,F27,Hur mycket starköl dricker du ungefär vid varje tillfälle?
+F7,F37,Hur många gånger har du druckit så mycket alkohol att du känt dig berusad under den senaste -veckorsperioden?
+F7,F57,Har du skolkat en hel dag från skolan det här läsåret?
+F7,F70,"Brukar du vara på fritidsgård eller ""träffpunkt""?"
+F7,F71,"Brukar du delta i någon ledarledd fritidsaktivitet eller träning? (Sport, musik, teater och konst, hobby, kyrkligt, scouter, politik eller annan förening)"
+F7,F72,Vem bestämmer när du ska vara hemma på kvällen?
+F7,F74,"Hur mycket pengar har du spelat för de senaste dagarna? (Exempel: kasinospel, pokerspel, spelautomater, Loot-lådor, tips, vadslagning eller liknande)"
+F7,F76,Får du satsa pengar på spel för dina föräldrar/vårdnadshavare?
+F7,F78,Hur gammal var du första gången du gjort något av de föregående frågorna?
+F7,F79,Har du någon gång åkt fast för polisen?
+F7,F87,Tycker du att någon i din familj dricker för mycket alkohol?
+F7,F97,Hur ofta har du under detta läsår haft svårt att somna?
+f8ma,F8ma,Arbetar (hel- eller deltid)
+f8mb,F8mb,Studerar
+f8mc,F8mc,Tjänstledig/föräldraledig
+f8md,F8md,Arbetslös
+f8me,F8me,Annat
+f8mf,F8mf,Vet inte
+f8pa,F8pa,Arbetar (hel- eller deltid)
+f8pb,F8pb,Studerar
+f8pc,F8pc,Tjänstledig/föräldraledig
+f8pd,F8pd,Arbetslös
+f8pe,F8pe,Annat
+f8pf,F8pf,Vet inte
+F9,F1,Hur gammal är du?
+F9,F2,"Är du pojke, flicka eller har du en annan könstillhörighet? Med annan könstillhörighet menar vi personer som inte är eller känner sig som varken pojke eller flicka."
+F9,F5,Hur länge har du bott i Sverige?
+F9,F7,Vad bor du i för typ av bostad? (Ange den bostad där du är mest)
+F9,F9,Hur mycket pengar har du ungefär till fritid och nöjen varje månad?
+F9,F29,Hur mycket vin dricker du ungefär vid varje tillfälle?
+F9,F49,Hur många gånger totalt har du använt annan narkotika än hasch/marijuana?
+F9,F59,Hur skulle dina föräldrar/vårdnadshavare reagera om du hade skolkat?
+F9,F69,"Om du jämför dina framtidsutsikter med de flesta andras i din ålder, tror du då att dina är sämre, lika bra eller bättre?"
+F9,F79,Har du någon gång åkt fast för polisen?
+F9,F89,Har du haft en pojkvän/flickvän under de senaste månaderna?
+F9,F90,Hur ofta har du haft huvudvärk detta läsår?
+F9,F91,Känner du dig ledsen och deppig utan att veta varför?
+F9,F92,Händer det att du känner dig rädd utan att veta varför?
+F9,F93,Hur ofta har du dålig aptit?
+F9,F94,Hur mycket skulle du vilja ändra på dig själv?
+F9,F95,"Hur ofta har du under detta läsår haft ""nervös mage"" (t.ex. magknip, magkramper, orolig mage, illamående, gaser, förstoppning eller diarré)?"
+F9,F96,Hur ofta tycker du att du inget duger till?
+F9,F97,Hur ofta har du under detta läsår haft svårt att somna?
+F9,F98,Är du nöjd med ditt utseende?
+F9,F99,Känner du dig slö och olustig?
+F10,F1,Hur gammal är du?
+F10,F10,Har du flyttat under de senaste månaderna?
+F10,F11,Hur många gånger har du flyttat sedan du började i grundskolans år ?
+F10,F12,Har du bytt skola under de senaste månaderna?
+F10,F13,Hur många gånger har du bytt skola sedan du började i grundskolans år ?
+F10,F14,Röker du cigaretter? (Räkna inte med e-cigaretter)
+F10,F15,Röker du e-cigaretter (elektronisk cigarett som omvandlar vätska till vattenånga)?
+F10,F17,Hur gammal var du första gången du rökte?
+F10,F18,Får du röka för dina föräldrar/vårdnadshavare?
+F10,F30,"Hur ofta brukar du dricka sprit? (med sprit menas brännvin, hembränt, vodka, gin, konjak, whisky, punsch och liknande. Även sprit som ingår i t ex drinkar eller shots)"
+F10,F50,Hur många gånger har du använt narkotika (cannabis eller annan narkotika) den senaste -veckorsperioden?
+F10,F60,Har du fuskat på läxförhör eller prov i skolan det här läsåret?
+F10,F70,"Brukar du vara på fritidsgård eller ""träffpunkt""?"
+F10,F90,Hur ofta har du haft huvudvärk detta läsår?
+F10,F100,Hur ofta har det hänt under detta läsår att du sovit oroligt och vaknat under natten?
+F10,F101,Hur ofta tycker du att det är riktigt härligt att leva?
+F10,F102,"Om du går ut ensam sent en kväll i området där du bor, känner du dig då…"
+F11,F1,Hur gammal är du?
+F11,F10,Har du flyttat under de senaste månaderna?
+F11,F11,Hur många gånger har du flyttat sedan du började i grundskolans år ?
+F11,F12,Har du bytt skola under de senaste månaderna?
+F11,F13,Hur många gånger har du bytt skola sedan du började i grundskolans år ?
+F11,F14,Röker du cigaretter? (Räkna inte med e-cigaretter)
+F11,F15,Röker du e-cigaretter (elektronisk cigarett som omvandlar vätska till vattenånga)?
+F11,F17,Hur gammal var du första gången du rökte?
+F11,F18,Får du röka för dina föräldrar/vårdnadshavare?
+F11,F21,Hur gammal var du första gången du snusade?
+F11,F31,Hur mycket sprit dricker du ungefär vid varje tillfälle?
+F11,F41,Får du dricka alkohol för dina föräldrar/vårdnadshavare?
+F11,F71,"Brukar du delta i någon ledarledd fritidsaktivitet eller träning? (Sport, musik, teater och konst, hobby, kyrkligt, scouter, politik eller annan förening)"
+F11,F81,Vet dina föräldrar/vårdnadshavare var du är när du är ute med kompisar på kvällar?
+F11,F91,Känner du dig ledsen och deppig utan att veta varför?
+F11,F101,Hur ofta tycker du att det är riktigt härligt att leva?
+F12,F1,Hur gammal är du?
+F12,F2,"Är du pojke, flicka eller har du en annan könstillhörighet? Med annan könstillhörighet menar vi personer som inte är eller känner sig som varken pojke eller flicka."
+F12,F10,Har du flyttat under de senaste månaderna?
+F12,F11,Hur många gånger har du flyttat sedan du började i grundskolans år ?
+F12,F12,Har du bytt skola under de senaste månaderna?
+F12,F13,Hur många gånger har du bytt skola sedan du började i grundskolans år ?
+F12,F14,Röker du cigaretter? (Räkna inte med e-cigaretter)
+F12,F15,Röker du e-cigaretter (elektronisk cigarett som omvandlar vätska till vattenånga)?
+F12,F17,Hur gammal var du första gången du rökte?
+F12,F18,Får du röka för dina föräldrar/vårdnadshavare?
+F12,F21,Hur gammal var du första gången du snusade?
+F12,F22,Får du snusa för dina föräldrar/vårdnadshavare?
+F12,F32,"Hur ofta brukar du dricka starkcider, alkoläsk eller andra blanddrycker?"
+F12,F42,"Har du sniffat/boffat någon gång (t.ex. använt lustgas, butangas från tändare, drivgas från sprayburkar m.m.)?"
+F12,F52,Hur gammal var du första gången du använde narkotika?
+F12,F62,"Hur ofta har du blivit mobbad, kränkt eller trakasserad i skolan det här läsåret?"
+F12,F72,Vem bestämmer när du ska vara hemma på kvällen?
+F12,F82,Vet dina föräldrar/vårdnadshavare vilka kompisar du umgås med på din fritid?
+F12,F92,Händer det att du känner dig rädd utan att veta varför?
+F12,F102,"Om du går ut ensam sent en kväll i området där du bor, känner du dig då…"
+F13,F1,Hur gammal är du?
+F13,F10,Har du flyttat under de senaste månaderna?
+F13,F11,Hur många gånger har du flyttat sedan du började i grundskolans år ?
+F13,F12,Har du bytt skola under de senaste månaderna?
+F13,F13,Hur många gånger har du bytt skola sedan du började i grundskolans år ?
+F13,F14,Röker du cigaretter? (Räkna inte med e-cigaretter)
+F13,F15,Röker du e-cigaretter (elektronisk cigarett som omvandlar vätska till vattenånga)?
+F13,F17,Hur gammal var du första gången du rökte?
+F13,F18,Får du röka för dina föräldrar/vårdnadshavare?
+F13,F31,Hur mycket sprit dricker du ungefär vid varje tillfälle?
+F13,F33,"Hur mycket starkcider, alkoläsk eller andra blanddrycker dricker du ungefär vid varje tillfälle?"
+F13,F53,Har du någon gång haft möjlighet att pröva narkotika?
+F13,F63,"Har du varit med om att mobba, kränka eller trakassera andra elever i skolan det här läsåret?"
+F13,F83,Vet dina föräldrar/vårdnadshavare vad du spenderar dina pengar på?
+F13,F93,Hur ofta har du dålig aptit?

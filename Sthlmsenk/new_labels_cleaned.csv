@@ -1,0 +1,432 @@
+itemnr_new,item_new
+ID,Origo ID
+ar,År
+Hemkommun,Hemkommun
+Skolkommun,Skolkommun
+Skolenhetskod,Skolenhetskod
+SkolID_gammal,Skolkod som använts för tidigare mätningar
+Skolnamn,Skolans namn
+ARSKURS,Årskurs
+F1,Hur gammal är du?
+F2,"Är du pojke, flicka eller har du en annan könstillhörighet? Med annan könstillhörighet menar vi personer som inte är eller känner sig som varken pojke eller flicka."
+F3_Omkodad,Vilket stadsdelsområde i Stockholm eller vilken kommun bor du i?
+F4a,Mamma
+F4b,Pappa
+F4c,Bonus-/styvförälder
+F4d,Syskon
+F4e,Mamma och pappa växelvis
+F4f,Andra släktingar
+F4g,Fosterföräldrar
+F4h,Annan
+F4i,Jag bor ensam
+F4j,Annan vårdnadshavare
+F5,Hur länge har du bott i Sverige?
+F6a,Vilken högsta utbildning har dina föräldrar/vårdnadshavare? - Mamma
+F6b,Vilken högsta utbildning har dina föräldrar/vårdnadshavare? - Pappa
+F6c,Vilken högsta utbildning har dina föräldrar/vårdnadshavare? - Annan vårdnadshavare
+F7,Vad bor du i för typ av bostad? (Ange den bostad där du är mest)
+F8ma,Arbetar (hel- eller deltid)
+F8mb,Studerar
+F8mc,Tjänstledig/föräldraledig
+F8md,Arbetslös
+F8me,Annat
+F8mf,Vet inte
+F8pa,Arbetar (hel- eller deltid)
+F8pb,Studerar
+F8pc,Tjänstledig/föräldraledig
+F8pd,Arbetslös
+F8pe,Annat
+F8pf,Vet inte
+F8aa,Arbetar (hel- eller deltid)
+F8ab,Studerar
+F8ac,Tjänstledig/föräldraledig
+F8ad,Arbetslös
+F8ae,Annat
+F8af,Vet inte
+F9,Hur mycket pengar har du ungefär till fritid och nöjen varje månad?
+F10,Har du flyttat under de senaste månaderna?
+F11,Hur många gånger har du flyttat sedan du började i grundskolans år ?
+F12,Har du bytt skola under de senaste månaderna?
+F13,Hur många gånger har du bytt skola sedan du började i grundskolans år ?
+F14,Röker du cigaretter? (Räkna inte med e-cigaretter)
+F15_RökerCigg,Röker du e-cigaretter? (bland de som röker eller har rökt men slutat)
+F15,Röker du e-cigaretter (elektronisk cigarett som omvandlar vätska till vattenånga)?
+F16a,Köper/köpte själv i butik eller kiosk
+F16b,Får av föräldrar/vårdnadshavare
+F16c,Skaffar/skaffade på annat sätt
+F17,Hur gammal var du första gången du rökte?
+F18,Får du röka för dina föräldrar/vårdnadshavare?
+F19a,Snusar du så kallat vitt snus/nikotinpåse (tobaksfritt snus med nikotin)?
+F19b,Snusar du snus med tobak?
+F20a,Köper/köpte själv i butik eller kiosk
+F20b,Får av föräldrar/vårdnadshavare
+F20c,Skaffar/skaffade på annat sätt
+F21,Hur gammal var du första gången du snusade?
+F22,Får du snusa för dina föräldrar/vårdnadshavare?
+F23a,Nej
+F23b,Mamma
+F23c,Pappa
+F23d,Syskon
+F23e,Annan person
+F23f,Vet inte
+F24,Hur ofta brukar du dricka folköl (klass ll)?
+F25,Hur mycket folköl dricker du ungefär vid varje tillfälle?
+F26,Hur ofta brukar du dricka starköl?
+F27,Hur mycket starköl dricker du ungefär vid varje tillfälle?
+F28,Hur ofta brukar du dricka vin?
+F29,Hur mycket vin dricker du ungefär vid varje tillfälle?
+F30,"Hur ofta brukar du dricka sprit? (med sprit menas brännvin, hembränt, vodka, gin, konjak, whisky, punsch och liknande. Även sprit som ingår i t ex drinkar eller shots)"
+F31,Hur mycket sprit dricker du ungefär vid varje tillfälle?
+F32,"Hur ofta brukar du dricka starkcider, alkoläsk eller andra blanddrycker?"
+F33,"Hur mycket starkcider, alkoläsk eller andra blanddrycker dricker du ungefär vid varje tillfälle?"
+F34,"Har du någon gång under de senaste månaderna druckit hemtillverkad sprit, så kallat ""hembränt""?"
+F35,Hur ofta dricker du vid ett och samma tillfälle alkohol motsvarande minst: cl sprit (en halv kvarting) eller en helflaska vin eller fyra stora flaskor stark cider/alkoläsk eller fyra burkar starköl eller sex burkar folköl?
+F36,Hur många gånger har du druckit så mycket alkohol att du känt dig berusad?
+F37,Hur många gånger har du druckit så mycket alkohol att du känt dig berusad under den senaste -veckorsperioden?
+F38,Hur gammal var du första gången du kände dig berusad?
+F39a,Dricker inte alkohol
+F39b,Köper själv i affär (gäller folköl)
+F39c,Köper själv på Systembolaget
+F39d,Från syskon
+F39e,Från kompisar eller kompisars syskon
+F39f,Från egna föräldrar/vårdnadshavare (med lov)
+F39g,Från egna föräldrar/vårdnadshavare (utan lov)
+F39h,Från annan vuxen som bjuder
+F39i,Från annan vuxen som köper ut åt mig
+F39j,"På restaurang, bar, pub eller liknande"
+F39k,Köper privatimporterad eller smugglad
+F39l,Köper själv via internet
+F39m,"Köper själv via sociala medier (tex Instagram, Snapchat, Facebook)"
+F39n,På annat sätt
+F40a,Har aldrig druckit alkohol
+F40b,Hemma
+F40c,Hemma hos någon annan
+F40d,"Utomhus på gatan, i en park eller annan öppen plats"
+F40e,"På offentlig lokal (t.ex. bar, pub, klubb)"
+F40f,På restaurang
+F40g,"Annan plats, nämligen"
+F41,Får du dricka alkohol för dina föräldrar/vårdnadshavare?
+F42,"Har du sniffat/boffat någon gång (t.ex. använt lustgas, butangas från tändare, drivgas från sprayburkar m.m.)?"
+F43a,Bensin
+F43b,"Klister, lim"
+F43c,Butangas (tändargas)
+F43d,"Drivgas från sprayburkar (t.ex. sprayfärg, hårspray, doftspray)"
+F43e,Lustgas
+F43f,Annat. Vad?
+F43g,Vet inte
+F44,Hur många gånger har du sniffat/boffat den senaste -veckorsperioden?
+F45,Hur gammal var du första gången du sniffade/boffade?
+F46,"Har du någon gång använt narkotika? (Med narkotika avses t ex hasch, marijuana, amfetamin, ecstasy, LSD, kokain, heroin och GHB)"
+F47a,"Cannabis (hasch, marijuana)"
+F47b,Amfetamin
+F47c,Heroin som röks
+F47d,Morfin
+F47e,Metadon
+F47f,LSD
+F47g,GHB
+F47h,Metabolit
+F47i,"Sömn-/lugnande medel av bensodiazepintyp (t.ex. Stesolid, Sobril, Xanor)"
+F47j,"Smärtstillande medel av opiodtyp (t.ex. Tramadol, Citodon, Oxycodone)"
+F47k,Kat
+F47l,Crack
+F47m,Heroin som injiceras
+F47n,Psilocybinsvamp
+F47o,Kokain
+F47p,Ecstasy
+F47q,Subutex
+F47r,Spice
+F47s,Ketamin
+F47u,Annan typ av narkotika. Vad?
+F47t,Vet inte
+F48,Hur många gånger totalt har du använt hasch/marijuana?
+F49,Hur många gånger totalt har du använt annan narkotika än hasch/marijuana?
+F50,Hur många gånger har du använt narkotika (cannabis eller annan narkotika) den senaste -veckorsperioden?
+F51a,Köpt av en okänd
+F51b,Köpt av någon jag har hört talas om men inte känner personligen
+F51c,Köpt av kompisar
+F51d,Köpt av någon annan jag känner
+F51e,Langat själv
+F51f,"Köpt via sociala medier (tex Instagram, Snapchat, Facebook)"
+F51g,Köpt på internet
+F51h,Blivit bjuden av kompisar
+F51i,Blivit bjuden av äldre syskon
+F51j,Skaffat i skolan eller i dess närhet
+F51k,Blivit bjuden av vuxen person
+F51l,Skaffat på annat sätt
+F52,Hur gammal var du första gången du använde narkotika?
+F53,Har du någon gång haft möjlighet att pröva narkotika?
+F53red,Har du någon gång haft möjlighet att pröva narkotika? (bland de som inte använt)
+F54a,Nej
+F54b,"Ja, beroendespecialist (Maria Ungdom, Mini-Maria eller annan öppenvårdsmottagning)"
+F54c,"Ja, socialtjänsten (”soc”)"
+F54d,"Ja, ungdomsmottagning"
+F54e,"Ja, sjukvård (akut, vårdcentral eller liknande)"
+F54f,"Ja, annat. Vad?"
+F55a,Jag vet vilka regler som gäller på den här skolan.
+F55b,Jag trivs bra i skolan.
+F55c,Vi elever är med och planerar vad vi skall göra i undervisningen.
+F55d,Lärarna berömmer elever som gör något bra i skolan.
+F55e,Det är hög ljudnivå och stökigt på lektionerna.
+F55f,Skolarbetet känns meningslöst.
+F55g,Vi elever får vara med och bestämma över saker som är viktiga för oss.
+F55h,Lärarna förklarar vad vi får och vad vi inte får göra.
+F55i,I början av lektionerna tar det minst fem minuter innan arbetet kan börja.
+F55j,Skolan berättar för mina föräldrar/vårdnadshavare om jag gjort något bra.
+F55k,Elevernas åsikter tas inte på allvar i den här skolan.
+F55l,"Vuxna ingriper om någon blir kränkt, trakasserad eller mobbad."
+F55m,Mina lärare ger mig inget beröm om jag jobbar hårt.
+F55n,Jag ser fram emot att gå till lektionerna.
+F55o,"Jag är orolig för att utsättas för brott i skolan. (t.ex. stöld, misshandel etc)"
+F55p,De flesta av mina lärare har intressant undervisning.
+F55q,Skolarbetet gör mig förvirrad.
+F55r,Om jag (eller andra) inte förstår får vi direkt hjälp av läraren
+F56,Har du varit borta från skolan det här läsåret därför att du var sjuk eller mådde dåligt?
+F57,Har du skolkat en hel dag från skolan det här läsåret?
+F58,Hur gammal var du första gången du skolkade en hel dag?
+F59,Hur skulle dina föräldrar/vårdnadshavare reagera om du hade skolkat?
+F60,Har du fuskat på läxförhör eller prov i skolan det här läsåret?
+F61a,Nej
+F61b,"Jag har blivit hånad, förlöjligad, kallad öknamn eller blivit retad på ett obehagligt och sårande sätt"
+F61c,Jag har blivit utfrusen av andra elever
+F61d,"Jag har blivit slagen, sparkad, knuffad eller stängd inne"
+F61e,Någon elev har spritt lögner eller falska rykten om mig och försökt få andra att tycka illa om mig
+F61f,Jag har blivit fråntagen pengar eller saker eller fått saker förstörda
+F61g,Jag har blivit hotad eller tvingad att göra saker som jag inte ville göra
+F61h,Lärare har psykat eller på annat sätt varit elaka mot mig
+F61i,"Jag har mobbats, kränkts eller trakasserats på annat sätt. Vilket?"
+F62,"Hur ofta har du blivit mobbad, kränkt eller trakasserad i skolan det här läsåret?"
+F63,"Har du varit med om att mobba, kränka eller trakassera andra elever i skolan det här läsåret?"
+F64,"Har du blivit mobbad, kränkt eller trakasserad via sociala medier, internet eller SMS/MMS det här läsåret?"
+F65,"Har du varit med om att mobba, kränka eller trakassera andra elever via sociala medier, internet eller SMS/MMS det här läsåret?"
+F66a,Vad hade du för betyg förra terminen (senast) i följande ämnen? - Svenska
+F66b,Vad hade du för betyg förra terminen (senast) i följande ämnen? - Engelska
+F66c,Vad hade du för betyg förra terminen (senast) i följande ämnen? - Matematik
+F67a,"Jag gör tvärt emot vad människor säger åt mig att göra, bara för att göra dem arga."
+F67b,"Jag gillar att göra spännande och farliga saker, även om det är förbjudet."
+F67c,Jag tål inte att bli provocerad – då kan jag slå till någon.
+F67d,Jag ljuger för att få fördelar eller slippa göra jobbiga saker.
+F67e,Om jag blir arg på någon har jag inga problem att agera för att skada honom/henne
+F67f,Jag är ofta ute på natten tillsammans med kompisar.
+F67g,Jag struntar i regler som hindrar mig från att göra det jag vill göra.
+F67h,Jag tycker det är roligt att lösa svåra problem och uppgifter.
+F67i,Jag ser mig själv som en ganska impulsiv person.
+F67j,Jag vill gärna vara där det händer spännande saker.
+F67k,Jag kan få andra att tro på nästan vad som helst.
+F67l,Jag blir ofta osäker när jag ställs inför nya uppgifter.
+F67m,Jag tänker oftast efter innan jag talar eller gör saker.
+F67n,Jag gör dumma saker även om de är lite farliga.
+F67o,Jag vill gärna se hur långt jag kan gå innan folk får nog.
+F67p,Det är fel att fuska i skolan.
+F67q,"Jag tycker att det är OK att ta något utan att fråga, om man inte blir upptäckt."
+F67r,Det händer att jag gör saker utan att tänka mig för.
+F67s,Om jag ställs inför en svår uppgift så väljer jag att göra något annat.
+F67t,Den som gör mig arg ger jag mig på – även om han/hon inte slagit mig först.
+F67u,"Det är viktigt att vara ärlig mot föräldrarna/vårdnadshavare, även om de blir arga."
+F68,Tycker du att det är viktigt vad du kommer att jobba med när du blir stor eller spelar det ingen roll?
+F69,"Om du jämför dina framtidsutsikter med de flesta andras i din ålder, tror du då att dina är sämre, lika bra eller bättre?"
+F70,"Brukar du vara på fritidsgård eller ""träffpunkt""?"
+F71,"Brukar du delta i någon ledarledd fritidsaktivitet eller träning? (Sport, musik, teater och konst, hobby, kyrkligt, scouter, politik eller annan förening)"
+F72,Vem bestämmer när du ska vara hemma på kvällen?
+F73_1,Nej
+F73_2,"Ja - online (dator, mobil, surfplatta)"
+F73_3,Ja - på annat sätt
+F74,"Hur mycket pengar har du spelat för de senaste dagarna? (Exempel: kasinospel, pokerspel, spelautomater, Loot-lådor, tips, vadslagning eller liknande)"
+F75a,Hur många gånger har du under de senaste månaderna... ...försökt minska ditt spelande?
+F75b,Hur många gånger har du under de senaste månaderna... ...känt dig rastlös och irriterad om du inte kunnat spela?
+F75c,Hur många gånger har du under de senaste månaderna... ...ljugit om hur mycket du spelat?
+F76,Får du satsa pengar på spel för dina föräldrar/vårdnadshavare?
+F77a,Snattat?
+F77b,Klottrat/olaglig graffiti?
+F77c,Stulit en cykel?
+F77d,Stulit en moped eller motorcykel?
+F77e,Stulit en bil?
+F77f,"Tvingat någon att ge dig pengar, mobiltelefon eller något annat värdefullt?"
+F77g,"Med avsikt förstört saker som inte var dina (t.ex. fönsterrutor, gatlampor, cyklar)?"
+F77h,Använt annans/falsk legitimation?
+F77i,Tagit pengar hemma som inte var dina?
+F77j,"Smitit från betalning (t.ex. bio, kafé etc)?"
+F77t,Tafsat eller tagit på någon på ett sexuellt sätt fast de inte ville det?
+F77k,Tvingat någon att ha sex med dig?
+F77l,Stulit ur någons ficka?
+F77m,Stulit något annat som vi inte frågat om?
+F77n,Köpt något som du vet var stulet?
+F77o,Sålt något som var stulet?
+F77p,Tjuvåkt på tunnelbanan eller pendeltåget?
+F77q,"Gjort inbrott i bil, affär, kiosk eller annan byggnad?"
+F77r,Med avsikt slagit någon så att du tror eller vet att han/hon behövde sjukvård?
+F77s,Burit vapen (t.ex. kniv eller knogjärn)?
+F78,Hur gammal var du första gången du gjort något av de föregående frågorna?
+F79,Har du någon gång åkt fast för polisen?
+F80aa,Känt dig allvarligt hotad?
+F80ab,Antal gånger som du känt dig allvarligt hotad?
+F80ae,Känt dig allvarligt hotad? -> Var hände det den senaste gången?
+F80ac,Känt dig allvarligt hotad? -> Anmälde du detta till polisen?
+F80ad,Antal gånger polisanmält allvarligt hotad
+F80ba,Blivit rånad?
+F80bb,bb.Antal gånger som du blivit rånad?
+F80be,Blivit rånad? -> Var hände det den senaste gången?
+F80bc,Blivit rånad? -> Anmälde du detta till polisen?
+F80bd,Antal gånger polisanmält rånad?
+F80ca,Blivit bestulen?
+F80cb,Antal gånger som du blivit bestulen?
+F80ce,Blivit bestulen? -> Var hände det den senaste gången?
+F80cc,Blivit bestulen? -> Anmälde du detta till polisen?
+F80cd,Antal gånger polisanmält blivit bestulen?
+F80da,Blivit misshandlad?
+F80db,Antal gånger som du blivit misshandlad?
+F80de,Blivit misshandlad? -> Var hände det den senaste gången?
+F80dc,Blivit misshandlad? -> Anmälde du detta till polisen?
+F80dd,Antal gånger som du polisanmält att du blivit misshandlad?
+F80fa,Blivit utsatt för sexuella handlingar mot din vilja (t.ex. har någon tafsat eller tagit på dig på ett sexuellt sätt fast du inte ville det)?
+F80fb,Antal gånger som du blivit utsatt för sexuella handlingar mot din vilja?
+F80fc,Blivit utsatt för sexuella handlingar mot din vilja? -> Var hände det den senaste gången?
+F80fd,Blivit utsatt för sexuella handlingar mot din vilja? -> Anmälde du detta till polisen?
+F80fe,Antal gånger som du polisanmält att du blivit utsatt för sexuella handlingar mot din vilja?
+F80ea,Blivit tvingad till sex/våldtagen?
+F80eb,Antal gånger som du blivit tvingad till sex/våldtagen?
+F80ee,Blivit tvingad till sex/våldtagen -> Var hände det den senaste gången?
+F80ec,Blivit tvingad till sex/våldtagen -> Anmälde du detta till polisen?
+F80ed,Antal gånger som du polisanmält att du blivit tvingad till sex/våldtagen?
+F81,Vet dina föräldrar/vårdnadshavare var du är när du är ute med kompisar på kvällar?
+F82,Vet dina föräldrar/vårdnadshavare vilka kompisar du umgås med på din fritid?
+F83,Vet dina föräldrar/vårdnadshavare vad du spenderar dina pengar på?
+F84,"Om du har ett personligt problem, kan du be någon av dina föräldrar/vårdnadshavare om hjälp?"
+F85a,De ger mig beröm när jag gör något bra.
+F85b,De hotar med bestraffning för något jag gjort men genomför det inte.
+F85c,De brukar uppmuntra och stötta mig.
+F85d,Jag vet inte hur de reagerar när jag gjort något de inte gillar.
+F85e,De märker när jag gör något bra.
+F85f,Det humör de är på bestämmer hur de är mot mig.
+F85g,Jag bryr mig om vad mina föräldrar/vårdnadshavare säger.
+F85h,Mina föräldrar/vårdnadshavare är en förebild för mig.
+F86,Händer det att du blir bjuden på alkohol av dina föräldrar/vårdnadshavare?
+F87,Tycker du att någon i din familj dricker för mycket alkohol?
+F88a,Motionerar och tränar regelbundet?
+F88b,Har snattat/klottrat/vandaliserat?
+F88c,"Är med i någon förening? (sport, hobby, musik eller någon annan förening)"
+F88d,Röker tobak?
+F88e,Slåss?
+F88f,Är duktiga i skolan?
+F88g,Dricker sig berusad på alkohol?
+F88h,Använder narkotika?
+F88i,Skolkar?
+F88j,"Har rånat, gjort inbrott eller stulit en bil?"
+F89,Har du haft en pojkvän/flickvän under de senaste månaderna?
+F90,Hur ofta har du haft huvudvärk detta läsår?
+F91,Känner du dig ledsen och deppig utan att veta varför?
+F92,Händer det att du känner dig rädd utan att veta varför?
+F93,Hur ofta har du dålig aptit?
+F94,Hur mycket skulle du vilja ändra på dig själv?
+F95,"Hur ofta har du under detta läsår haft ""nervös mage"" (t.ex. magknip, magkramper, orolig mage, illamående, gaser, förstoppning eller diarré)?"
+F96,Hur ofta tycker du att du inget duger till?
+F97,Hur ofta har du under detta läsår haft svårt att somna?
+F98,Är du nöjd med ditt utseende?
+F99,Känner du dig slö och olustig?
+F100,Hur ofta har det hänt under detta läsår att du sovit oroligt och vaknat under natten?
+F101,Hur ofta tycker du att det är riktigt härligt att leva?
+F102,"Om du går ut ensam sent en kväll i området där du bor, känner du dig då…"
+F103a,"Vandalism (klotter, olaglig graffiti, förstörelse) är vanligt i bostadsområdet."
+F103b,Om en vuxen såg mig göra något olagligt i mitt bostadsområde skulle nog mina föräldrar/vårdnadshavare få reda på det.
+F103c,Vuxna skulle ingripa om någon helt öppet försökte sälja narkotika till ungdomar.
+F103d,Det finns personer som säljer narkotika i bostadsområdet.
+F103e,På vardagskvällar finns det många berusade utomhus i bostadsområdet.
+F103f,Så fort jag kan vill jag flytta till ett annat bostadsområde.
+F103g,"Det är ovanligt med våldsbrott (misshandel, rån, våldtäkt) i det här bostadsområdet."
+F103h,Vuxna skulle ingripa om det blev ett slagsmål framför mitt hus.
+F103i,Om jag blev rånad på en allmän plats i bostadsområdet skulle vuxna ingripa.
+F103j,Mina grannar brukar heja/hälsa på mig när vi möts.
+F103k,Jag trivs bra i mitt bostadsområde.
+F103l,Om jag var tvungen att flytta skulle jag sakna bostadsområdet jag bor i.
+EXTRA17_1,Hur ofta upplever du att du möter följande exempel av våld (mot andra personer i din omgivning): Fysiskt
+EXTRA17_2,Hur ofta upplever du att du möter följande exempel av våld (mot andra personer i din omgivning): Psykiskt
+EXTRA17_3,Hur ofta upplever du att du möter följande exempel av våld (mot andra personer i din omgivning): Sexualiserat
+EXTRA17_4,Hur ofta upplever du att du möter följande exempel av våld (mot andra personer i din omgivning): Rasistiskt
+EXTRA17_5,Hur ofta upplever du att du möter följande exempel av våld (mot andra personer i din omgivning): Homo- /transfobiskt
+EXTRA17_6,Hur ofta upplever du att du möter följande exempel av våld (mot andra personer i din omgivning): Digitaliserat våld
+EXTRA18_1,Upplever du att du har verktyg att agera när du möter våld (mot andra personer i din omgivning): Fysiskt
+EXTRA18_2,Upplever du att du har verktyg att agera när du möter våld (mot andra personer i din omgivning): Psykiskt
+EXTRA18_3,Upplever du att du har verktyg att agera när du möter våld (mot andra personer i din omgivning): Sexualiserat
+EXTRA18_4,Upplever du att du har verktyg att agera när du möter våld (mot andra personer i din omgivning): Rasistiskt
+EXTRA18_5,Upplever du att du har verktyg att agera när du möter våld (mot andra personer i din omgivning): Homo- /transfobiskt
+EXTRA18_6,Upplever du att du har verktyg att agera när du möter våld (mot andra personer i din omgivning): Digitaliserat våld
+EXTRA19_1,"När eller om du möter våld (mot andra personer i din omgivning), ingriper eller agerar du då – både när det händer eller i efterhand? Fysiskt"
+EXTRA19_2,"När eller om du möter våld (mot andra personer i din omgivning), ingriper eller agerar du då – både när det händer eller i efterhand? Psykiskt"
+EXTRA19_3,"När eller om du möter våld (mot andra personer i din omgivning), ingriper eller agerar du då – både när det händer eller i efterhand? Sexualiserat"
+EXTRA19_4,"När eller om du möter våld (mot andra personer i din omgivning), ingriper eller agerar du då – både när det händer eller i efterhand? Rasistiskt"
+EXTRA19_5,"När eller om du möter våld (mot andra personer i din omgivning), ingriper eller agerar du då – både när det händer eller i efterhand? Homo- /transfobiskt"
+EXTRA19_6,"När eller om du möter våld (mot andra personer i din omgivning), ingriper eller agerar du då – både när det händer eller i efterhand? Digitaliserat våld"
+EXTRA20_1,Vilket av följande sätt att agera är det mest sannolikt att du skulle använda dig av när du möter våld? Fysiskt
+EXTRA20_2,Vilket av följande sätt att agera är det mest sannolikt att du skulle använda dig av när du möter våld? Psykiskt
+EXTRA20_3,Vilket av följande sätt att agera är det mest sannolikt att du skulle använda dig av när du möter våld? Sexualiserat
+EXTRA20_4,Vilket av följande sätt att agera är det mest sannolikt att du skulle använda dig av när du möter våld? Rasistiskt
+EXTRA20_5,Vilket av följande sätt att agera är det mest sannolikt att du skulle använda dig av när du möter våld? Homo- /transfobiskt
+EXTRA20_6,Vilket av följande sätt att agera är det mest sannolikt att du skulle använda dig av när du möter våld? Digitaliserat våld
+EXTRA27_1,"Har du blivit utsatt för någon typ av våld, hot eller kränkning av någon du har varit ihop med eller intresserad av? Nej"
+EXTRA27_2,"Har du blivit utsatt för någon typ av våld, hot eller kränkning av någon du har varit ihop med eller intresserad av? Ja, psykiskt (t.ex. hotad, kränkt eller kontrollerad)"
+EXTRA27_3,"Har du blivit utsatt för någon typ av våld, hot eller kränkning av någon du har varit ihop med eller intresserad av? Ja, fysiskt (t.ex. sparkad, slagen eller knuffad)"
+EXTRA27_4,"Har du blivit utsatt för någon typ av våld, hot eller kränkning av någon du har varit ihop med eller intresserad av? Ja, sexuellt (t.ex. tvingad till sex mot min vilja)"
+EXTRA28_1,"Har du utsatt någon som du varit ihop med eller intresserad av för någon typ av våld, hot eller kränkning? Nej"
+EXTRA28_2,"Har du utsatt någon som du varit ihop med eller intresserad av för någon typ av våld, hot eller kränkning? Ja, psykiskt (t.ex. hotad, kränkt eller kontrollerad)"
+EXTRA28_3,"Har du utsatt någon som du varit ihop med eller intresserad av för någon typ av våld, hot eller kränkning? Ja, fysiskt (t.ex. sparkad, slagen eller knuffad)"
+EXTRA28_4,"Har du utsatt någon som du varit ihop med eller intresserad av för någon typ av våld, hot eller kränkning? Ja, sexuellt (t.ex. tvingad till sex mot min vilja)"
+EXTRA25,"Har du utsatt andra för sexuella trakasserier (t.ex. att du tagit på någon eller sagt något på ett sätt som de upplevt som obehagligt, på nätet eller i verkligheten)? I så fall hur ofta?"
+EXTRA26,"Har du utsatts för sexuella trakasserier (t.ex. att någon tagit på dig eller sagt något som du upplevt som obehagligt, på nätet eller i verkligheten)? I så fall hur ofta?"
+EXTRA23,"Har du någon gång använt dopningsmedel (ex. anabola steroider, testosteron, tillväxthormoner, läkemedel) utan läkares ordination/recept?"
+EXTRA24_1,Vilka dopningspreparat har du använt? Anabola steroider
+EXTRA24_2,Vilka dopningspreparat har du använt? Testosteron
+EXTRA24_3,Vilka dopningspreparat har du använt? Tillväxthormoner
+EXTRA24_4,Vilka dopningspreparat har du använt? Annat. Vad?
+EXTRA30,"Var bor du?  Om du bor i flera områden, markera det område du oftast bor i."
+EXTRA49,Har du under senaste året blivit kontaktad av någon som vill att du utför en kriminell handling (eller en handling du misstänker är brottslig) i utbyte mot en tjänst eller pengar?
+EXTRA50_1,Hur har du blivit kontaktad kring detta: I skolan
+EXTRA50_2,Hur har du blivit kontaktad kring detta: På fritidsgård/under fritidsaktivitet
+EXTRA50_3,Hur har du blivit kontaktad kring detta: Utomhus
+EXTRA50_4,Hur har du blivit kontaktad kring detta: På sociala medier
+EXTRA50_5,Hur har du blivit kontaktad kring detta: Annat:
+EXTRA51_1,Har du senaste året utfört en handling du misstänker kan vara brottslig i utbyte mot en tjänst eller pengar? Nej
+EXTRA51_2,"Har du senaste året utfört en handling du misstänker kan vara brottslig i utbyte mot en tjänst eller pengar? Ja, sålt droger"
+EXTRA51_3,"Har du senaste året utfört en handling du misstänker kan vara brottslig i utbyte mot en tjänst eller pengar? Ja, förvarat/gömt droger"
+EXTRA51_4,"Har du senaste året utfört en handling du misstänker kan vara brottslig i utbyte mot en tjänst eller pengar? Ja, förvarat/gömt vapen"
+EXTRA51_5,"Har du senaste året utfört en handling du misstänker kan vara brottslig i utbyte mot en tjänst eller pengar? Ja, hotat någon"
+EXTRA51_6,"Har du senaste året utfört en handling du misstänker kan vara brottslig i utbyte mot en tjänst eller pengar? Ja, skadat någon"
+EXTRA51_7,"Har du senaste året utfört en handling du misstänker kan vara brottslig i utbyte mot en tjänst eller pengar? Ja, annat:"
+F11_klass,Hur många gånger har du flyttat sedan du började i grundskolans år ?
+F13_klass,Hur många gånger har du bytt skola sedan du började i grundskolans år ?
+F17_klass,Hur gammal var du första gången du rökte?
+F21_klass,Hur gammal var du första gången du snusade?
+F37_klass,Hur många gånger har du druckit så mycket alkohol att du känt dig berusad under den senaste -veckorsperioden?
+F38_klass,Hur gammal var du första gången du kände Dig berusad?
+F44_klass,Hur många gånger har du sniffat/boffat den senaste den -veckorsperioden?
+F45_klass,Hur gammal var du första gången du sniffade/boffade?
+F50_klass,Hur många gånger har du använt narkotika (cannabis eller annan narkotika) den senaste -veckorsperioden?
+F52_klass,Hur gammal var du första gången du använde narkotika?
+F58_klass,Hur gammal var du första gången du skolkade en hel dag?
+F78_klass,Hur gammal var du första gången du gjort något av ovanstående?
+spelprobl,Haft problem av spelande (bland de som spelat enl. fråga )
+f102nyckel,Elever som känner sig ganska eller mycket trygga om de går ut ensamma sent en kväll i området
+f62nyckel,Elever som blivit mobbade två gånger i månaden eller oftare - bland elever som uppgett att de känt sig mobbade eller trakasserade under läsåret
+F70nyckel,Elever som ofta eller ibland brukar vara på fritidsgård eller träffpunkt
+F71nyckel,Elever som ofta eller ibland deltar i någon lärarledd fritidsaktivitet eller träning
+f40bcnyckel,Elever som druckit alkohol hemma eller hemma hos någon annan
+f100nyckel,Elever som har sovit oroligt och vaknat under natten en gång i veckan eller oftare
+alkokons,Total årlig alkoholkonsumtion omräknat i procent alkohol (cl)
+indexprosoc,Prosocialt index
+indexinfsockontroll,Grad av informell social kontroll i bostadsområdet
+indexordningsprob,Upplevelse av ordningsproblem i bostadsområdet
+lag_sk103,Låg grad av social kontroll i bostadsområdet
+psykhalsa,God psykisk hälsa
+f65a_gammal,Vad hade du för betyg förra terminen (senast) i svenska?
+f65b_gammal,Vad hade du för betyg förra terminen (senast) i engelska?
+f65c_gammal,Vad hade du för betyg förra terminen (senast) i matematik?
+f66v_gammal,Jag kan tänka mig att vara med i en grupp där våld är accepterat.
+f86k_gammal,Hur många av dina kamrater (inom och utom skolan): Är med i en grupp där våld är accepterat?
+F72_gammal,"Har Du någon gång under de senaste månaderna köpt lotter eller satsat pengar på spel? (Trisslott, bingolotto, kasinospel, poker, tips, spel på hästar eller liknande)"
+CORONA_1_gammal,Relationen till min familj är...
+CORONA_2_gammal,Min fritid är...
+CORONA_3_gammal,Mitt umgänge med kompisar är...
+CORONA_4_gammal,Min skolsituation är...
+CORONA_5_gammal,Min fysiska hälsa är...
+CORONA_6_gammal,Min psykiska hälsa är...
+CORONA_7_gammal,Min familjs ekonomi är...
+CORONA_8_gammal,Mina framtida chanser på arbetsmarknaden är...
+CORONA_9_gammal,Mitt liv som helhet är...

@@ -1,0 +1,18 @@
+
+Nytt 2024 framgår i detalj från dokumentet "Kodbok Stockholmsenkäten 2024.xlsx"
+
+Utdrag nedan utifrån de som är mest relevanta för DID-rapporten. Variabelnamnen är från Origos nya variabelnamn (se kodboken).
+
+F14	          Röker du cigaretter? (Räkna inte med e-cigaretter)
+F15_RökerCigg	Röker du e-cigaretter? (bland de som röker eller har rökt men slutat)
+F15	          Röker du e-cigaretter (elektronisk cigarett som omvandlar vätska till vattenånga)?
+
+Av ovanstående använder vi F14 och F15 (som tidigare hette FNY12020)
+
+---
+
+F19a	Snusar du så kallat vitt snus/nikotinpåse (tobaksfritt snus med nikotin)?
+F19b	Snusar du snus med tobak?
+
+Här blir det knepigare, när fråga F18 enbart frågade om snus. Vi kan ev behöva lägga samman svaren för att få jämförbara andelar, och sedan lägga till en särredovisning av vitt/tobak.
+

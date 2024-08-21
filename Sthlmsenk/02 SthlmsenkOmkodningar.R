@@ -12,7 +12,7 @@ rename <- dplyr::rename
 # General recode preprocess -----------------------------------------------
 
 ### NOTE:
-# if you need to retain any variable as it is in the raw unprocessed data, 
+# if you need to retain any variable as it is in the raw unprocessed data,
 # you should make a copy of it (with a new variable name) prior to running the code below.
 
 #replace all 99* codes with missing (NA)
@@ -30,7 +30,7 @@ df$f6b <- recode(df$f6b,"'<NA>'=NA;'Vet inte'=NA") # Pappas utbildningsnivå
 
 ### Create new single variable for highest parent education level
 # first set factor levels
-df <- df %>% 
+df <- df %>%
   mutate(f6a = factor(f6a, levels = c("Folkskola eller grundskola (max 9 år i skolan)",
                                       "Gymnasium",
                                       "Universitet och högskola")),
@@ -40,7 +40,7 @@ df <- df %>%
   )
 
 # create numerical variable to enable logical comparisons
-df <- df %>% 
+df <- df %>%
   mutate(f6aNum = car::recode(f6a,"'Folkskola eller grundskola (max 9 år i skolan)'=0;
                               'Gymnasium'=1;
                               'Universitet och högskola'=2", as.factor = F),
@@ -50,7 +50,7 @@ df <- df %>%
   )
 
 # create new composite variable
-df <- df %>% 
+df <- df %>%
   mutate(f6ab = case_when(f6aNum > f6bNum ~ f6a,
                           f6aNum < f6bNum ~ f6b,
                           f6aNum == f6bNum ~ f6a,
@@ -78,8 +78,8 @@ smb<-'Stämmer mycket bra'
 
 if.positiva.items <- c("f66h", "f66m", "f66p", "f66u") # create vector with reverse scored items
 
-if.itemlabels <- allAnalyzedItems %>% 
-  filter(Index == 'Individfaktorer') %>% 
+if.itemlabels <- allAnalyzedItems %>%
+  filter(Index == 'Individfaktorer') %>%
   select(!Index)
 
 if.negativa.items <- if.itemlabels %>% # vector with items that are not reversed
@@ -98,8 +98,8 @@ for (i in if.negativa.items) {
 
 ## 03 Skola-----
 
-skola.itemlabels <- allAnalyzedItems %>% 
-  filter(Index == 'Skola') %>% 
+skola.itemlabels <- allAnalyzedItems %>%
+  filter(Index == 'Skola') %>%
   select(!Index)
 
 #skola.negativa<-names(df[c(156:157,160,162,164,166,168)])
@@ -122,7 +122,7 @@ for (i in skola.negativa) {
   df[[i]]<-recode(df[[i]],"smb=3;sgb=2;sgd=1;smd=0",as.factor=FALSE)
 }
 
-#responsesF55<-read.csv("C:/Users/magnuspjo/OneDrive - RISE/Dokument/Länsstyrelsen/Stockholmsenkäten2022/data/responsesF55.csv", 
+#responsesF55<-read.csv("C:/Users/magnuspjo/OneDrive - RISE/Dokument/Länsstyrelsen/Stockholmsenkäten2022/data/responsesF55.csv",
 #                       fileEncoding = "ISO-8859-1")
 
 for (i in c("F55","F56","F59")){
@@ -137,6 +137,7 @@ for (i in c("F55","F56","F59")){
 }
 
 df$F61<-recode(df$F61,"'Jag har inte blivit mobbad'=0;
+                  'Jag har inte blivit mobbad, kränkt eller trakasserad'=0;
                'Det har hänt någon enstaka gång'=1;
                '2 eller 3 gånger i månaden'=2;
                'Ungefär en gång i veckan'=3;
@@ -150,7 +151,7 @@ df$F61<-recode(df$F61,"'Jag har inte blivit mobbad'=0;
 
 # koda om svaren för items som ingår i psykiska/psykosomatiska besvär, F88-F99 i data, fråga 90-101 i PDF
 # variabler df[289:300]
-# låg poäng = låg risk 
+# låg poäng = låg risk
 df$F88<-recode(df$F88,"'Aldrig'=1;'Ungefär 1 gång/termin'=2;'Ungefär 1 gång/månad'=3;'Ungefär 1 gång/vecka'=4;'Flera gånger i veckan'=5",as.factor=FALSE)
 df$F89<-recode(df$F89,"'Väldigt ofta'=5;'Ganska ofta'=4;'Ibland'=3;'Någon enstaka gång'=2;'Sällan'=1",as.factor=FALSE)
 df$F90<-recode(df$F90,"'Sällan'=1;'Någon enstaka gång'=2;'Ibland'=3;'Ganska ofta'=4;'Väldigt ofta'=5",as.factor=FALSE)
@@ -165,8 +166,8 @@ df$F98<-recode(df$F98,"'Aldrig'=1;'Ungefär 1 natt/termin'=2;'Ungefär 1 natt/m�
 df$F99<-recode(df$F99,"'Sällan'=5;'Någon enstaka gång'=4;'Ibland'=3;'Ganska ofta'=2;'Väldigt ofta'=1",as.factor=FALSE)
 
 # flytta ankare från 1 till 0 för lägsta kategori, behövs för vissa Rasch-program
-psfitems <- allAnalyzedItems %>% 
-  filter(Index == 'Psykiska/psykosomatiska besvär') %>% 
+psfitems <- allAnalyzedItems %>%
+  filter(Index == 'Psykiska/psykosomatiska besvär') %>%
   pull(itemnr)
 # flytta ankare från 1 till 0 för lägsta kategori, behövs för vissa Rasch-program
 for (i in psfitems) {
@@ -326,8 +327,8 @@ for (i in ns.negativa.items) {
 # 61. Har du känt dig mobbad eller trakasserad i skolan det här läsåret?
 # f60a till i, antingen förkryssad eller inte
 
-items.mobbning <- df %>% 
-  select(starts_with("f60")) %>% 
+items.mobbning <- df %>%
+  select(starts_with("f60")) %>%
   names()
 
 for (i in items.mobbning) {
@@ -363,11 +364,13 @@ df$F14 <- recode(df$F14,"'Nej, jag har aldrig rökt'=0;
                  'Nej, jag har rökt men slutat'=2;
                  'Ja, ibland men inte varje dag'=3;
                  'Ja, dagligen'=4;
-                 '<NA>'=NA", 
+                 '<NA>'=NA",
                  as.factor = F)
 df$F14r <- recode(df$F14,"0:2=0;3=1;4=2", as.factor = F) # possible part of frequency based index
 
 df$FNY12020 <- recode(df$FNY12020,"'Nej, jag har aldrig rökt e-cigaretter'=0;
+                 'Nej, jag har aldrig rökt'=0;
+                 'Nej, jag har rökt men slutat'=2;
                  'Nej, bara provat hur det smakar'=1;
                  'Nej, jag har rökt e-cigaretter men slutat'=2;
                  'Ja, ibland men inte varje dag'=3;
@@ -383,7 +386,7 @@ df$F18 <- recode(df$F18,"'Nej, jag har aldrig snusat'=0;
                  'Nej, jag har slutat'=2;
                  'Ja, ibland men inte varje dag'=3;
                  'Ja, dagligen'=4;
-                 '<NA>'=NA", 
+                 '<NA>'=NA",
                  as.factor = F)
 
 df$F18r <- recode(df$F18,"0:2=0;3=1;4=2", as.factor = F)
@@ -395,7 +398,7 @@ df$F34 <- recode(df$F34,"'Dricker inte alkohol'=0;
                  'Någon gång i månaden'=3;
                  'Ett par gånger i månaden'=4;
                  'Någon gång i veckan'=5;
-                 '<NA>'=NA", 
+                 '<NA>'=NA",
                  as.factor = F)
 
 df$F41 <- recode(df$F41,"'Nej, ingen gång'=0;
@@ -405,7 +408,7 @@ df$F41 <- recode(df$F41,"'Nej, ingen gång'=0;
                  'Ja, 11-20 gånger'=4;
                  'Ja, 21-50 gånger'=5;
                  'Ja, mer än 50 gånger'=6;
-                 '<NA>'=NA", 
+                 '<NA>'=NA",
                  as.factor = F)
 
 df$F47 <- recode(df$F47,"'Ingen gång'=0;
@@ -415,7 +418,7 @@ df$F47 <- recode(df$F47,"'Ingen gång'=0;
                  '11-20 gånger'=4;
                  '21-50 gånger'=5;
                  'Mer än 50 gånger'=6;
-                 '<NA>'=NA", 
+                 '<NA>'=NA",
                  as.factor = F)
 
 df$F48 <- recode(df$F48,"'Ingen gång'=0;
@@ -425,12 +428,12 @@ df$F48 <- recode(df$F48,"'Ingen gång'=0;
                  '11-20 gånger'=4;
                  '21-50 gånger'=5;
                  'Mer än 50 gånger'=6;
-                 '<NA>'=NA", 
+                 '<NA>'=NA",
                  as.factor = F)
 
-# f53-frågorna handlar om huruvida man sökt hjälp, och vi skiljer ej på var man sökt hjälp, 
+# f53-frågorna handlar om huruvida man sökt hjälp, och vi skiljer ej på var man sökt hjälp,
 # bara om man sökt hjälp (1) eller ej (0)
-df <- df %>% 
+df <- df %>%
   mutate(f53 = case_when(
     f53a == "Chosen" ~ 0,
     f53b == "Chosen" ~ 1,
@@ -448,7 +451,7 @@ df$F73 <- recode(df$F73,"'Har inte spelat de senaste 30 dagarna'=0;
                  '200-299 kronor'=4;
                  '300-399 kronor'=5;
                  '400 kronor eller mer'=6;
-                 '<NA>'=NA", 
+                 '<NA>'=NA",
                  as.factor = F)
 
 
@@ -457,40 +460,40 @@ df$F73 <- recode(df$F73,"'Har inte spelat de senaste 30 dagarna'=0;
 df$F17 <- recode(df$F17,"'Nej'=0;
                  'Ja'=2;
                  'Vet inte'=1;
-                 '<NA>'=NA", 
+                 '<NA>'=NA",
                  as.factor = F)
 
 df$F21 <- recode(df$F21,"'Nej'=0;
                  'Ja'=2;
                  'Vet inte'=1;
-                 '<NA>'=NA", 
+                 '<NA>'=NA",
                  as.factor = F)
 
 df$F40 <- recode(df$F40,"'Nej'=0;
                  'Ja'=2;
                  'Vet inte'=1;
-                 '<NA>'=NA", 
+                 '<NA>'=NA",
                  as.factor = F)
 
 # f22 har kodats så att Nej = 0, Vet ej = 1, och sedan ökande nivå för varje person som kryssats för, d.v.s. max 5
 
 df$f22b <- recode(df$f22b,"'Chosen'=1;
                  'Not chosen'=0;
-                 '<NA>'=NA", 
+                 '<NA>'=NA",
                   as.factor = F)
 df$f22c <- recode(df$f22c,"'Chosen'=1;
                  'Not chosen'=0;
-                 '<NA>'=NA", 
+                 '<NA>'=NA",
                   as.factor = F)
 df$f22d <- recode(df$f22d,"'Chosen'=1;
                  'Not chosen'=0;
-                 '<NA>'=NA", 
+                 '<NA>'=NA",
                   as.factor = F)
 df$f22e <- recode(df$f22e,"'Chosen'=1;
                  'Not chosen'=0;
-                 '<NA>'=NA", 
+                 '<NA>'=NA",
                   as.factor = F)
-df <- df %>% 
+df <- df %>%
   mutate(f22 = case_when(
     f22a == "Chosen" ~ 0,
     f22f == "Chosen" ~ 1,
@@ -504,9 +507,9 @@ df <- df %>%
 df$FNY22020 <- recode(df$FNY22020,"'Nej'=0;
                  'Ja'=2;
                  'Vet inte'=1;
-                 '<NA>'=NA", 
+                 '<NA>'=NA",
                       as.factor = F)
-
+# "Nej, jag har aldrig rökt" added for 2024
 
 # 37. Hur många gånger har du druckit så mycket alkohol att du känt dig berusad under den senaste 4-veckorsperioden?
 # df %>% count(as.numeric(df$f36)) visar en konstig fördelning, vi kodar om den enligt nedan
@@ -518,26 +521,26 @@ df$F49r <- recode(as.numeric(as.character(df$F49)),"4:12=3;13:100=NA")
 # 1) Ingen gång   gå till fråga 39
 # Vi vill koda om F35, svar "Ingen gång" till att motsvara 0 för f36r
 # Samma gäller för F45 om narkotika inkl cannabis, med F49 om senaste 4v.
-df <- df %>% 
+df <- df %>%
   mutate(F35r = case_when(F35 == "Ingen gång" ~ 0,
                           TRUE ~ NA_real_
-  )) %>% 
-  mutate(F36new = coalesce(f36r,F35r)) %>% 
+  )) %>%
+  mutate(F36new = coalesce(f36r,F35r)) %>%
   mutate(F45r = case_when(F45 == "Nej" ~ 0,
                           TRUE ~ NA_real_
-  )) %>% 
+  )) %>%
   mutate(F49new = coalesce(F49r,F45r))
 
 
 # ta fram ett indexvärde för bruk under senaste 4v
 senaste4v <- c("F14r","F18r","F36new","F49new","FNY12020r")
-df <- df %>% 
+df <- df %>%
   mutate(Senaste4v = rowSums(df %>% select(all_of(senaste4v)), na.rm = T))
 
-df <- df %>% 
+df <- df %>%
   mutate(across(itemsANDTSdebut, as.character))
 
-df <- df %>% 
+df <- df %>%
   mutate(across(itemsANDTSdebut, as.numeric))
 
 
@@ -546,8 +549,8 @@ df <- df %>%
 # brott, items f75a till s (fråga 77 i PDF)
 # "Hur många gånger har du gjort följande saker under de senaste 12 månaderna?"
 
-items.brott <- df %>% 
-  select(starts_with("f75")) %>% 
+items.brott <- df %>%
+  select(starts_with("f75")) %>%
   names()
 
 for (i in items.brott) {
@@ -561,9 +564,9 @@ for (i in items.brott) {
 
 # utsatt för brott, 80 i PDF, f78aa till f78ea
 
-items.brott2 <- df %>% 
-  select(starts_with("f78")) %>% 
-  select(ends_with("a")) %>% 
+items.brott2 <- df %>%
+  select(starts_with("f78")) %>%
+  select(ends_with("a")) %>%
   names()
 
 for (i in items.brott2) {

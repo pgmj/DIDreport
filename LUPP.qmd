@@ -138,7 +138,7 @@ glimpse(skoldata.järfälla)
 ## Demografi Stockholmsenkäten
 
 ```{r}
-df <- read_parquet("../DIDapp/data/2023-05-07_ScoredRev.parquet")
+df <- read_parquet("~/RISE/SHIC - Data i Dialog - Data i Dialog/data/DID_klart/2023-10-27_ScoredRev.parquet")
 df <- df %>%
   rename(Kommun = DIDkommun) %>% 
   filter(Kommun == "Järfälla",
@@ -146,8 +146,8 @@ df <- df %>%
          Skolkommun == "Järfälla") %>% 
   mutate(Skolnamn = str_squish(Skolnamn))
 
-library(foreign)
-df <- read.spss("~/RISE/SHIC - Data i Dialog - Data i Dialog/data/Järfälla/NYsthlmsenkät/Stockholmsenkäten_2006-2022_Järfälla.sav", to.data.frame = T)
+# library(foreign)
+# df <- read.spss("~/RISE/SHIC - Data i Dialog - Data i Dialog/data/Järfälla/NYsthlmsenkät/Stockholmsenkäten_2006-2022_Järfälla.sav", to.data.frame = T)
 
 df <- df %>% 
   filter(#Kommun == "Järfälla",
@@ -203,7 +203,7 @@ df %>%
   dplyr::filter(Skolnamn %in% järfällaSkolor) %>%
   rename(År = ar) %>% 
   count(År) %>% 
-  kbl_rise(width = 30)
+  kbl_rise(tbl_width = 30)
 
 df %>% 
   mutate(Skolnamn = recode(Skolnamn,"''=NA")) %>% 
@@ -675,16 +675,31 @@ tidy(m3p, conf.int = T)
 
 #### Fördelning på skolor
 
+Jättemånga elever med blankt skolnamn, fel i tidigare kodning eller fel i underlag från Origo?
+
 ```{r}
+jfSkolor <- df %>% 
+  filter(ARSKURS == "Åk 9",
+         Kommun == "Järfälla",
+         ar > 2010) %>%
+  mutate(År = factor(ar),
+         Skolnamn = str_squish(Skolnamn)) %>% 
+  count(Skolnamn) %>% # många med <10 svar
+  filter(n > 9)
+jfSkolor  
+  
 df %>% 
   filter(ARSKURS == "Åk 9",
          Kommun == "Järfälla",
          ar > 2010) %>%
-  mutate(År = factor(ar)) %>% 
-  drop_na(Kön,ARSKURS,SkolaNegativ,PsykSomBesv,Skolnamn) %>%
-  ggplot(aes(x = Skolnamn, y = SkolaNegativ)) +
+  mutate(År = factor(ar),
+         Skolnamn = str_squish(Skolnamn)) %>% 
+  filter(Skolnamn %in% jfSkolor$Skolnamn) %>% 
+  drop_na(Kön,ARSKURS,`Vantrivsel i skolan`,`Psykiska/ psykosomatiska besvär`,Skolnamn) %>% #distinct(Skolnamn)
+  ggplot(aes(x = fct_reorder(Skolnamn, `Vantrivsel i skolan`), y = `Vantrivsel i skolan`)) + # 64 skolnamn
   geom_boxplot(fill = RISEprimGreenMid, alpha = 0.7) +
-  theme_rise()
+  theme_rise() +
+  theme(axis.text.x = element_text(angle = 90))
 
 ```
 

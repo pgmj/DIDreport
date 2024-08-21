@@ -13,7 +13,7 @@ library(vctrs)
 library(ggiraph)
 library(gt)
 library(gtExtras)
-library(RISEkbmRasch)
+#library(RISEkbmRasch)
 library(janitor)
 library(ggh4x)
 

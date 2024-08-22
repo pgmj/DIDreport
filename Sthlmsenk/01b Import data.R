@@ -187,8 +187,8 @@ df.jfl3 <- read.spss(paste0(datafolder,"Järfälla/Sthlmsenkät 2024/Stockholm
                      to.data.frame = TRUE)
 
 recode_map <- read_csv("Sthlmsenk/origo2024_recode_map.csv")
-glimpse(recode_map)
-recode_vec <- setNames(recode_map$itemnr_old, recode_map$itemnr_new)
+#glimpse(recode_map)
+#recode_vec <- setNames(recode_map$itemnr_old, recode_map$itemnr_new)
 
 all_vars_old <- c(demogr.vars,allAnalyzedItems$itemnr)
 all_vars_old[7] <- "F2"
@@ -484,6 +484,8 @@ df <- rbind(df.sthlm,
             df.sundbyberg)
 
 #write_parquet(df,paste0(datafolder,"DID_klart/2024-04-17_DataPreRecode.parquet"))
+#write_parquet(df.jfl3r,paste0(datafolder,"DID_klart/2024-08-22_DataPreRecode_Järfälla2024.parquet"))
+
 # create data frame with 0 rows and named variables as a template
 #names <- data.frame(matrix(ncol = length(names(df)), nrow = 0))
 # provide column names

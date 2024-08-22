@@ -28,7 +28,14 @@ rename <- dplyr::rename
 
 datafolder <- "~/Library/CloudStorage/OneDrive-SharedLibraries-RISE/SHIC - Data i Dialog - Data i Dialog/data/"
 
-df.all <- read_parquet(paste0(datafolder,"DID_klart/2023-10-27_ScoredRev.parquet"))
+# df.all <- read_parquet(paste0(datafolder,"DID_klart/2023-10-27_ScoredRev.parquet"))
+# df.2024.jfl <- read_parquet(paste0(datafolder,"DID_klart/2024-08-22_ScoredRev_Järfälla2024.parquet"))
+# df.all <- rbind(df.all,
+#                 df.2024.jfl %>% select(!all_of(c("F62","F64")))
+#                 )
+# write_parquet(df.all,paste0(datafolder,"DID_klart/2024-08-22_ScoredRev.parquet"))
+df.all <- read_parquet(paste0(datafolder,"DID_klart/2024-08-22_ScoredRev.parquet"))
+
 df <- df.all %>%
   rename(Kommun = DIDkommun)
 
@@ -36,7 +43,13 @@ df.allaK <- df %>%
   select(!Kommun) %>%
   add_column(Kommun = "Alla")
 
-df.raw <- read_parquet(paste0(datafolder,"DID_klart/2024-04-17_DataPreRecode.parquet"))
+# df.raw <- read_parquet(paste0(datafolder,"DID_klart/2024-04-17_DataPreRecode.parquet"))
+# df.raw.2024 <- read_parquet(paste0(datafolder,"DID_klart/2024-08-22_DataPreRecode_Järfälla2024.parquet"))
+# df.raw <- rbind(df.raw,
+#                 df.raw.2024)
+# write_parquet(df.raw,paste0(datafolder,"DID_klart/2024-08-22_DataPreRecode.parquet"))
+df.raw <- read_parquet(paste0(datafolder,"DID_klart/2024-08-22_DataPreRecode.parquet"))
+
 # df$F70raw <- df.raw$F70
 
 allaKommuner <- df %>%

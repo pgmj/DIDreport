@@ -10,7 +10,7 @@ author:
   orcid: 0000-0003-1669-592X
 date: last-modified
 params:
-  fokusKommun: "Vallentuna"
+  fokusKommun: "Järfälla"
   jmfKommun: "Danderyd"
   years: 2020
 format: 
@@ -50,22 +50,22 @@ editor_options:
 # These are read by the script render.R, which in turn generates one report for each line in the first sheet of the xls-file.
 
 # which municipality to focus this report on?
-fokusKommun <- params$fokusKommun
-# which municipalities should be included in comparisons?
-jmfKommun <- factor(c(fokusKommun,params$jmfKommun),
-                   levels = c(fokusKommun,params$jmfKommun))
+# fokusKommun <- params$fokusKommun
+# # which municipalities should be included in comparisons?
+# jmfKommun <- factor(c(fokusKommun,params$jmfKommun),
+#                    levels = c(fokusKommun,params$jmfKommun))
 
 ## for testing/dev replace rows above with these (comment out/in):
-# fokusKommun <- "Järfälla"
-# jmfKommun <- factor(c(fokusKommun,"Botkyrka", "Huddinge", "Södertälje"),
-#                    levels = c(fokusKommun,"Botkyrka", "Huddinge", "Södertälje"))
+fokusKommun <- "Järfälla"
+jmfKommun <- factor(c(fokusKommun,"Botkyrka", "Huddinge", "Södertälje"),
+                   levels = c(fokusKommun,"Botkyrka", "Huddinge", "Södertälje"))
 
 # Järfälla	Botkyrka,Huddinge,Södertälje
 # Vallentuna  Österåker,Danderyd,Täby
 # Sigtuna	 Järfälla,Upplands Väsby,Botkyrka
 # years of interest
 #yearsIn <- params$years
-yearsIn <- c(2016,2018,2020,2022)
+yearsIn <- c(2016,2018,2020,2022,2024)
 
 # setup -------------------------------------------------------------------
 
@@ -74,17 +74,20 @@ library(tidyverse)
 library(arrow)
 library(colorspace) # for modifying color palettes
 library(formattable)
-library(geomtextpath)
+#library(geomtextpath)
 library(readxl)
 library(visNetwork)
 library(networkD3)
 library(vctrs)
-library(ggiraph)
+#library(ggiraph)
 library(gt)
 library(gtExtras)
-#library(RISEkbmRasch)
 library(janitor)
+#library(RISEkbmRasch)
 library(ggh4x)
+library(ggrepel)
+library(kableExtra)
+library(glue)
 
 ### some commands exist in multiple packages, here we define preferred ones that are frequently used
 select <- dplyr::select
@@ -92,7 +95,7 @@ count <- dplyr::count
 recode <- car::recode
 rename <- dplyr::rename
 
-årtal <- c(2006,2008,2010,2012,2014,2016,2018,2020,2022)
+årtal <- c(2006,2008,2010,2012,2014,2016,2018,2020,2022,2024)
 
 
 ### set up color palette based on RISE guidelines
@@ -150,7 +153,8 @@ För att se exakta antal i figurerna går det att använda muspekaren på respek
 ::: panel-tabset
 ### Fördelat på kön
 ```{r}
-responsesGender <- df %>% 
+#responsesGender <- 
+df %>% 
   filter(Kommun == fokusKommun,
          !Kön == "<NA>") %>% 
   rename(År = ar,
@@ -159,9 +163,9 @@ responsesGender <- df %>%
   summarise(Antal = n()) %>% 
   ggplot(aes(x = År, y = Antal, color = Kön)) + 
   geom_line(linewidth = 1) +
-  geom_point_interactive(aes(tooltip = Antal),
-                         size = 3) +
-  #geom_point(size = 3) +
+  # geom_point_interactive(aes(tooltip = Antal),
+  #                        size = 3) +
+  geom_point(size = 3) +
   #scale_color_brewer(type = "qual", palette = "Dark2") +
   scale_color_gender() +
   scale_x_continuous(guide = guide_axis(n.dodge = 1), breaks = årtal) +
@@ -172,12 +176,12 @@ responsesGender <- df %>%
   theme_rise() +
   theme(text = element_text(family = "Lato"))
 
-girafe(ggobj = responsesGender)
-
+#girafe(ggobj = responsesGender)
 ```
 ### Fördelat på årskurs
 ```{r}
-responsesARSKURS <- df %>% 
+#responsesARSKURS <- 
+  df %>% 
   filter(Kommun == fokusKommun,
          !Kön == "<NA>",
          !is.na(ARSKURS)) %>% 
@@ -187,8 +191,9 @@ responsesARSKURS <- df %>%
   summarise(Antal = n()) %>% 
   ggplot(aes(x = År, y = Antal, color = Årskurs)) + 
   geom_line(linewidth = 1) +
-  geom_point_interactive(aes(tooltip = Antal),
-                         size = 3) +
+  # geom_point_interactive(aes(tooltip = Antal),
+  #                        size = 3) +
+  geom_point(size = 3) +
   scale_color_brewer(type = "qual", palette = "Set1") +
   scale_x_continuous(guide = guide_axis(n.dodge = 1), breaks = årtal) +
   scale_y_continuous(limits = c(0,NA)) +
@@ -198,26 +203,28 @@ responsesARSKURS <- df %>%
   theme_rise() +
   theme(text = element_text(family = "Lato"))
 
-girafe(ggobj = responsesARSKURS)
+#girafe(ggobj = responsesARSKURS)
 
 ```
 ### Otillräckliga svar
 Det krävs svar på minst 5 frågor inom ett index för att ett indexvärde ska beräknas. Här redovisas hur stor andel av de som svarat på Stockholmsenkäten som har 0-4 frågor besvarade inom varje index.
 ```{r}
-otillr <- df.risk %>%
+#otillr <- 
+  df.risk %>%
   filter(is.na(riskLevel)) %>%
   filter(Kommun == fokusKommun) %>%
   ggplot(aes(x = År, y = Andel, group = Index, color = Index)) +
   geom_line(linewidth = 0.8) +
-  geom_point_interactive(aes(tooltip = Andel),
-                         size = 2.5) +
+  # geom_point_interactive(aes(tooltip = Andel),
+  #                        size = 2.5) +
+  geom_point(size = 2.5) +
   ylab("Andel i %") +
   scale_color_brewer(type = "qual", palette = "Dark2") +
   theme_minimal() +
   theme_rise() +
   theme(text = element_text(family = "Lato"))
 
-girafe(ggobj = otillr)
+#girafe(ggobj = otillr)
 
 ```
 ### Vistelsetid
@@ -237,7 +244,8 @@ stapelDemografi("Vad bor du i för typ av bostad?")
 ### Jämfört med andra
 
 ```{r}
-responsesKommuner <- df %>% 
+# responsesKommuner <- 
+  df %>% 
   filter(Kommun %in% jmfKommun,
          !Kön == "<NA>") %>% 
   rename(År = ar,
@@ -246,8 +254,9 @@ responsesKommuner <- df %>%
   summarise(Antal = n()) %>% 
   ggplot(aes(x = År, y = Antal, group = Kommun, color = Kommun)) + 
   geom_line(linewidth = 1) +
-  geom_point_interactive(aes(tooltip = Antal),
-                         size = 2.5) +
+  # geom_point_interactive(aes(tooltip = Antal),
+  #                        size = 2.5) +
+  geom_point(size = 2.5) +
   scale_color_brewer(type = "qual", palette = "Dark2") +
   scale_x_continuous(guide = guide_axis(n.dodge = 1), breaks = årtal) +
   scale_y_continuous(limits = c(0,NA)) +
@@ -264,7 +273,7 @@ responsesKommuner <- df %>%
       panel.spacing = unit(pandist, "cm", data = NULL)
     )
 
-girafe(ggobj = responsesKommuner)
+#girafe(ggobj = responsesKommuner)
 
 ```
 
@@ -1228,7 +1237,8 @@ df %>%
 utsatt.items <- c("f78aa","f78ba","f78ca","f78da","f78ea")
 utsatt.legend <- c("Hotad","Rånad","Bestulen","Misshandlad","Tvingad till sex")
 
-utsattBrott <- df %>% 
+#utsattBrott <- 
+  df %>% 
   filter(Kommun == fokusKommun,
          !is.na(Kön),
          !is.na(ARSKURS)) %>% 
@@ -1246,10 +1256,11 @@ utsattBrott <- df %>%
   mutate(Andel = n * 100 / sum(n)) %>% 
   filter(Utsatt1 == "Utsatt för brott") %>% 
   ggplot(aes(x = År, y = n, color = Kön)) + 
-  geom_line(linewidth = 1) +
-  geom_point_interactive(aes(tooltip = n),
-                         size = 3,
-                         alpha = 0.8) +
+  geom_line(linewidth = 1, alpha = 0.85) +
+  # geom_point_interactive(aes(tooltip = n),
+  #                        size = 3,
+  #                        alpha = 0.8) +
+    geom_point(size = 3, alpha = 0.85) +
   scale_color_manual(values = RISEpalette1[c(1,5)]) +
   scale_x_continuous(guide = guide_axis(n.dodge = 2), breaks = årtal) +
   scale_y_continuous('Antal', limits = c(0,NA)) +
@@ -1259,7 +1270,7 @@ utsattBrott <- df %>%
   theme_rise() +
   facet_wrap(~Årskurs)
 
-girafe(ggobj = utsattBrott)
+#girafe(ggobj = utsattBrott)
 
 ```
 

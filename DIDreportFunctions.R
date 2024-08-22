@@ -9,7 +9,7 @@ title.size <- 12
 legend.size <- 10
 stript.size <- 10
 
-årtal <- c(2006,2008,2010,2012,2014,2016,2018,2020,2022)
+årtal <- c(2006,2008,2010,2012,2014,2016,2018,2020,2022,2024)
 årtalKOLADA <- c(2010:2023)
 
 theme_rise <- function(fontfamily = "Lato", axissize = 13, titlesize = 15,
@@ -53,6 +53,23 @@ theme_rise <- function(fontfamily = "Lato", axissize = 13, titlesize = 15,
 gender_colors <- c("Pojke" = "#F5A127", "Flicka" = "#009CA6")
 scale_color_gender <- partial(scale_color_manual, values = gender_colors)
 scale_fill_gender <- partial(scale_fill_manual, values = gender_colors)
+
+kbl_rise <- function(data, tbl_width = 65, fontsize = 14, fontfamily = "Arial",
+                     options = c("striped", "hover"), ...) {
+  kbl(data, booktabs = T, escape = F,
+      table.attr = paste0("data-quarto-disable-processing='true' style='width:",tbl_width,"%;'")) %>%
+    kable_styling(
+      bootstrap_options = options,
+      position = "left",
+      full_width = T,
+      font_size = fontsize,
+      fixed_thead = T,
+      latex_options = c("striped", "scale_down"),
+      ...
+    ) %>%
+    row_spec(0, bold = T) %>%
+    kable_classic(html_font = fontfamily)
+}
 
 # Överblick ---------------------------------------------------------------
 

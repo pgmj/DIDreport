@@ -17,6 +17,7 @@ rename <- dplyr::rename
 
 # all analyzed items
 #allAnalyzedItems <- read.csv("../data/allitems.csv")
+allItems <- read_csv("Sthlmsenk/allItemsIndex.csv")
 
 # create vector with participant ID's for use to merge in thetas when calculated
 df$individ <- seq.int(nrow(df))
@@ -24,7 +25,6 @@ individ.id <- seq.int(nrow(df))
 
 # Minimum items responses that a participant should have to be included in the analysis?
 min.responses <- 5
-
 ### use objects created in script 01:
 sthlm.index <- allItems %>%
   distinct(Index) %>%
@@ -64,7 +64,7 @@ for (i in sthlm.index) {
     pull(order) %>%
     as.numeric()
   # estimate person scores using RIestThetas2, which uses parallel processing
-  thetas <- as.data.frame(RIestThetas2(df.if, itemParams = itemParams[[x]], cpu = 8))
+  thetas <- as.data.frame(RIestThetasOLD2(df.if, itemParams = itemParams[[x]], cpu = 8))
   thetas$individ <- df.if.id # insert id variable to new df
   names(thetas) <- c(i, "individ")
   thetas[1] <- round(thetas[1], 3)
@@ -83,7 +83,7 @@ df$Wellbeing <- df$Wellbeing*-1
 
 # Save to file ------------------------------------------------------------
 
-write_parquet(df, sink = glue("../DIDapp/data/{Sys.Date()}_ScoredRev.parquet"))
+#write_parquet(df, sink = glue("../DIDreport/Sthlmsenk/{Sys.Date()}_ScoredRev_Järfälla2024.parquet"))
 
 # df.old <- read_parquet("../DIDapp/data/2023-05-07_ScoredRev.parquet")
 # df.new <- rbind(df.old,df)

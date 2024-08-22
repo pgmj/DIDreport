@@ -1,0 +1,56 @@
+itemnr,item,Index
+f66c,"Jag tål inte att bli provocerad, då kan jag slå till någon.",Utagerande
+f66d,Jag ljuger för att få fördelar eller slippa göra jobbiga saker.,Utagerande
+f66g,Jag struntar i regler som hindrar mig från att göra det jag vill göra.,Utagerande
+f66j,Jag vill gärna vara där det händer spännande saker.,Utagerande
+f66k,Jag kan få andra att tro på nästan vad som helst.,Utagerande
+f66n,Jag gör dumma saker även om de är lite farliga.,Utagerande
+f66o,Jag vill gärna se hur långt jag kan gå innan folk får nog.,Utagerande
+f66q,"Jag tycker att det är OK att ta något utan att fråga, om man inte blir upptäckt.",Utagerande
+f66r,Det händer att jag gör saker utan att tänka mig för.,Utagerande
+f54e,Det är hög ljudnivå och stökigt på lektionerna.,SkolaNegativ
+f54f,Skolarbetet känns meningslöst.,SkolaNegativ
+f54i,I början av lektionerna tar det minst fem minuter innan arbetet kan börja,SkolaNegativ
+f54k,Elevernas åsikter tas inte på allvar i den här skolan.,SkolaNegativ
+f54m,Mina lärare ger mig inget beröm om jag jobbar hårt.,SkolaNegativ
+f54o,"Jag är orolig för att utsättas för brott i skolan. (t.ex. stöld, misshandel etc)",SkolaNegativ
+f54q,Skolarbetet gör mig förvirrad.,SkolaNegativ
+f54a,Jag vet vilka regler som gäller på den här skolan.,SkolaPositiv
+f54b,Jag trivs bra i skolan.,SkolaPositiv
+f54d,Lärarna berömmer elever som gör något bra i skolan.,SkolaPositiv
+f54g,Vi elever får vara med och bestämma över saker som är viktiga för oss.,SkolaPositiv
+f54h,Lärarna förklarar vad vi får och vad vi inte får göra.,SkolaPositiv
+f54j,Skolan berättar för mina föräldrar om jag gjort något bra.,SkolaPositiv
+f54l,Vuxna ingriper om någon blir trakasserad eller mobbad.,SkolaPositiv
+f54n,Jag ser fram emot att gå till lektionerna.,SkolaPositiv
+f54r,Om man inte förstår får man direkt hjälp av läraren.,SkolaPositiv
+F88,Hur ofta har du haft huvudvärk detta läsår?,PsykSomBesv
+F89,Känner du dig ledsen och deppig utan att veta varför?,PsykSomBesv
+F91,Hur ofta har du dålig aptit?,PsykSomBesv
+F92,Hur mycket skulle du vilja ändra på dig själv?,PsykSomBesv
+F93,"Hur ofta har du under detta läsår haft ”nervös mage” (t.ex. magknip, magkramper, orolig mage, illamående, gaser, förstoppning eller diarré)?",PsykSomBesv
+F95,Hur ofta har du under detta läsår haft svårt att somna?,PsykSomBesv
+F97,Känner du dig slö och olustig?,PsykSomBesv
+F98,Hur ofta har det hänt under detta läsår att du sovit oroligt och vaknat under natten?,PsykSomBesv
+F99,Hur ofta tycker du att det är riktigt härligt att leva?,PsykSomBesv
+F80,Vet dina föräldrar/vårdnadshavare vilka kamrater du umgås med på din fritid?,Parenting
+f83b,De hotar med bestraffning för något jag gjort men genomför det inte.,Parenting
+f83d,Jag vet inte hur de reagerar när jag gjort något de inte gillar.,Parenting
+f83e,De märker när jag gör något bra.,Parenting
+f83f,Det humör de är på bestämmer hur de är mot mig.,Parenting
+F58,Hur skulle dina föräldrar reagera om du hade skolkat?,Parenting
+f101b,Om en vuxen såg mig göra något olagligt i mitt bostadsområde skulle nog mina föräldrar få reda på det.,Community
+f101c,Vuxna skulle ingripa om någon helt öppet försökte sälja narkotika till ungdomar.,Community
+f101g,"Det är ovanligt med våldsbrott (misshandel, rån, våldtäkt) i det här bostadsområdet.",Community
+f101i,Om jag blev rånad på en allmän plats i bostadsområdet skulle vuxna ingripa.,Community
+f101j,Mina grannar brukar heja/hälsa på mig när vi möts.,Community
+f101l,Om jag var tvungen att flytta skulle jag sakna bostadsområdet jag bor i.,Community
+f54n,Jag ser fram emot att gå till lektionerna.,Wellbeing
+F92,Hur mycket skulle du vilja ändra på dig själv?,Wellbeing
+F99,Hur ofta tycker du att det är riktigt härligt att leva?,Wellbeing
+f83e,De märker när jag gör något bra.,Wellbeing
+F70,Brukar du delta i någon ledarledd fritidsaktivitet eller träning?,Wellbeing
+f86a,Motionerar och tränar regelbundet?,Wellbeing
+f101j,Mina grannar brukar heja/hälsa på mig när vi möts.,Wellbeing
+F67,Tycker du att det är viktigt vad du kommer att jobba med när du blir stor eller spelar det ingen roll?,Wellbeing
+F68,"Om du jämför dina framtidsutsikter med de flesta andras i din ålder, tror du då att dina är sämre, lika bra, eller bättre?",Wellbeing

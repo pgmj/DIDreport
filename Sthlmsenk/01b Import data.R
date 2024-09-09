@@ -182,7 +182,7 @@ df.jfl2 <- df.jfl2 %>%
              SkolSDO = NA,
              DIDkommun = 'Järfälla')
 
-# 2024
+# 2024 (maybe make this section a separate R-file and use source()?)
 df.jfl3 <- read.spss(paste0(datafolder,"Järfälla/Sthlmsenkät 2024/Stockholmsenkäten 2024 Järfälla.sav"),
                      to.data.frame = TRUE)
 
@@ -196,6 +196,34 @@ all_vars_old[7] <- "F2"
 rmap <- recode_map %>%
   mutate(itemnr_old = factor(itemnr_old, levels=unique(all_vars_old))) %>%
   arrange(itemnr_old)
+
+### before renaming the new variable names to the old ones to enable comparisons, we need to deal with some new items
+# F19a Snusar du så kallat vitt snus/nikotinpåse (tobaksfritt snus med nikotin)?
+# F19b Snusar du snus med tobak?
+# we want the "higher" response from either item
+df.jfl3 %>%
+  mutate(across(c(F19a,F19b), ~ recode(.x,"'Nej, jag har aldrig snusat'=0;
+                 'Nej, bara provat hur det smakar'=1;
+                 'Nej, jag har snusat men slutat'=2;
+                 'Nej, jag har slutat'=3;
+                 'Ja, ibland men inte varje dag'=4;
+                 'Ja, dagligen'=5;
+                 '<NA>'=NA",
+                 as.factor = T))) %>%
+  mutate(across(c(F19a,F19b), ~ factor(.x, ordered = TRUE))) %>%
+  mutate(F18 = pmax(F19a,F19b)) %>%
+  # recode back to character categories for later recoding to work
+  mutate(F18 = recode(F18,"0='Nej, jag har aldrig snusat';
+                 1='Nej, bara provat hur det smakar';
+                 2='Nej, jag har snusat men slutat';
+                 3='Nej, jag har slutat';
+                 4='Ja, ibland men inte varje dag';
+                 5='Ja, dagligen'"))
+
+#df$F18 <- recode(df$F18,"2=1;3:4=2")
+
+df.jfl3 %>%
+  distinct(F19b)
 
 df.jfl3r <- df.jfl3 %>%
   select(all_of(rmap$itemnr_new)) %>%

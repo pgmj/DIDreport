@@ -1034,18 +1034,21 @@ KOLADA %>%
 
 ## Närsamhälle
 
+### Otryggt närsamhälle
+
 ::: panel-tabset
 #### Kön/Årskurs
 ```{r}
 #| fig-height: 7
 DIDareaPlot2("Närsamhälle") +
-  theme(legend.justification = c(0.0, 1.0))
+  theme(legend.justification = c(0.0, 1.0)) +
+  labs(title = paste0("Otryggt närsamhälle - ", fokusKommun))
 ```
 
 #### Förhöjd risk
 ```{r}
 DIDline90åk("Närsamhälle") +
-  labs(subtitle = "Närsamhälle")
+  labs(subtitle = "Otryggt närsamhälle")
 ```
 
 #### Enkätfrågor i indexet

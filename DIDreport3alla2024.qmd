@@ -427,7 +427,7 @@ DIDareaPlot2("Föräldraskap") +
 
 #### Förhöjd risk
 ```{r}
-DIDline90åk("Föräldraskap")
+DIDline90åkAlla("Föräldraskap")
 ```
 
 #### Frågor i indexet
@@ -484,7 +484,7 @@ DIDareaPlot2("Vantrivsel i skolan")  +
 
 #### Förhöjd risk
 ```{r}
-DIDline90åk("Vantrivsel i skolan")
+DIDline90åkAlla("Vantrivsel i skolan")
 ```
 
 #### Enkätfrågor i indexet
@@ -806,7 +806,7 @@ DIDareaPlot2("Närsamhälle") +
 
 #### Förhöjd risk
 ```{r}
-DIDline90åk("Närsamhälle") +
+DIDline90åkAlla("Närsamhälle") +
   labs(subtitle = "Otryggt närsamhälle")
 ```
 
@@ -884,7 +884,7 @@ DIDareaPlot2("Utagerande") +
 
 ### Förhöjd risk
 ```{r}
-DIDline90åk("Utagerande")
+DIDline90åkAlla("Utagerande")
 ```
 
 ### Enkätfrågor i indexet
@@ -907,7 +907,7 @@ DIDareaPlot2("Psykiska/ psykosomatiska besvär") +
 ```
 ### Förhöjd risk
 ```{r}
-DIDline90åk("Psykiska/ psykosomatiska besvär")
+DIDline90åkAlla("Psykiska/ psykosomatiska besvär")
 ```
 ### Enkätfrågor i indexet
 ```{r}

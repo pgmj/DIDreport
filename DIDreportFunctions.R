@@ -472,6 +472,38 @@ DIDline90åk <- function(faktor){
     theme_rise()
 }
 
+DIDline90åkAlla <- function(faktor){
+
+  plotFaktor <- faktor
+
+  df.risk.gender.arskurs %>%
+    mutate(ar = as.numeric(as.character(År))) %>%
+    filter(Index == plotFaktor,
+           ar > 2009,
+           Kommun %in% jmfKommun,
+           Kön %in% c("Flicka", "Pojke"),
+           riskLevel == "Förhöjd risk") %>%
+    drop_na(Årskurs) %>%
+
+    ggplot(aes(x = År, y = Andel, group = Kön, color = Kön)) +
+    geom_line(linewidth = 1.3) +
+    geom_point(size = 7) +
+    geom_text(aes(label = n), color = "white", size = 3) +
+    scale_y_continuous(limits = c(0, 30)) +
+    scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
+    scale_color_manual(values = RISEpalette1[c(1,5)], guide = "none") +
+    geom_hline(yintercept = 10, color = "darkgrey", linetype = 2, linewidth = 0.4, alpha = 0.7) +
+    labs(title = "Andel i grupp \"förhöjd risk\"",
+         subtitle = "Antal elever visas i vit text i punkterna",
+         caption = "Datakälla: Stockholmsenkäten.",
+         x = "",
+         y = "Andel respondenter i %") +
+    facet_grid(Årskurs~Kön,
+               labeller = labeller(Kommun = label_wrap_gen(12))) +
+    theme_rise()
+}
+
+
 # DIDline90åkOLD <- function(faktor){
 #
 #   plotFaktor <- faktor

@@ -10,7 +10,7 @@ author:
   orcid: 0000-0003-1669-592X
 date: last-modified
 params:
-  fokusKommun: "Järfälla"
+  fokusKommun: "Vallentuna"
   jmfKommun: "Danderyd"
   years: 2020
 format: 
@@ -56,9 +56,9 @@ editor_options:
 #                    levels = c(fokusKommun,params$jmfKommun))
 
 ## for testing/dev replace rows above with these (comment out/in):
-fokusKommun <- "Järfälla"
-jmfKommun <- factor(c(fokusKommun,"Botkyrka", "Huddinge", "Södertälje"),
-                   levels = c(fokusKommun,"Botkyrka", "Huddinge", "Södertälje"))
+fokusKommun <- "Vallentuna"
+jmfKommun <- factor(c(fokusKommun,"Österåker", "Danderyd", "Täby"),
+                   levels = c(fokusKommun,"Österåker", "Danderyd", "Täby"))
 
 # Järfälla	Botkyrka,Huddinge,Södertälje
 # Vallentuna  Österåker,Danderyd,Täby
@@ -74,7 +74,7 @@ library(tidyverse)
 library(arrow)
 library(colorspace) # for modifying color palettes
 library(formattable)
-#library(geomtextpath)
+library(geomtextpath)
 library(readxl)
 #library(visNetwork)
 #library(networkD3)
@@ -84,10 +84,10 @@ library(readxl)
 #library(gtExtras)
 library(janitor)
 #library(RISEkbmRasch)
-#library(ggh4x)
+library(ggh4x)
 library(ggrepel)
 library(kableExtra)
-library(glue)
+#library(glue)
 
 ### some commands exist in multiple packages, here we define preferred ones that are frequently used
 select <- dplyr::select
@@ -176,7 +176,7 @@ df %>%
 ```
 ### Fördelat på årskurs
 ```{r}
-  df %>% 
+df %>% 
   filter(Kommun == fokusKommun,
          !Kön == "<NA>",
          !is.na(ARSKURS)) %>% 
@@ -198,22 +198,16 @@ df %>%
 ### Otillräckliga svar
 Det krävs svar på minst 5 frågor inom ett index för att ett indexvärde ska beräknas. Här redovisas hur stor andel av de som svarat på Stockholmsenkäten som har 0-4 frågor besvarade inom varje index.
 ```{r}
-#otillr <- 
-  df.risk %>%
+df.risk %>%
   filter(is.na(riskLevel)) %>%
   filter(Kommun == fokusKommun) %>%
   ggplot(aes(x = År, y = Andel, group = Index, color = Index)) +
   geom_line(linewidth = 0.8) +
-  # geom_point_interactive(aes(tooltip = Andel),
-  #                        size = 2.5) +
   geom_point(size = 2.5) +
   ylab("Andel i %") +
   scale_color_brewer(type = "qual", palette = "Dark2") +
-  theme_minimal() +
   theme_rise() +
   theme(text = element_text(family = "Lato"))
-
-#girafe(ggobj = otillr)
 
 ```
 ### Vistelsetid
@@ -233,8 +227,7 @@ stapelDemografi("Vad bor du i för typ av bostad?")
 ### Jämfört med andra
 
 ```{r}
-# responsesKommuner <- 
-  df %>% 
+df %>% 
   filter(Kommun %in% jmfKommun,
          !Kön == "<NA>") %>% 
   rename(År = ar,
@@ -243,8 +236,6 @@ stapelDemografi("Vad bor du i för typ av bostad?")
   summarise(Antal = n()) %>% 
   ggplot(aes(x = År, y = Antal, group = Kommun, color = Kommun)) + 
   geom_line(linewidth = 1) +
-  # geom_point_interactive(aes(tooltip = Antal),
-  #                        size = 2.5) +
   geom_point(size = 2.5) +
   scale_color_brewer(type = "qual", palette = "Dark2") +
   scale_x_continuous(guide = guide_axis(n.dodge = 1), breaks = årtal) +
@@ -262,44 +253,6 @@ stapelDemografi("Vad bor du i för typ av bostad?")
       panel.spacing = unit(pandist, "cm", data = NULL)
     )
 
-#girafe(ggobj = responsesKommuner)
-
-```
-
-### Tabeller
-```{r}
-#| layout-ncol: 2
-#| include: true
-#| 
-
-df %>% 
-  filter(Kommun == fokusKommun,
-         !Kön == "<NA>") %>% 
-  rename(År = ar,
-         Årskurs = ARSKURS) %>% 
-  group_by(År,Kön) %>% 
-  reframe(`Antal respondenter` = n()) %>% 
-  gt(.,
-   groupname_col = "År") %>% 
-  gt_theme_espn() %>% 
-  tab_options(table.font.name = "Lato",
-              heading.align = "left") %>% 
-  cols_align(align = "right")
-
-df %>% 
-  filter(Kommun == fokusKommun,
-         !Kön == "<NA>") %>% 
-  rename(År = ar,
-         Årskurs = ARSKURS) %>% 
-  group_by(År,Kön,Årskurs) %>% 
-  reframe(`Antal respondenter` = n()) %>% 
-  gt(.,
-   groupname_col = c("År","Årskurs")) %>% 
-  gt_theme_espn() %>% 
-  tab_options(table.font.name = "Lato",
-              heading.align = "left") %>% 
-  cols_align(align = "right",
-             columns = "Kön")
 ```
 :::
 
@@ -633,7 +586,7 @@ df.raw %>%
   geom_line(linewidth = 1.3, alpha = 0.85) +
   geom_text(aes(label = n), color = "white", size = 2.7) +
   scale_color_brewer('',palette = "Dark2") +
-  scale_x_continuous("Årtal", guide = guide_axis(n.dodge = 2), breaks = årtal) +
+  scale_x_discrete("Årtal", guide = guide_axis(n.dodge = 2), breaks = årtal) +
   scale_y_continuous(limits = c(0,NA), breaks = c(0,5,10,15,20,25)) +
   theme_rise() +
   theme(legend.position = "top",
@@ -669,7 +622,7 @@ df.raw %>%
   scale_color_manual('',values = RISEpalette1[c(1,5)],
                     aesthetics = c("fill","color"),
                     labels = c("Flicka","Pojke","Annan könstillhörighet")) +
-  scale_x_continuous("Årtal", guide = guide_axis(n.dodge = 2), breaks = årtal) +
+  scale_x_discrete("Årtal", guide = guide_axis(n.dodge = 2), breaks = årtal) +
   scale_y_continuous(limits = c(0,25), breaks = c(0,5,10,15,20,25)) +
   theme_rise() +
   theme(legend.position = "top") +
@@ -745,7 +698,6 @@ df.plot %>%
     Datakälla: Skolinspektionen."
   ) +
   facet_wrap(~Kön) +
-  theme_minimal() +
   theme_rise() +
   theme(plot.caption = element_text(lineheight = 0.45))
 ```
@@ -757,20 +709,6 @@ DIDmedelSDg(sums.indexGG, "Positiv skolanknytning") +
   facet_grid(Årskurs~Kön) +
   labs(caption = "Datakälla: Stockholmsenkäten")
 ```
-#### Åk 5
-
-Just nu finns det bara rådata från Skolinspektionens skolenkät åk 5 för Stockholm, Vallentuna och Vaxholm.
-```{r}
-if (fokusKommun %in% c("Stockholm","Vallentuna","Vaxholm")) {
-  DIDmedelSDg(sums.si, "SkolaPositivSI") +
-  facet_wrap(~Kön) +
-  ylab("Positiv skolanknytning åk 5") +
-  scale_color_manual(values = RISEpalette1, aesthetics = c("fill","color")) +
-  scale_y_continuous(limits = c(-2,3)) +
-  labs(caption = "Datakälla: Skolinspektionen")
-}
-
-```
 
 #### Enkätfrågor Stockholmsenkäten
 ```{r}
@@ -778,11 +716,6 @@ itemlabels.final %>%
   filter(Index == "SkolaPositiv") %>% 
   select(!Index) %>% 
   kbl_rise(tbl_width = 60)
-```
-#### Enkätfrågor Skolinspektionen
-```{r}
-kbl_rise(si.items, tbl_width = 60)
-# note that all SI items have merged the top 3 response categories (top = highest risk)
 ```
 :::
 
@@ -1356,7 +1289,8 @@ df %>%
                      labels = c("0","1","2","3","4","5+")) +
   #scale_fill_manual(values = RISEpalette1) +
   theme_rise() +
-  ylab("Antal") +
+  labs(y = "Antal",
+       x = "Antal självrapporterade brott") +
   facet_grid(ARSKURS~Kön)
 
 ```
@@ -1537,10 +1471,13 @@ df %>%
     breaks = årtal,
     guide = guide_axis(n.dodge = 2)
   ) +
+  scale_y_continuous(breaks = c(11:18)) +
   labs(
     title = "Genomsnittslig debutålder per substans över tid",
     subtitle = fokusKommun,
-    caption = "Skuggat fält indikerar standardavvikelse."
+    caption = "Skuggat fält indikerar standardavvikelse.",
+    y = "Medelvärde debutålder",
+    x = ""
   ) +
   facet_grid(~Kön) +
   scale_color_brewer(
@@ -1550,8 +1487,6 @@ df %>%
     labels = c("rökning", "snus", "alkohol", "sniffning", "narkotika"),
     aesthetics = c("fill", "color")
   ) +
-  ylab("Medelvärde debutålder") +
-  theme_minimal() +
   theme_rise()
 ```
 :::

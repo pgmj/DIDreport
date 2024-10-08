@@ -1047,7 +1047,7 @@ df.utsattGÅ %>%
   scale_color_brewer(labels = utsatt.legend, type = "qual", palette = "Dark2") +
   scale_x_discrete(breaks = årtal,
                    guide = guide_axis(n.dodge = 2)) +
-  xlab("Årtal") +
+  xlab("") +
   ylab("Andel i procent") +
   facet_grid(Årskurs~Kön) +
   theme_rise()
@@ -1077,7 +1077,8 @@ df %>%
                    guide = guide_axis(n.dodge = 2)) +
   labs(title = "Utsatthet för olika typer av brott",
        subtitle = fokusKommun,
-       y = "Antal individer"
+       y = "Antal individer",
+       x = ""
        ) +
   facet_grid(Årskurs~Kön) +
   scale_color_brewer(type = "qual", palette = "Dark2",

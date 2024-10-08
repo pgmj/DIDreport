@@ -7,15 +7,17 @@ library(colorspace)
 library(formattable)
 library(geomtextpath)
 library(readxl)
-library(visNetwork)
-library(networkD3)
-library(vctrs)
-library(ggiraph)
-library(gt)
-library(gtExtras)
+#library(visNetwork)
+#library(networkD3)
+#library(vctrs)
+#library(ggiraph)
+#library(gt)
+#library(gtExtras)
 #library(RISEkbmRasch)
 library(janitor)
 library(ggh4x)
+library(ggrepel)
+library(kableExtra)
 
 ### some commands exist in multiple packages, here we define preferred ones that are frequently used
 select <- dplyr::select
@@ -28,13 +30,16 @@ rename <- dplyr::rename
 
 datafolder <- "~/Library/CloudStorage/OneDrive-SharedLibraries-RISE/SHIC - Data i Dialog - Data i Dialog/data/"
 
-# df.all <- read_parquet(paste0(datafolder,"DID_klart/2023-10-27_ScoredRev.parquet"))
-# df.2024.jfl <- read_parquet(paste0(datafolder,"DID_klart/2024-08-22_ScoredRev_Järfälla2024.parquet"))
+# df.all <- read_parquet(paste0(datafolder,"DID_klart/2024-08-22_ScoredRev.parquet"))
+# df.2024 <- read_parquet(paste0(datafolder,"DID_klart/2024-10-08_ScoredRev_vtuna24.parquet")) %>%
+#   select(!DIDkommun) %>%
+#   add_column(DIDkommun = 'Vallentuna')
+# # #
 # df.all <- rbind(df.all,
-#                 df.2024.jfl %>% select(!all_of(c("F62","F64")))
+#                 df.2024 %>% select(!all_of(c("F62","F64")))
 #                 )
-# write_parquet(df.all,paste0(datafolder,"DID_klart/2024-08-22_ScoredRev.parquet"))
-df.all <- read_parquet(paste0(datafolder,"DID_klart/2024-08-22_ScoredRev.parquet"))
+# write_parquet(df.all,paste0(datafolder,"DID_klart/2024-10-08_ScoredRev.parquet"))
+df.all <- read_parquet(paste0(datafolder,"DID_klart/2024-10-08_ScoredRev.parquet"))
 
 df <- df.all %>%
   rename(Kommun = DIDkommun)
@@ -44,11 +49,13 @@ df.allaK <- df %>%
   add_column(Kommun = "Alla")
 
 # df.raw <- read_parquet(paste0(datafolder,"DID_klart/2024-04-17_DataPreRecode.parquet"))
-# df.raw.2024 <- read_parquet(paste0(datafolder,"DID_klart/2024-08-22_DataPreRecode_Järfälla2024.parquet"))
+# df.raw.2024 <- read_parquet(paste0(datafolder,"DID_klart/2024-09-12_DataPreRecode_Sthlm2024.parquet"))
+#
 # df.raw <- rbind(df.raw,
 #                 df.raw.2024)
-# write_parquet(df.raw,paste0(datafolder,"DID_klart/2024-08-22_DataPreRecode.parquet"))
-df.raw <- read_parquet(paste0(datafolder,"DID_klart/2024-08-22_DataPreRecode.parquet"))
+# write_parquet(df.raw,paste0(datafolder,"DID_klart/2024-10-08_DataPreRecode.parquet"))
+
+df.raw <- read_parquet(paste0(datafolder,"DID_klart/2024-10-08_DataPreRecode.parquet"))
 
 # df$F70raw <- df.raw$F70
 
@@ -219,17 +226,17 @@ svarsfrekvenser <- demogr.skolverket.long %>%
 ## Skolinspektionen --------------------------------------------------------
 
 # read data from processed file with Rasch based scores
-df.si <- read_parquet("Sthlmsenk/didapp_data/SkolinspAk5Scored_2022-12-20.parquet")
-# this data is also based on higher score = higher risk
-
-# some functions are based on the SthlmsEnkät labeling of year as "ar"
-# we add a duplicate year variable
-df.si <- df.si %>%
-  mutate(ar = as.numeric(as.character(År)),
-         ar = vec_cast(ar, double()))
+# df.si <- read_parquet("Sthlmsenk/didapp_data/SkolinspAk5Scored_2022-12-20.parquet")
+# # this data is also based on higher score = higher risk
 #
-# # read item info
-si.items <- read_csv("Sthlmsenk/didapp_data/SkolinspFinalItems_2022-12-20.csv")
+# # some functions are based on the SthlmsEnkät labeling of year as "ar"
+# # we add a duplicate year variable
+# df.si <- df.si %>%
+#   mutate(ar = as.numeric(as.character(År)),
+#          ar = vec_cast(ar, double()))
+# #
+# # # read item info
+# si.items <- read_csv("Sthlmsenk/didapp_data/SkolinspFinalItems_2022-12-20.csv")
 # note that all SI items have merged the top 3 response categories (top = highest risk)
 
 # Cutoff values SthlmsEnk -------------------------------------------------------------
@@ -237,21 +244,21 @@ si.items <- read_csv("Sthlmsenk/didapp_data/SkolinspFinalItems_2022-12-20.csv")
 # percentiles based on 2006-2020 data for all of Stockholm Stad (~ 110k responses)
 # each year's 70th and 90th percentile value was used to calculate an average (not weighted in any way)
 # see script "file 04 Distributions and risk limits.R" in https://github.com/pgmj/sthlmsenk/tree/main/OtherScripts
-rslimits <- read_csv("Sthlmsenk/didapp_data/2023-05-07_rslimitsNoRev.csv")
+rslimits <- read_csv("Sthlmsenk/2024-09-23_rslimitsNoRev.csv")
 
 # read cutoffs for protective factors
-rslimits.prot <- read_csv("Sthlmsenk/didapp_data/2023-05-07_protective.csv")
+rslimits.prot <- read_csv("Sthlmsenk/2024-09-23_protective.csv")
 
 rslimits <- cbind(rslimits,rslimits.prot)
 rslimits <- rslimits %>%
   relocate(SkolaPositiv, .after = SkolaNegativ)
 
 # for Skolinspektionen ÅK5
-rslimits.si <- read_csv("Sthlmsenk/didapp_data/2022-12-20_SkolinspLimits.csv")
-rslimits$`Positiv skolanknytning åk 5` <- rslimits.si$`Positiv skolanknytning åk 5`
+# rslimits.si <- read_csv("Sthlmsenk/didapp_data/2022-12-20_SkolinspLimits.csv")
+# rslimits$`Positiv skolanknytning åk 5` <- rslimits.si$`Positiv skolanknytning åk 5`
 
 # vector of years to be included in year selection inputs
-årtal <- c(2006,2008,2010,2012,2014,2016,2018,2020,2022)
+årtal <- c(2006,2008,2010,2012,2014,2016,2018,2020,2022,2024)
 
 # vector of risk and protective factors
 rsfaktorer <- c('Utagerande','Närsamhälle','Föräldraskap','Psykiska/ psykosomatiska besvär','Vantrivsel i skolan','Positiv skolanknytning','Välbefinnande')
@@ -303,8 +310,8 @@ sums.index <- rbind(sums.Utagerande,
                     sums.Wellbeing)
 
 # same but for Skolinspektionens data
-sums.Skolinsp <- RSsmf(df.si,Indexvärde, 8) %>%
-  add_column(Faktor = 'SkolaPositivSI')
+# sums.Skolinsp <- RSsmf(df.si,Indexvärde, 8) %>%
+#   add_column(Faktor = 'SkolaPositivSI')
 
 ## get key values divided by gender----
 
@@ -357,8 +364,8 @@ sums.indexG <- rbind(sums.Utagerande,
                      sums.Wellbeing)
 
 # same but for Skolinspektionens data
-sums.SkolinspG <- RSsmfGender(df.si,Indexvärde, 8)%>%
-  add_column(Faktor = 'SkolaPositivSI')
+# sums.SkolinspG <- RSsmfGender(df.si,Indexvärde, 8)%>%
+#   add_column(Faktor = 'SkolaPositivSI')
 
 
 ## merge sums.index files----
@@ -372,13 +379,13 @@ sums.indexG <- sums.indexG %>%
 sums.index <- rbind(sums.index, sums.indexG)
 
 # same but for Skolinspektionens data
-sums.si <- sums.Skolinsp %>%
-  add_column(Kön = "Flickor och pojkar")
-sums.SkolinspG <- sums.SkolinspG %>%
-  relocate(Kön, .after = "Faktor")
-sums.si <- rbind(sums.si, sums.SkolinspG)
-sums.si <- sums.si %>%
-  mutate(ar = as.numeric(as.character(År)))
+# sums.si <- sums.Skolinsp %>%
+#   add_column(Kön = "Flickor och pojkar")
+# sums.SkolinspG <- sums.SkolinspG %>%
+#   relocate(Kön, .after = "Faktor")
+# sums.si <- rbind(sums.si, sums.SkolinspG)
+# sums.si <- sums.si %>%
+#   mutate(ar = as.numeric(as.character(År)))
 
 
 # key values divided by gender and grade ----------------------------------
@@ -601,14 +608,10 @@ df <- df %>%
                             f60c == 1 ~ "Jag har blivit utfrusen av andra elever",
                             f60d == 1 ~ "Jag har blivit slagen, sparkad, knuffad eller stängd inne",
                             f60e == 1 ~ "Någon elev har spritt lögner eller falska rykten om mig och försökt få andra att tycka illa om mig",
-                            f60f == 1 ~ "Jag har blivit fråntagen pengar eller saker eller fått saker förstörda
-",
-                            f60g == 1 ~ "Jag har blivit hotad eller tvingad att göra saker som jag inte ville göra
-",
-                            f60h == 1 ~ "Lärare har psykat eller på annat sätt varit elaka mot mig
-",
-                            f60i == 1 ~ "Jag har mobbats på annat sätt.
-",
+                            f60f == 1 ~ "Jag har blivit fråntagen pengar eller saker eller fått saker förstörda",
+                            f60g == 1 ~ "Jag har blivit hotad eller tvingad att göra saker som jag inte ville göra",
+                            f60h == 1 ~ "Lärare har psykat eller på annat sätt varit elaka mot mig",
+                            f60i == 1 ~ "Jag har mobbats på annat sätt.",
                             F63 == 1 ~ "Har du blivit mobbad eller trakasserad via internet eller SMS/MMS det här läsåret?",
                             f60a == 1 ~ "Nej",
                             TRUE ~ NA
@@ -653,33 +656,33 @@ if (fokusKommun == "Alla") {
 # RSfigurerRapport --------------------------------------------------------
 
 ## For sankey diagrams
-lst.data <- read_excel("Sthlmsenk/didapp_data/RISE LST RS-faktorer tabeller OSF.xlsx")
-rskontext <- c("Individ","Familj","Kamrater och fritid","Skola","Samhälle")
+# lst.data <- read_excel("Sthlmsenk/didapp_data/RISE LST RS-faktorer tabeller OSF.xlsx")
+# rskontext <- c("Individ","Familj","Kamrater och fritid","Skola","Samhälle")
 
 
 # Skolinspektionen excel --------------------------------------------------
 
-df.si.2022 <- read_parquet("Skolinspektionen/Trygghet och studiero 2022/SItryggNöjd.parquet")
-
-si.kommuner <- df.si.2022 %>%
-  filter(Kommun %in% LänetsKommuner) %>%
-  distinct(Kommun) %>%
-  pull()
-
-df.si.long <- df.si.2022 %>%
-  filter(Kommun %in% LänetsKommuner) %>%
-  select(!TotalN) %>%
-  pivot_longer(starts_with(c("trygghet","nöjdhet")),
-               values_to = "Antal") %>%
-  separate(name, c("item","svarskategori"), sep = "_") %>%
-  group_by(Kommun,Årskurs,item) %>%
-  mutate(Andel = round(100 * Antal / sum(Antal, na.rm = T),1),
-         Svarsfrekvens = 100 * Svarsfrekvens) %>%
-  ungroup()
-
-df.si.kolada <- read_parquet("KOLADA/2023-05-19_KOLADA_skolinsp_tryggNöjd.parquet") %>%
-  filter(Kommun %in% LänetsKommuner) %>%
-  mutate(Kön = car::recode(Kön,"'Flicka'='Flickor';
-                           'Pojke'='Pojkar'"))
+# df.si.2022 <- read_parquet("Skolinspektionen/Trygghet och studiero 2022/SItryggNöjd.parquet")
+#
+# si.kommuner <- df.si.2022 %>%
+#   filter(Kommun %in% LänetsKommuner) %>%
+#   distinct(Kommun) %>%
+#   pull()
+#
+# df.si.long <- df.si.2022 %>%
+#   filter(Kommun %in% LänetsKommuner) %>%
+#   select(!TotalN) %>%
+#   pivot_longer(starts_with(c("trygghet","nöjdhet")),
+#                values_to = "Antal") %>%
+#   separate(name, c("item","svarskategori"), sep = "_") %>%
+#   group_by(Kommun,Årskurs,item) %>%
+#   mutate(Andel = round(100 * Antal / sum(Antal, na.rm = T),1),
+#          Svarsfrekvens = 100 * Svarsfrekvens) %>%
+#   ungroup()
+#
+# df.si.kolada <- read_parquet("KOLADA/2023-05-19_KOLADA_skolinsp_tryggNöjd.parquet") %>%
+#   filter(Kommun %in% LänetsKommuner) %>%
+#   mutate(Kön = car::recode(Kön,"'Flicka'='Flickor';
+#                            'Pojke'='Pojkar'"))
 
 

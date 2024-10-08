@@ -1,0 +1,335 @@
+---
+title: "Data i dialog"
+subtitle: "Gränsvärden"
+title-block-banner: "#009ca6"
+title-block-banner-color: "#FFFFFF"
+author: 
+  name: Magnus Johansson
+  affiliation: RISE Research Institutes of Sweden
+  affiliation-url: https://www.ri.se/sv/vad-vi-gor/expertiser/kategoriskt-baserade-matningar
+  orcid: 0000-0003-1669-592X
+date: '2023-01-11'
+format: 
+  html:
+    toc: true
+    toc-depth: 3
+    toc-title: "Innehållsförteckning"
+    embed-resources: true
+    standalone: true
+    page-layout: full
+    logo: rise_logo_quarto.png
+    mainfont: 'Lato'
+    monofont: 'Roboto Mono'
+    code-overflow: wrap
+    code-tools: true
+    code-fold: true
+    number-sections: true
+    fig-dpi: 150
+    layout-align: left
+    linestretch: 1.6
+    theme: materia
+    link-external-newwindow: true
+  pdf:
+    papersize: a4
+    documentclass: article #article, report or book
+    classoption: [twocolumn, portrait]
+  revealjs:
+    theme: default
+    logo: rise_logo_quarto.png
+    chalkboard: false
+    self-contained: true
+    footer: 'Material skapat av magnus.p.johansson@ri.se'
+    mainfont: 'Lato'
+    slide-level: 4
+    scrollable: true
+    smaller: false
+  docx:
+    toc: true
+    number-sections: true
+    title: "Rasch in Quarto"
+    subtitle: "Template file"
+    author: "Magnus Johansson"
+#    reference-doc: RISEmallMJv6.dotx
+# execute:
+#   echo: false
+#   warning: false
+#   message: false
+#   cache: true
+editor_options: 
+  markdown: 
+    wrap: 72
+  chunk_output_type: console
+---
+
+## Förberedelser
+
+Vi läser in data för 2006-2024.
+
+```{r}
+library(arrow)
+library(tidyverse)
+library(car)
+library(glue)
+library(janitor)
+library(knitr)
+library(ggdist)
+### some commands exist in multiple packages, here we define preferred ones that are frequently used
+select <- dplyr::select
+count <- dplyr::count
+recode <- car::recode
+rename <- dplyr::rename
+
+# theming
+theme_rise <- function (fontfamily = "Lato", axissize = 13, titlesize = 15, 
+  margins = 12, axisface = "plain", panelDist = 0.6, ...) 
+{
+  theme_minimal() + theme(text = element_text(family = fontfamily), 
+    axis.title.x = element_text(margin = margin(t = margins), 
+      size = axissize), axis.title.y = element_text(margin = margin(r = margins), 
+      size = axissize), plot.title = element_text(face = "bold", 
+      size = titlesize), axis.title = element_text(face = axisface), 
+    plot.caption = element_text(hjust = 0, face = "italic"), 
+    legend.text = element_text(family = fontfamily), legend.background = element_rect(color = "lightgrey"), 
+    strip.background = element_rect(color = "lightgrey"), 
+    panel.spacing = unit(panelDist, "cm", data = NULL), 
+    panel.border = element_rect(color = "grey", fill = NA), 
+    ...)
+}
+
+
+# df <- read_parquet(paste0(datafolder,"DID_klart/2023-05-07_ScoredRev.parquet")) %>%
+#   filter(ar > 2004 & ar < 2022)
+
+df <- read_parquet(paste0(datafolder,"DID_klart/2024-09-12_ScoredRev.parquet")) %>%
+  filter(ar > 2004 & ar < 2024) %>% 
+  mutate(År = ar)
+
+#allItems <- read_csv("Sthlmsenk/allItemsIndex.csv")
+allItems <- read_csv("allItemsIndex.csv")
+# create vector of risk index names
+riskfaktorer <- allItems %>%
+  filter(!Index %in% c("Wellbeing","SkolaPositiv")) %>%
+  distinct(Index) %>%
+  pull()
+
+andrafaktorer <- c("SkolaPositiv","Wellbeing")
+```
+
+## Inledning
+
+Vi vill ta fram gränsvärden för "något förhöjd" och "mycket förhöjd" risk, och sätter initialt dessa värden utifrån kvartilen (75:e percentilen) med högst svar på varje riskfaktor, samt de 10% med högst svar på varje riskfaktor (90:e percentilen).
+
+Innan vi tar fram dessa värden ska vi titta på distributionerna av våra variabler, sett till alla data från 2006 till 2022 (vi saknar data för 2024 från de flesta kommuner).
+
+```{r}
+df %>% 
+  select(År,all_of(riskfaktorer)) %>% 
+  pivot_longer(all_of(riskfaktorer), names_to = "Riskfaktor",
+               values_to = "Mätvärde") %>% 
+  group_by(Riskfaktor) %>% 
+  summarise(Medianvärde = median(Mätvärde, na.rm = T),
+            MAD = mad(Mätvärde, na.rm = T),
+            IQR = IQR(Mätvärde, na.rm = T),
+            Medelvärde = mean(Mätvärde, na.rm = T),
+            SD = sd(Mätvärde, na.rm = T)
+            )
+```
+
+
+```{r}
+df %>% 
+  select(År,all_of(riskfaktorer)) %>% 
+  pivot_longer(all_of(riskfaktorer)) %>% 
+  
+  ggplot(aes(x = value, fill = name), bins = 500) +
+  #stat_dotsinterval()
+  geom_histogram() +
+  theme_rise() +
+  scale_fill_viridis_d(guide = "none") +
+    scale_x_continuous(breaks = seq(-5,5,1)) +
+  facet_wrap(~name, ncol = 1, scales = "free_y",
+             strip.position="left")
+
+```
+
+```{r}
+df %>% 
+  select(ar,all_of(riskfaktorer)) %>% 
+  pivot_longer(riskfaktorer) %>% 
+  
+  ggplot(aes(x = value, slab_fill = after_stat(level))) +
+   stat_dotsinterval(quantiles = 300, point_interval = "median_qi",
+                    layout = "weave", slab_color = NA, .width = c(.75,.90)) +
+  theme_rise() +
+  scale_fill_viridis_d(guide = "none") +
+    scale_x_continuous(breaks = seq(-5,5,1)) +
+  facet_wrap(~name, ncol = 1, scales = "free_y",
+             strip.position="left")
+```
+
+Steg ett är att ta fram värden för 75:e och 90:e percentilen för varje mättillfälle från 2006 till 2020.
+
+Sedan vill vi ha ett viktat medelvärde från samtliga årtal, med en ren volymvikt, d.v.s. antalet respondenter.
+
+```{r}
+antalsvar <- df %>% 
+  select(ar,all_of(sthlm.index)) %>% 
+  na.omit() %>% 
+  count(ar)
+
+n_index <- function(index) {
+  df %>% 
+    dplyr::select(ar,{{index}}) %>% 
+    na.omit() %>% 
+    count(ar,name = {{index}})
+}
+n_index(sthlm.index[1])
+
+tmp <- map(1:5, ~ n_index(sthlm.index[.x]))
+
+n_index_ar <- data.frame("ar" = tmp[[1]]$ar,
+           "Utagerande" = tmp[[1]]$Utagerande,
+           "SkolaNegativ" = tmp[[2]]$SkolaNegativ,
+           "PsykSomBesv" = tmp[[3]]$PsykSomBesv,
+           "Parenting" = tmp[[4]]$Parenting,
+           "Community" = tmp[[5]]$Community
+           ) %>% 
+  pivot_longer(!ar, names_to = "index", values_to = "n")
+```
+
+
+```{r}
+p75 <- df %>% 
+  select(ar,all_of(sthlm.index)) %>% 
+  pivot_longer(all_of(sthlm.index), names_to = "index") %>% 
+  group_by(ar,index) %>% 
+  summarise(p75 = quantile(value, probs = .75, na.rm = T)
+            #p90 = quantile(value, probs = .90, na.rm = T)
+            ) %>% 
+  ungroup() %>% 
+  pivot_wider(values_from = p75,
+              names_from = index) %>% 
+  mutate(across(where(is.numeric), round, 3)) %>% 
+  left_join(antalsvar, by = "ar")
+
+p75 %>%
+  kable(label = "75th percentile for each year")
+```
+
+
+```{r}
+p90 <- df %>% 
+  select(ar,all_of(sthlm.index)) %>% 
+  pivot_longer(all_of(sthlm.index), names_to = "index") %>% 
+  group_by(ar,index) %>% 
+  summarise(#p75 = quantile(value, probs = .75, na.rm = T)
+            p90 = quantile(value, probs = .90, na.rm = T)
+            ) %>% 
+  ungroup() %>% 
+  pivot_wider(values_from = p90,
+              names_from = index) %>% 
+  #add_row(medel = !!! colMeans(.[-1], na.rm = T)) %>% 
+  mutate(across(where(is.numeric), round, 3)) %>% 
+  left_join(antalsvar, by = "ar")
+
+p90 %>%
+  kable(label = "90th percentile for each year")
+```
+
+### Viktade medelvärden (n per år)
+
+```{r}
+p90w <- lapply(p90[c(sthlm.index)], function(x) weighted.mean(x,p90$n)) %>% 
+  unlist() %>% 
+  as.data.frame(nm = "p90")
+
+p75w <- lapply(p75[c(sthlm.index)], function(x) weighted.mean(x,p75$n)) %>% 
+  unlist() %>% 
+  as.data.frame(nm = "p75")
+
+w <- cbind(p90w,p75w) %>% 
+  rownames_to_column("index")
+w
+```
+
+#### Viktade medelvärden (n per år & index)
+
+```{r}
+p90_2 <- p90 %>% 
+  select(!n) %>% 
+  pivot_longer(all_of(sthlm.index),
+               names_to = "index") %>% 
+  left_join(n_index_ar, by = c("ar","index"))
+
+p75_2 <- p75 %>% 
+  select(!n) %>% 
+  pivot_longer(all_of(sthlm.index),
+               names_to = "index") %>% 
+  left_join(n_index_ar, by = c("ar","index"))
+
+wmean <- function(data,index) {
+  tmp <- data %>% 
+    filter(index == {{index}})
+  
+  weighted.mean(tmp$value,tmp$n)
+  
+}
+
+w2 <- data.frame(index = sthlm.index,
+                 p90 = c(wmean(p90_2,"Utagerande"),wmean(p90_2,"SkolaNegativ"),wmean(p90_2,"PsykSomBesv"),wmean(p90_2,"Parenting"),wmean(p90_2,"Community")),
+                 p75 = c(wmean(p75_2,"Utagerande"),wmean(p75_2,"SkolaNegativ"),wmean(p75_2,"PsykSomBesv"),wmean(p75_2,"Parenting"),wmean(p75_2,"Community"))
+)
+
+w
+w2
+```
+
+Det skiljer bara på tredje decimalen, alltså är viktning per index och volym/år överarbetat noggrannt. Vi använder det viktade `w`.
+
+### Andra variabler
+
+Vi har två positiva index, "Positiv skolanknytning" och "Välbefinnande", där vi tar 85:e percentilen utifrån att Folkhälsomyndigheten använder detta som distributionsbaserat gränsvärde för högt välbefinnande.
+
+```{r}
+p85 <- df %>% 
+  select(ar,all_of(andrafaktorer)) %>% 
+  pivot_longer(all_of(andrafaktorer), names_to = "index") %>% 
+  group_by(ar,index) %>% 
+  summarise(p85 = quantile(value, probs = .85, na.rm = T)) %>% 
+  ungroup() %>% 
+  pivot_wider(values_from = p85,
+              names_from = index) %>% 
+  mutate(across(where(is.numeric), round, 3)) %>% 
+  left_join(antalsvar, by = "ar")
+
+p15 <- df %>% 
+  select(ar,all_of(andrafaktorer)) %>% 
+  pivot_longer(all_of(andrafaktorer), names_to = "index") %>% 
+  group_by(ar,index) %>% 
+  summarise(p15 = quantile(value, probs = .15, na.rm = T)) %>% 
+  ungroup() %>% 
+  pivot_wider(values_from = p15,
+              names_from = index) %>% 
+  mutate(across(where(is.numeric), round, 3)) %>% 
+  left_join(antalsvar, by = "ar")
+
+p85 %>%
+  kable(label = "85th percentile for each year")
+```
+
+```{r}
+p85w <- lapply(p85[c(andrafaktorer)], function(x) weighted.mean(x,p85$n)) %>% 
+  unlist() %>% 
+  as.data.frame(nm = "p85")
+
+p15w <- lapply(p15[c(andrafaktorer)], function(x) weighted.mean(x,p85$n)) %>% 
+  unlist() %>% 
+  as.data.frame(nm = "p15")
+
+p <- cbind(p15w,p85w) %>% 
+  rownames_to_column("index")
+p
+```
+
+  
+

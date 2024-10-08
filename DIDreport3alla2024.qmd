@@ -1,0 +1,1313 @@
+---
+title: "Data i dialog"
+subtitle: "Kommunrapport v4"
+title-block-banner: "#009ca6"
+title-block-banner-color: "#FFFFFF"
+author: 
+  name: Magnus Johansson
+  affiliation: RISE Research Institutes of Sweden
+  affiliation-url: https://www.ri.se/sv/vad-vi-gor/expertiser/kategoriskt-baserade-matningar
+  orcid: 0000-0003-1669-592X
+date: last-modified
+format: 
+  html:
+    toc: true
+    toc-depth: 4
+    toc-title: "Innehållsförteckning"
+    embed-resources: true
+    standalone: true
+    page-layout: full
+    mainfont: 'Lato'
+    monofont: 'Roboto Mono'
+    code-overflow: wrap
+    code-tools: false
+    code-fold: false
+    number-sections: true
+    fig-dpi: 120
+    layout-align: left
+    linestretch: 1.6
+    theme: materia
+    link-external-newwindow: true
+    fig-cap-location: bottom
+execute:
+  echo: false
+  warning: false
+  message: false
+  cache: false
+editor_options: 
+  chunk_output_type: console
+---
+
+## Alla kommuner i Stockholms län {.unnumbered}
+
+```{r}
+
+### Parameters are defined externally in the file DIDparameters.xls
+# These are read by the script render.R, which in turn generates reports
+
+# which municipality to focus this report on?
+#fokusKommun <- params$fokusKommun
+# # which municipalities should be included in comparisons?
+#jmfKommun <- factor(c(fokusKommun,params$jmfKommun),
+#                    levels = c(fokusKommun,params$jmfKommun))
+
+## for testing/dev:
+fokusKommun <- "Alla"
+jmfKommun <- factor(c(fokusKommun,"Stockholm", "Södertälje", "Vallentuna"),
+                  levels = c(fokusKommun,"Stockholm", "Södertälje", "Vallentuna"))
+
+# Botkyrka, Huddinge, Södertälje
+# Österåker,Danderyd,Täby
+# years of interest
+#yearsIn <- params$years
+yearsIn <- c(2018,2020,2022,2024)
+
+# setup -------------------------------------------------------------------
+
+library(ggplot2)
+library(tidyverse)
+library(arrow)
+library(colorspace) # for modifying color palettes
+library(formattable)
+library(geomtextpath)
+library(readxl)
+#library(visNetwork)
+#library(networkD3)
+#library(vctrs)
+#library(ggiraph)
+#library(gt)
+#library(gtExtras)
+#library(RISEkbmRasch)
+library(janitor)
+library(ggh4x)
+library(ggrepel)
+library(kableExtra)
+
+### some commands exist in multiple packages, here we define preferred ones that are frequently used
+select <- dplyr::select
+count <- dplyr::count
+recode <- car::recode
+rename <- dplyr::rename
+
+årtal <- c(2006,2008,2010,2012,2014,2016,2018,2020,2022,2024)
+
+
+### set up color palette based on RISE guidelines
+RISEprimGreen <- "#009ca6"
+RISEprimRed <- "#e83c63"
+RISEprimYellow <- "#ffe500"
+RISEprimGreenMid <- "#8dc8c7"
+RISEprimRedMid <- "#f5a9ab"
+RISEprimYellowMid <- "#ffee8d"
+RISEprimGreenLight <- "#ebf5f0"
+RISEprimRedLight <- "#fde8df"
+RISEprimYellowLight <- "#fff7dd"
+RISEcompPurple <- "#482d55"
+RISEcompGreenDark <- "#0e4e65"
+RISEgrey1 <- "#f0f0f0"
+RISEgrey2 <- "#c8c8c8"
+RISEgrey3 <- "#828282"
+RISEgrey4 <- "#555555"
+
+### colors specifically for DID application
+DIDcolorsOriginal <- c('#D55E00','#F0E442','#009E73','#999999')
+DIDcolors <- lighten(DIDcolorsOriginal, amount = 0.1, space = "HLS")
+DIDred <- "#D55E00"
+DIDorange <- "#E69F00"
+DIDgreen <- "#009E73"
+DIDyellow <- "#F0E442"
+
+DIDtestColors <- c("#509B8E","#E2C578","#DB7358")
+
+RISEpalette1 <- colorRampPalette(colors = c("#009ca6", "#e83c63", "#ffe500"))(6)
+#scales::show_col(RISEpalette1)
+
+RISEpalette2 <- colorRampPalette(colors = c("#009ca6", "#482d55", "#e83c63", "#ffe500"))(8)
+#scales::show_col(RISEpalette2)
+
+# distance between panels in faceted ggplots
+pandist <- 0.6
+
+rfactors <- c('Utagerande','Närsamhälle','Föräldraskap','Psykiska/ psykosomatiska besvär','Vantrivsel i skolan')
+pfactors <- c('Välbefinnande','Positiv skolanknytning')
+
+```
+
+```{r}
+# preprocess data
+source("DIDreportSetup.R")
+# import functions to create figures and tables
+source("DIDreportFunctions.R")
+
+# if (fokusKommun == "Alla"){
+#   
+#   df <- df %>% 
+#     mutate(Kommun = "Alla")
+#   
+# }
+```
+
+## Demografi Stockholmsenkäten
+
+::: panel-tabset
+### Fördelat på kön
+```{r}
+df %>% 
+  filter(#Kommun == fokusKommun,
+         !Kön == "<NA>") %>% 
+  rename(År = ar,
+         Årskurs = ARSKURS) %>% 
+  group_by(År,DIDkommun,Kön) %>% 
+  summarise(Antal = n()) %>% 
+  ungroup() %>% 
+  ggplot(aes(x = År, y = Antal, color = DIDkommun)) + 
+  geom_line(linewidth = 1, alpha = 0.7) +
+  geom_point(size = 3, alpha = 0.7) +
+  scale_color_viridis_d('Kommun') +
+  scale_x_continuous(guide = guide_axis(n.dodge = 2), breaks = årtal, minor_breaks = NULL) +
+  scale_y_continuous(limits = c(0,NA)) +
+  labs(title = "Antal respondenter per år",
+       subtitle = "Fördelat på kommun och kön") +
+  theme_rise() +
+  #theme(text = element_text(family = "Lato")) +
+  facet_wrap(~Kön)  +
+  # only run once to set defaults for rest of file
+  update_geom_defaults("text", list(family = "Lato")) +
+  update_geom_defaults("text_repel", list(family = "Lato"))
+
+```
+### Fördelat på kön 2
+```{r}
+df %>% 
+  filter(!DIDkommun == "Stockholm",
+         !Kön == "<NA>") %>% 
+  rename(År = ar,
+         Årskurs = ARSKURS) %>% 
+  group_by(År,DIDkommun,Kön) %>% 
+  summarise(Antal = n()) %>% 
+  ungroup() %>% 
+  ggplot(aes(x = År, y = Antal, color = DIDkommun)) + 
+  geom_line(linewidth = 1, alpha = 0.7) +
+  geom_point(size = 3, alpha = 0.7) +
+  scale_color_viridis_d('Kommun') +
+  scale_x_continuous(guide = guide_axis(n.dodge = 2), breaks = årtal, minor_breaks = NULL) +
+  scale_y_continuous(limits = c(0,NA)) +
+  labs(title = "Antal respondenter per år (exkl. Stockholm)",
+       subtitle = "Fördelat på kommun och kön") +
+  theme_minimal() +
+  theme_rise() +
+  theme(text = element_text(family = "Lato")) +
+  facet_wrap(~Kön) 
+
+```
+### Fördelat på årskurs
+```{r}
+df %>% 
+  filter(#Kommun == fokusKommun,
+         !Kön == "<NA>",
+         !is.na(ARSKURS)) %>% 
+  rename(År = ar,
+         Årskurs = ARSKURS) %>% 
+  group_by(År,DIDkommun,Årskurs) %>% 
+  summarise(Antal = n()) %>% 
+  ungroup() %>% 
+  ggplot(aes(x = År, y = Antal, color = DIDkommun)) + 
+  geom_line(linewidth = 1) +
+  geom_point(size = 3) +
+  scale_color_viridis_d('Kommun') +
+  scale_x_continuous(guide = guide_axis(n.dodge = 2), breaks = årtal, minor_breaks = NULL) +
+  scale_y_continuous(limits = c(0,NA)) +
+  labs(title = "Antal respondenter per år",
+       subtitle = "Fördelat på kommun och årskurs") +
+  theme_minimal() +
+  theme_rise() +
+  theme(text = element_text(family = "Lato")) +
+  facet_wrap(~Årskurs)
+
+```
+### Fördelat på årskurs 2
+```{r}
+df %>% 
+  filter(!DIDkommun == "Stockholm",
+         !Kön == "<NA>",
+         !is.na(ARSKURS)) %>% 
+  rename(År = ar,
+         Årskurs = ARSKURS) %>% 
+  group_by(År,DIDkommun,Årskurs) %>% 
+  summarise(Antal = n()) %>% 
+  ungroup() %>% 
+  ggplot(aes(x = År, y = Antal, color = DIDkommun)) + 
+  geom_line(linewidth = 1) +
+  geom_point(size = 3) +
+  scale_color_viridis_d('Kommun') +
+  scale_x_continuous(guide = guide_axis(n.dodge = 2), breaks = årtal, minor_breaks = NULL) +
+  scale_y_continuous(limits = c(0,NA)) +
+  labs(title = "Antal respondenter per år (exkl. Stockholm)",
+       subtitle = "Fördelat på kommun och årskurs") +
+  theme_minimal() +
+  theme_rise() +
+  theme(text = element_text(family = "Lato")) +
+  facet_wrap(~Årskurs)
+
+```
+### Otillräckliga svar
+Det krävs svar på minst 5 frågor inom ett index för att ett indexvärde ska beräknas. Här redovisas hur stor andel av de som svarat på Stockholmsenkäten som har 0-4 frågor besvarade inom varje index.
+```{r}
+df.risk %>%
+  filter(is.na(riskLevel)) %>%
+  filter(Kommun == fokusKommun) %>%
+  ggplot(aes(x = År, y = Andel, group = Index, color = Index)) +
+  geom_line(linewidth = 0.8) +
+  geom_point(size = 2.5) +
+  ylab("Andel i %") +
+  scale_color_brewer(type = "qual", palette = "Dark2") +
+  theme_minimal() +
+  theme_rise() +
+  theme(text = element_text(family = "Lato")) +
+  scale_y_continuous(limits = c(0,50))
+
+```
+### Vistelsetid
+```{r}
+stapelDemografi("Hur länge har du bott i Sverige?")
+```
+### Utbildningsnivå föräldrar
+```{r}
+stapelDemografi("Vilken högsta utbildning har din mamma/pappa?")
+```
+
+### Boendetyp
+```{r}
+stapelDemografi("Vad bor du i för typ av bostad?")
+```
+:::
+
+## Överblick riskfaktorer
+
+### Åk 9 kön
+
+Enbart årskurs 9.
+
+::: panel-tabset
+#### 2024
+```{r}
+#| fig-height: 5
+df.risk.gender.arskurs.alla %>% 
+  filter(!is.na(Kön),
+         Årskurs == "Åk 9",
+         Kommun == "Alla") %>% 
+  DIDstapel("2024", tpathsize = 2.9) +
+  facet_wrap(~Kön) +
+  labs(title = "Stockholm Stad, Järfälla och Vallentuna - 2024",
+       subtitle = "Enbart åk 9")
+```
+#### 2022
+```{r}
+#| fig-height: 5
+df.risk.gender.arskurs.alla %>% 
+  filter(!is.na(Kön),
+         Årskurs == "Åk 9",
+         Kommun == "Alla") %>% 
+  DIDstapel("2022", tpathsize = 2.9) +
+  facet_wrap(~Kön) +
+  labs(title = "Alla kommuner i DID - 2022",
+       subtitle = "Enbart åk 9")
+```
+#### 2020
+```{r}
+#| fig-height: 5
+df.risk.gender.arskurs.alla %>% 
+  filter(!is.na(Kön),
+         Årskurs == "Åk 9",
+         Kommun == "Alla") %>% 
+  DIDstapel("2020", tpathsize = 2.9) +
+  facet_wrap(~Kön) +
+  labs(title = "Alla kommuner i DID - 2020",
+       subtitle = "Enbart åk 9")
+```
+#### 2018
+```{r}
+#| fig-height: 5
+
+df.risk.gender.arskurs.alla %>% 
+  filter(!is.na(Kön),
+         Årskurs == "Åk 9",
+         Kommun == "Alla") %>% 
+  DIDstapel("2018", tpathsize = 2.9) +
+  facet_wrap(~Kön) +
+  labs(title = "Alla kommuner i DID - 2018",
+       subtitle = "Enbart åk 9")
+```
+#### 2016
+```{r}
+#| fig-height: 5
+#| 
+df.risk.gender.arskurs.alla %>% 
+  filter(!is.na(Kön),
+         Årskurs == "Åk 9",
+         Kommun == "Alla") %>% 
+  DIDstapel("2016", tpathsize = 2.9) +
+  facet_wrap(~Kön) +
+  labs(title = "Alla kommuner i DID - 2016",
+       subtitle = "Enbart åk 9")
+```
+#### Förklaring riskgrupper
+Kategoriseringen bygger på en statistisk fördelningsmodell och är inte validerad mot externa kriterier. Gränsvärden för kategoriseringen har tagits fram med grund i data från hela Stockholm Stads mätningar från 2006 till 2020, totalt 107 135 elever. För varje mättillfälle (varannat år) har gränsvärden för 75:e och 90:e percentilen räknats fram inom varje index. Sedan har medelvärden för 75:e och 90:e percentilen beräknats, och dessa är de gränsvärden som sedan tillämpas för indelningen i "något förhöjd risk" (mellan 75:e och 90:e percentilgränsen) och "hög risk" (över 90:e percentilgränsen).
+:::
+
+### Kön och årskurs
+
+::: panel-tabset
+#### 2024
+```{r}
+#| fig-height: 7
+df.risk.gender.arskurs %>% 
+  filter(!is.na(Årskurs),
+         Kommun == fokusKommun) %>% 
+  DIDstapel("2024", tpathsize = 2.7) +
+  facet_grid(Årskurs~Kön) +
+  theme(legend.justification = c(0.0, 1.0)) +
+  labs(title = "Stockholm Stad, Järfälla och Vallentuna - 2024")
+
+```
+#### 2022
+```{r}
+#| fig-height: 7
+df.risk.gender.arskurs %>% 
+  filter(!is.na(Årskurs),
+         Kommun == fokusKommun) %>% 
+  DIDstapel("2022", tpathsize = 2.7) +
+  facet_grid(Årskurs~Kön) +
+  theme(legend.justification = c(0.0, 1.0))
+```
+#### 2020
+```{r}
+#| fig-height: 7
+df.risk.gender.arskurs %>% 
+  filter(!is.na(Årskurs),
+         Kommun == fokusKommun) %>% 
+  DIDstapel("2020", tpathsize = 2.7) +
+  facet_grid(Årskurs~Kön) +
+  theme(legend.justification = c(0.0, 1.0))
+```
+#### 2018
+```{r}
+#| fig-height: 7
+df.risk.gender.arskurs %>% 
+  filter(!is.na(Årskurs),
+         Kommun == fokusKommun) %>% 
+  DIDstapel("2018", tpathsize = 2.7) +
+  facet_grid(Årskurs~Kön) +
+  theme(legend.justification = c(0.0, 1.0))
+```
+#### 2016
+```{r}
+#| fig-height: 7
+df.risk.gender.arskurs %>% 
+  filter(!is.na(Årskurs),
+         Kommun == fokusKommun) %>% 
+  DIDstapel("2016", tpathsize = 2.7) +
+  facet_grid(Årskurs~Kön) +
+  theme(legend.justification = c(0.0, 1.0))
+```
+:::
+
+## Familj
+
+### Bristande föräldraskap
+
+::: panel-tabset
+#### Kön/Årskurs
+```{r}
+#| fig-height: 7
+DIDareaPlot2("Föräldraskap") + 
+  ggtitle(paste0("Bristande föräldraskap - ",fokusKommun)) +
+  theme(legend.justification = c(0.0, 1.0))
+```
+
+#### Förhöjd risk
+```{r}
+DIDline90åk("Föräldraskap")
+```
+
+#### Frågor i indexet
+```{r}
+itemlabels.final %>% 
+  filter(Index == "Parenting") %>% 
+  select(!Index) %>% 
+  kbl_rise(tbl_width = 60)
+```
+:::
+
+### KOLADA
+
+::: panel-tabset
+#### 0-100
+```{r}
+#| fig-height: 5
+KOLADA2 %>%
+  #filter(Kön == "Alla") %>%
+  filter(KPI %in% c(
+    "Föräldrapenningdagar som tas ut av män, andel av antal dagar (%)",
+    "Tillfälliga föräldrapenningdagar (VAB) som tas ut av män, andel av antal dagar (%)"
+  )) %>% 
+  DIDkoladaAlla() +
+  scale_y_continuous(limits = c(0, 100))
+
+```
+#### Inzoomad
+```{r}
+#| fig-height: 5
+
+KOLADA2 %>%
+  #filter(Kön == "Alla") %>%
+  filter(KPI %in% c(
+    "Föräldrapenningdagar som tas ut av män, andel av antal dagar (%)",
+    "Tillfälliga föräldrapenningdagar (VAB) som tas ut av män, andel av antal dagar (%)"
+  )) %>% 
+  DIDkoladaAlla()
+
+```
+:::
+
+## Skola
+
+### Riskfaktorer åk 9 & gy 2
+
+::: panel-tabset
+#### Kön/Årskurs
+```{r}
+#| fig-height: 7
+DIDareaPlot2("Vantrivsel i skolan")  +
+  theme(legend.justification = c(0.0, 1.0))
+```
+
+#### Förhöjd risk
+```{r}
+DIDline90åk("Vantrivsel i skolan")
+```
+
+#### Enkätfrågor i indexet
+```{r}
+itemlabels.final %>% 
+  filter(Index == "SkolaNegativ") %>% 
+  select(!Index) %>% 
+  kbl_rise(tbl_width = 60)
+```
+:::
+
+### Mobbning
+
+I Stockholmsenkäten handlar frågorna om mobbning primärt om mobbning i skolan, och de redovisas därför i denna sektion.
+
+#### Mobbad i skolan
+
+```{r}
+df %>% 
+  filter(Kommun == fokusKommun) %>%
+  drop_na(mobbad,ARSKURS) %>% 
+  group_by(ar,ARSKURS,Kön) %>% 
+  count(mobbad, .drop = F) %>% 
+  mutate(Andel = 100*n/sum(n)) %>% 
+  ungroup() %>% 
+  filter(mobbad == "Nej") %>% 
+  mutate(Andel = 100 - Andel) %>% 
+  ggplot(aes(x = ar, y = Andel, color = Kön, group = Kön)) +
+  geom_point(size = 3, alpha = 0.9) +
+  geom_line(linewidth = 1.3, alpha = 0.9) +
+  scale_color_manual(values = RISEpalette1[c(1,5)],
+                     aesthetics = c("fill","color"),
+                     labels = c("Flicka","Pojke","Annat/ej svar")) +
+  scale_x_continuous("Årtal", guide = guide_axis(n.dodge = 2), breaks = årtal) +
+  scale_y_continuous(limits = c(0,100), breaks = c(0,20,40,60,80,100)) +
+  theme_rise() +
+  labs(title = "Andel elever som känt sig mobbade eller trakasserade",
+       subtitle = "Andel som svarat annat än 'Nej' på frågan\n'Har du känt dig mobbad eller trakasserad i skolan det här läsåret?'") +
+  ylab("Andel i %") +
+  xlab("") +
+  facet_wrap(~ARSKURS)
+```
+
+
+#### Åk 9
+
+:::panel-tabset
+##### 2024
+```{r}
+#| fig-height: 7
+DIDmobbadÅK(2024,"Åk 9")
+```
+##### 2022
+```{r}
+#| fig-height: 7
+DIDmobbadÅK(2022,"Åk 9")
+```
+##### 2020
+```{r}
+#| fig-height: 7
+DIDmobbadÅK(2020,"Åk 9")
+```
+##### 2018
+```{r}
+#| fig-height: 7
+DIDmobbadÅK(2018,"Åk 9")
+```
+##### 2016
+```{r}
+#| fig-height: 7
+DIDmobbadÅK(2016,"Åk 9")
+```
+:::
+
+#### Gy 2
+
+:::panel-tabset
+##### 2024
+```{r}
+#| fig-height: 7
+DIDmobbadÅK(2024,"Gy 2")
+```
+##### 2022
+```{r}
+#| fig-height: 7
+DIDmobbadÅK(2022,"Gy 2")
+```
+##### 2020
+```{r}
+#| fig-height: 7
+DIDmobbadÅK(2020,"Gy 2")
+```
+##### 2018
+```{r}
+#| fig-height: 7
+DIDmobbadÅK(2018,"Gy 2")
+```
+##### 2016
+```{r}
+#| fig-height: 7
+DIDmobbadÅK(2016,"Gy 2")
+```
+:::
+
+### Skyddsfaktorer
+
+::: panel-tabset
+```{r}
+#| include: false
+#| eval: false
+
+#### Åk 9 & Gy 2 grupperat
+plotFaktor <- "Positiv skolanknytning"
+
+df.plot <- df %>%
+  filter(Kommun == fokusKommun) %>%
+  mutate(
+    Risknivå = case_when(
+      .data[[plotFaktor]] < rslimits.prot |>
+        select(plotFaktor) |>
+        slice(1) |>
+        pull() ~ "Lågt indexvärde",
+      .data[[plotFaktor]] >= rslimits.prot |>
+        select(plotFaktor) |>
+        slice(1) |>
+        pull() &
+        .data[[plotFaktor]] < rslimits.prot |>
+        select(plotFaktor) |>
+        slice(2) |>
+        pull() ~ "Neutral",
+      .data[[plotFaktor]] >= rslimits.prot |>
+        select(plotFaktor) |>
+        slice(2) |>
+        pull() ~ "Högt indexvärde",
+      TRUE ~ "Otillräckliga svar"
+    )
+  )
+
+df.plot %>%
+  filter(Kön %in% c("Flicka","Pojke")) %>%
+  mutate(Risknivå = factor(Risknivå, levels = c("Högt indexvärde", "Neutral", 
+                                             "Lågt indexvärde","Otillräckliga svar"))) %>%   group_by(ar, Kön) %>% 
+  count(Risknivå, .drop = FALSE) %>% 
+  mutate(Andel = (100 * n / sum(n)) %>% round(digits = 1)) %>%
+  mutate(Grupp = factor(Risknivå, levels = c("Högt indexvärde", "Neutral", 
+                                             "Lågt indexvärde","Otillräckliga svar"))) %>%
+  ungroup() %>% 
+  ggplot(aes(x = ar, y = Andel)) +
+  geom_area(aes(color = Grupp, fill = Grupp), 
+            position = "stack",
+            alpha = 0.9) +
+  scale_fill_manual(values = DIDcolorsRYGG) +
+  scale_color_manual(values = DIDcolorsRYGG) +
+  scale_y_continuous(breaks = c(0, 20, 40, 60, 80, 100)) +
+  xlab("Årtal") +
+  ylab("Andel i %") +
+  labs(
+    title = paste0(plotFaktor, " - ", fokusKommun),
+    subtitle = "Uppdelat på kön",
+    caption = "Grönt fält indikerar andel som överstiger referensvärde för 15% med högst indexvärde.\n
+    Rött fält  indikerar andel som understiger referensvärde för 15% med lägst indexvärde.\n
+    Datakälla: Skolinspektionen."
+  ) +
+  facet_wrap(~Kön) +
+  theme_rise() +
+  theme(plot.caption = element_text(lineheight = 0.45))
+```
+
+#### Åk 9 & Gy 2 medelvärden
+
+```{r}
+DIDmedelSDg(sums.indexGG, "Positiv skolanknytning") + 
+  facet_grid(Årskurs~Kön) +
+  labs(caption = "Datakälla: Stockholmsenkäten")
+```
+#### Enkätfrågor Stockholmsenkäten
+```{r}
+itemlabels.final %>% 
+  filter(Index == "SkolaPositiv") %>% 
+  select(!Index) %>% 
+  kbl_rise(tbl_width = 60)
+```
+:::
+
+
+### KOLADA
+
+::: panel-tabset
+#### Förskola
+```{r}
+#| fig-height: 7
+KOLADA2 %>% 
+  #filter(Kön == "Alla") %>% 
+  filter(KPI %in% c("Barn 3-5 år inskrivna i förskola, andel (%)",
+                    "Heltidstjänster i förskola med pedagogisk högskoleexamen, lägeskommun, andel (%)",
+                    "Heltidstjänster i förskola med pedagogisk högskoleexamen, enskild regi, andel (%)",
+                    "Heltidstjänster i förskola med pedagogisk högskoleexamen, kommunal regi, andel (%)")
+  ) %>% 
+  DIDkoladaAlla() + 
+  scale_y_continuous(limits = c(0, 100))
+
+```
+#### Förskola inzoomad
+```{r}
+#| fig-height: 7
+KOLADA2 %>% 
+  #filter(Kön == "Alla") %>% 
+  filter(KPI %in% c("Barn 3-5 år inskrivna i förskola, andel (%)",
+                    "Heltidstjänster i förskola med pedagogisk högskoleexamen, lägeskommun, andel (%)",
+                    "Heltidstjänster i förskola med pedagogisk högskoleexamen, enskild regi, andel (%)",
+                    "Heltidstjänster i förskola med pedagogisk högskoleexamen, kommunal regi, andel (%)")
+  ) %>% 
+  DIDkoladaAlla()
+
+```
+
+#### Grundskola
+```{r}
+#| fig-height: 7
+KOLADA2 %>% 
+  #filter(Kön == "Alla") %>% 
+  filter(KPI %in% c("Lärare med pedagogisk högskoleexamen i grundskola åk 1-9, lägeskommun, andel (%)",
+                    "Lärare (heltidstjänster) med lärarlegitimation och behörighet i minst ett ämne i grundskola åk 1-9, lägeskommun, andel (%)",
+                    "Elever i åk 9 som är behöriga till yrkesprogram, hemkommun, andel (%)",
+                    "Elever vars föräldrar har eftergymnasial utbildning, åk 1-9 i lägeskommun, andel (%)")
+  ) %>% 
+  DIDkoladaAlla() + scale_y_continuous(limits = c(0, 100))
+
+```
+#### Grundskola inzoomad
+```{r}
+#| fig-height: 7
+KOLADA2 %>% 
+  #filter(Kön == "Alla") %>% 
+  filter(KPI %in% c("Lärare med pedagogisk högskoleexamen i grundskola åk 1-9, lägeskommun, andel (%)",
+                    "Lärare (heltidstjänster) med lärarlegitimation och behörighet i minst ett ämne i grundskola åk 1-9, lägeskommun, andel (%)",
+                    "Elever i åk 9 som är behöriga till yrkesprogram, hemkommun, andel (%)",
+                    "Elever vars föräldrar har eftergymnasial utbildning, åk 1-9 i lägeskommun, andel (%)")
+  ) %>% 
+  DIDkoladaAlla()
+
+```
+#### Gymnasie
+```{r}
+#| fig-height: 7
+KOLADA2 %>% 
+  #filter(Kön == "Alla") %>% 
+  filter(KPI %in% c("Lärare med pedagogisk högskoleexamen i gymnasieskola, lägeskommun, andel (%)",
+                    "Gymnasieelever som uppnått grundläggande behörighet till universitet och högskola inom 4 år, hemkommun, andel (%)",
+                    "Gymnasieelever med indraget studiestöd pga. ogiltig frånvaro, hemkommun, andel (%)")
+  ) %>% 
+  DIDkoladaAlla() + scale_y_continuous(limits = c(0, 100))
+
+```
+#### Gymnasie inzoomad
+```{r}
+#| fig-height: 8
+KOLADA2 %>% 
+  #filter(Kön == "Alla") %>% 
+  filter(KPI %in% c("Lärare med pedagogisk högskoleexamen i gymnasieskola, lägeskommun, andel (%)",
+                    "Gymnasieelever som uppnått grundläggande behörighet till universitet och högskola inom 4 år, hemkommun, andel (%)",
+                    "Gymnasieelever med indraget studiestöd pga. ogiltig frånvaro, hemkommun, andel (%)")
+  ) %>% 
+  DIDkoladaAlla()
+
+```
+
+:::
+
+
+## Kamrater och fritid
+
+### KOLADA
+
+::: panel-tabset
+#### 0-100
+```{r}
+#| fig-height: 9
+
+KOLADA2 %>%
+  #filter(Kön == "Alla") %>%
+  filter(KPI %in% c(
+    "Deltagartillfällen i idrottsföreningar, antal/inv 7-20 år",
+    "Deltagartillfällen i idrottsföreningar, antal/inv 13-20 år",
+    "Aktivitetstillfällen för barn och unga i kommunala bibliotek, antal/1000 inv 0-18 år",
+    "Elever i musik- eller kulturskola, 6-15 år, andel (%)"
+  )) %>% 
+  DIDkoladaAlla() +
+  scale_y_continuous(limits = c(0, 100))
+```
+#### Inzoomad
+```{r}
+#| fig-height: 9
+
+KOLADA2 %>%
+  #filter(Kön == "Alla") %>%
+  filter(KPI %in% c(
+    "Deltagartillfällen i idrottsföreningar, antal/inv 7-20 år",
+    "Deltagartillfällen i idrottsföreningar, antal/inv 13-20 år",
+    "Aktivitetstillfällen för barn och unga i kommunala bibliotek, antal/1000 inv 0-18 år",
+    "Elever i musik- eller kulturskola, 6-15 år, andel (%)"
+  )) %>% 
+  DIDkoladaAlla()
+```
+:::
+
+## Närsamhälle
+
+### Otryggt närsamhälle
+
+::: panel-tabset
+#### Kön/Årskurs
+```{r}
+#| fig-height: 7
+DIDareaPlot2("Närsamhälle") +
+  theme(legend.justification = c(0.0, 1.0)) +
+  labs(title = paste0("Otryggt närsamhälle - ", fokusKommun))
+```
+
+#### Förhöjd risk
+```{r}
+DIDline90åk("Närsamhälle") +
+  labs(subtitle = "Otryggt närsamhälle")
+```
+
+#### Enkätfrågor i indexet
+```{r}
+itemlabels.final %>% 
+  filter(Index == "Community") %>% 
+  select(!Index) %>% 
+  kbl_rise(tbl_width = 60)
+```
+:::
+
+### KOLADA
+
+::: panel-tabset
+#### 0-100
+```{r}
+#| fig-height: 7
+KOLADA2 %>% 
+  #filter(Kön == "Alla") %>% 
+  filter(KPI %in% c("Invånare 0-19 år i ekonomiskt utsatta hushåll, andel (%)",
+                    "Trångboddhet i flerbostadshus, enligt norm 2, andel (%)",
+                    "Trångboddhet i flerbostadshus, enligt norm 3, andel (%)",
+                    "Anmälda brott om skadegörelse per 1 000 inv.",
+                    "Anmälda stöld- och tillgreppsbrott, antal/1000 inv")
+  ) %>% 
+  DIDkoladaAlla() +
+  scale_y_continuous(limits = c(0, 100))
+
+```
+#### Inzoomad
+```{r}
+#| fig-height: 7
+KOLADA2 %>% 
+  #filter(Kön == "Alla") %>% 
+  filter(KPI %in% c("Invånare 0-19 år i ekonomiskt utsatta hushåll, andel (%)",
+                    "Trångboddhet i flerbostadshus, enligt norm 2, andel (%)",
+                    "Trångboddhet i flerbostadshus, enligt norm 3, andel (%)",
+                    "Anmälda brott om skadegörelse per 1 000 inv.",
+                    "Anmälda stöld- och tillgreppsbrott, antal/1000 inv")
+  ) %>% 
+  DIDkoladaAlla()
+```
+:::
+
+### KOLADA barnbokslån
+
+::: panel-tabset
+#### 0-100
+```{r}
+KOLADA2 %>% 
+  filter(KPI %in% c("Barnbokslån i kommunala bibliotek, antal/barn 0-17 år")
+  ) %>% 
+  DIDkoladaAlla() +
+  scale_y_continuous(limits = c(0, 100))
+```
+#### Inzoomad
+```{r}
+KOLADA2 %>% 
+  filter(KPI %in% c("Barnbokslån i kommunala bibliotek, antal/barn 0-17 år")
+  ) %>% 
+  DIDkoladaAlla()
+```
+:::
+
+## Utagerande
+
+::: panel-tabset
+### Kön/Årskurs
+```{r}
+#| fig-height: 7
+DIDareaPlot2("Utagerande") +
+  theme(legend.justification = c(0.0, 1.0))
+```
+
+### Förhöjd risk
+```{r}
+DIDline90åk("Utagerande")
+```
+
+### Enkätfrågor i indexet
+```{r}
+itemlabels.final %>% 
+  filter(Index == "Utagerande") %>% 
+  select(!Index) %>% 
+  kbl_rise(tbl_width = 60)
+```
+:::
+
+## Psykiska/psykosomatiska besvär
+
+::: panel-tabset
+### Kön/Årskurs
+```{r}
+#| fig-height: 7
+DIDareaPlot2("Psykiska/ psykosomatiska besvär") +
+  theme(legend.justification = c(0.0, 1.0))
+```
+### Förhöjd risk
+```{r}
+DIDline90åk("Psykiska/ psykosomatiska besvär")
+```
+### Enkätfrågor i indexet
+```{r}
+itemlabels.final %>% 
+  filter(Index == "PsykSomBesv") %>% 
+  select(!Index) %>% 
+  kbl_rise(tbl_width = 60)
+```
+:::
+
+### Välbefinnande
+
+Nytt index taget från olika delar av Stockholmsenkäten, se fliken med enkätfrågor i indexet.
+
+::: panel-tabset
+#### Uppdelat på kön
+```{r}
+DIDmedelSDg(sums.index,"Välbefinnande") + 
+  facet_wrap(~Kön) +
+  labs(caption = "Datakälla: Stockholmsenkäten")
+```
+
+#### Kön/Årskurs
+```{r}
+DIDmedelSDg(sums.indexGG, "Välbefinnande") + 
+  facet_grid(Årskurs~Kön) +
+  labs(caption = "Datakälla: Stockholmsenkäten")
+```
+
+#### Enkätfrågor i indexet
+```{r}
+itemlabels.final %>% 
+  filter(Index == "Wellbeing") %>% 
+  select(!Index) %>% 
+  kbl_rise(tbl_width = 60)
+```
+:::
+
+## Brott
+
+::: panel-tabset
+### Andel utsatta för brott
+```{r}
+df %>% 
+  filter(Kommun == fokusKommun,
+         !is.na(Kön),
+         !is.na(ARSKURS)) %>% 
+  rename(År = ar,
+         Årskurs = ARSKURS) %>% 
+  mutate(Utsatt = f78aa + f78ba + f78ca + f78da + f78ea) %>% 
+  mutate(Utsatt1 = case_when(Utsatt >= 1 ~ "Utsatt för brott",
+                             Utsatt == 0 ~ "Ej utsatt för brott",
+                             TRUE ~ "Svar saknas")
+         ) %>%
+  mutate(Utsatt1 = factor(Utsatt1, levels = c("Utsatt för brott","Ej utsatt för brott","Svar saknas"))) %>% 
+  select(all_of(c("Utsatt1","År","Kön","Årskurs"))) %>% 
+  group_by(År,Årskurs,Kön) %>% 
+  count(Utsatt1) %>% 
+  mutate(Andel = n * 100 / sum(n)) %>% 
+  filter(Utsatt1 == "Utsatt för brott") %>% 
+  ggplot(aes(x = År, y = Andel, color = Kön)) + 
+  geom_line(linewidth = 1) +
+  geom_point(size = 3) +
+  scale_color_manual(values = RISEpalette1[c(1,5)]) +
+  scale_x_continuous(guide = guide_axis(n.dodge = 2), breaks = årtal) +
+  scale_y_continuous(limits = c(0,100)) +
+  labs(title = "Andel respondenter per år",
+       subtitle = "Utsatt för någon typ av brott") +
+  theme_rise() +
+  facet_wrap(~Årskurs)
+```
+
+### Antal utsatta för brott
+```{r}
+utsatt.items <- c("f78aa","f78ba","f78ca","f78da","f78ea")
+utsatt.legend <- c("Hotad","Rånad","Bestulen","Misshandlad","Tvingad till sex")
+
+df %>% 
+  filter(Kommun == fokusKommun,
+         !is.na(Kön),
+         !is.na(ARSKURS)) %>% 
+  rename(År = ar,
+         Årskurs = ARSKURS) %>% 
+  mutate(Utsatt = f78aa + f78ba + f78ca + f78da + f78ea) %>%
+  mutate(Utsatt1 = case_when(Utsatt >= 1 ~ "Utsatt för brott",
+                             Utsatt == 0 ~ "Ej utsatt för brott",
+                             TRUE ~ "Svar saknas")
+         ) %>%
+  mutate(Utsatt1 = factor(Utsatt1, levels = c("Utsatt för brott","Ej utsatt för brott","Svar saknas"))) %>% 
+  select(all_of(c("Utsatt1","År","Kön","Årskurs"))) %>% 
+  group_by(År,Årskurs,Kön) %>% 
+  count(Utsatt1) %>% 
+  mutate(Andel = n * 100 / sum(n)) %>% 
+  filter(Utsatt1 == "Utsatt för brott") %>% 
+  ggplot(aes(x = År, y = n, color = Kön)) + 
+  geom_line(linewidth = 1) +
+  geom_point(size = 3,
+             alpha = 0.8) +
+  scale_color_manual(values = RISEpalette1[c(1,5)]) +
+  scale_x_continuous(guide = guide_axis(n.dodge = 2), breaks = årtal) +
+  scale_y_continuous('Antal', limits = c(0,NA)) +
+  labs(title = "Antal respondenter per år",
+       subtitle = "Utsatt för någon typ av brott") +
+  theme_minimal() +
+  theme_rise() +
+  facet_wrap(~Årskurs)
+
+```
+
+### Andel utsatt för specifikt brott
+```{r}
+SEutsattGÅ <- function(i) {
+  df %>%
+    filter(Kön %in% c("Pojke","Flicka")) %>% 
+    filter(!is.na(ARSKURS)) %>% 
+    filter(Kommun == fokusKommun) %>% 
+    group_by(ar,ARSKURS,Kön,.data[[i]]) %>%
+    summarise(n = n()) %>%
+    mutate(Procent = round(100 * n / sum(n), 1)) %>% 
+    ungroup() %>% 
+    add_column(Item = as.character(i)) %>% 
+    rename(respons = as.character(i))
+}
+
+df.utsattGÅ <- rbind(SEutsattGÅ("f78aa"),
+                   SEutsattGÅ("f78ba"),
+                   SEutsattGÅ("f78ca"),
+                   SEutsattGÅ("f78da"),
+                   SEutsattGÅ("f78ea"))
+
+df.utsattGÅ %>% 
+  filter(respons == 1) %>% 
+  rename(Årskurs = ARSKURS) %>% 
+  ggplot(aes(y = Procent, x = factor(ar), group = Item, color = Item)) +
+  geom_point(size = 3) +
+  geom_line(linewidth = 1) +
+  scale_color_brewer(labels = utsatt.legend, type = "qual", palette = "Dark2") +
+  scale_x_discrete(breaks = årtal,
+                   guide = guide_axis(n.dodge = 2)) +
+  xlab("Årtal") +
+  ylab("Andel i procent") +
+  facet_grid(Årskurs~Kön) +
+  theme_rise()
+```
+
+### Antal utsatt för specifikt brott
+```{r}
+df %>%
+  filter(Kommun == fokusKommun,
+         !is.na(Kön),
+         !is.na(ARSKURS)) %>% 
+  select(all_of(c(utsatt.items,"ARSKURS","ar","Kön"))) %>%
+  pivot_longer(utsatt.items) %>%
+  rename(Item = name,
+         Utsatt = value,
+         Årskurs = ARSKURS) %>%
+  mutate(År = factor(ar)) %>% 
+  select(!ar) %>% 
+  group_by(År,Årskurs,Kön,Item) %>% 
+  count(Utsatt) %>% 
+  filter(Utsatt == 1) %>% 
+  
+  ggplot(aes(x = År, y = n, group = Item, color = Item)) +
+  geom_point(size = 3) +
+  geom_line(linewidth = 1.1) +
+  scale_x_discrete(breaks = årtal,
+                   guide = guide_axis(n.dodge = 2)) +
+  labs(title = "Utsatthet för olika typer av brott",
+       subtitle = fokusKommun,
+       y = "Antal individer"
+       ) +
+  facet_grid(Årskurs~Kön) +
+  scale_color_brewer(type = "qual", palette = "Dark2",
+                     name="Typ av brott",
+                         breaks=utsatt.items,
+                         labels=utsatt.legend) +
+  theme_rise()
+```
+
+### Begått brott, antal
+Summerat utifrån självrapporterade brott.
+```{r}
+items.brott <- df %>% 
+  select(starts_with("f75")) %>% 
+  names()
+
+df <- df %>% 
+  mutate(AntalBrott = rowSums(across(all_of(items.brott)), na.rm = T))
+
+df %>% 
+  filter(Kön %in% c("Pojke","Flicka")) %>% 
+  filter(!is.na(ARSKURS)) %>% 
+  filter(Kommun == fokusKommun) %>% 
+  mutate(AntalBrott = recode(AntalBrott,"6:25=5")) %>% 
+  mutate(År = factor(ar)) %>% 
+  
+  ggplot(aes(x = AntalBrott, y = after_stat(count), group = År, fill = År)) +
+  geom_bar(position = "dodge") +
+  scale_color_viridis_d(begin = 0.2,
+                     aesthetics = c("fill","color")) +
+  scale_x_continuous(breaks = c(0:5),
+                     labels = c("0","1","2","3","4","5+")) +
+  theme_rise() +
+  labs(y = "Antal individer",
+       x = "Antal självrapporterade brott") +
+  facet_grid(ARSKURS~Kön)
+
+```
+### Begått specifikt brott
+```{r}
+SEutsattGÅ <- function(i) {
+  df %>%
+    filter(Kön %in% c("Pojke","Flicka")) %>% 
+    filter(!is.na(ARSKURS)) %>% 
+    filter(Kommun == fokusKommun) %>% 
+    group_by(ar,ARSKURS,Kön,.data[[i]]) %>%
+    summarise(n = n()) %>%
+    mutate(Procent = round(100 * n / sum(n), 1)) %>% 
+    ungroup() %>% 
+    add_column(Item = as.character(i)) %>% 
+    rename(respons = as.character(i))
+}
+
+df.begått <- data.frame(matrix(ncol = 7, nrow = 0)) # we need to make a new dataframe
+
+for (i in items.brott) {
+  df.begåttN <- SEutsattGÅ(i)
+  df.begått <- rbind(df.begått,df.begåttN)
+}
+
+df.begått %>% 
+  filter(respons == 1) %>% 
+  rename(Årskurs = ARSKURS) %>% 
+  ggplot(aes(y = Procent, x = factor(ar), group = Item, color = Item)) +
+  geom_point(size = 2) +
+  geom_line(linewidth = 1) +
+  # label the top 3 for girls
+  geom_text_repel(data = df.begått %>% 
+                    filter(ARSKURS == "Åk 9",
+                           Kön == "Flicka",
+                           respons == 1,
+                           #Procent > 12,
+                           ar == 2020) %>% 
+                    arrange(desc(Procent)) %>% 
+                    head(3),
+             aes(label = Item)) +
+  # and labels for boys
+  geom_text_repel(data = df.begått %>% 
+                    filter(ARSKURS == "Åk 9",
+                           Kön == "Pojke",
+                           respons == 1,
+                           #Procent > 12,
+                           ar == 2020) %>% 
+                    arrange(desc(Procent)) %>% 
+                    head(3),
+             aes(label = Item)) +
+  scale_color_viridis_d(begin = 0.2,
+                     aesthetics = c("fill","color")) +  
+  xlab("Årtal") +
+  facet_grid(Årskurs~Kön) +
+  theme_rise()
+
+allitems %>% 
+  filter(Index == "Brott") %>% 
+  select(!Index) %>% 
+  kbl_rise(fontsize = 12)
+```
+
+### KOLADA 0-100
+```{r}
+KOLADA2 %>% 
+  #filter(Kön == "Alla") %>% 
+  filter(KPI %in% c("Anmälda brott om skadegörelse per 1 000 inv.",
+                    "Anmälda stöld- och tillgreppsbrott, antal/1000 inv")
+  ) %>% 
+  DIDkoladaAlla() +
+  scale_y_continuous(limits = c(0, 100))
+```
+### KOLADA inzoomad
+```{r}
+KOLADA2 %>% 
+  #filter(Kön == "Alla") %>% 
+  filter(KPI %in% c("Anmälda brott om skadegörelse per 1 000 inv.",
+                    "Anmälda stöld- och tillgreppsbrott, antal/1000 inv")
+  ) %>% 
+  DIDkoladaAlla()
+```
+:::
+
+
+## ANDTS/substansbruk
+
+::: panel-tabset
+### Antal substanser
+```{r}
+#| fig-height: 6
+plotFaktor = "Senaste4v"
+df %>%
+  filter(Kön %in% c("Pojke", "Flicka"),
+         !is.na(ARSKURS)) %>%
+  select(Senaste4v, ar, Kön, ARSKURS) %>%
+  mutate(Senaste4v = recode(Senaste4v,"7:10=6")) %>% 
+  mutate(Senaste4v = factor(Senaste4v,
+         levels = rev(c(0:6))
+         )
+         ) %>% 
+  #levels = c("Tre gånger eller fler","Två gånger","En gång","Ej använt","Svar saknas"))) %>% 
+  group_by(ar, Kön, ARSKURS) %>%
+  count(Senaste4v, .drop = FALSE) %>%
+  mutate(Andel = (100 * n / sum(n)) %>% round(digits = 1)) %>%
+  ggplot(aes(x = ar, y = Andel)) +
+  geom_area(aes(fill = Senaste4v),
+            position = "stack",
+            alpha = 0.85
+  ) +
+  #scale_fill_manual(values = c("#D55E00", "orange", "#F0E442", "#009E73", "lightgrey")) +
+  scale_fill_viridis_d() +
+  scale_y_continuous(breaks = c(0, 20, 40, 60, 80, 100)) +
+  scale_x_continuous(breaks = årtal, guide = guide_axis(n.dodge = 2)) +
+  xlab("Årtal") +
+  ylab("Andel i %") +
+  labs(
+    title = paste0("Användning senaste 4 veckorna, oviktat index"),
+    subtitle = "Antal substanser",
+    fill='Antal substanser'
+  ) +
+  theme_rise() +
+  facet_grid(ARSKURS ~ Kön)
+```
+### Rökning
+
+```{r}
+andtsUseShare("F14r")
+```
+
+### Snus    
+```{r}
+andtsUseShare("F18r")
+```
+
+### Alkohol
+
+```{r}
+andtsUseShare2("F36new")
+```
+
+### Narkotika (inkl. cannabis)
+```{r}
+andtsUseShare2("F49new")
+```
+### Debutålder ANDT
+```{r}
+itemsANDTSdebut <- c("F16","F20","F37","F44","F51")
+
+df %>%
+  filter(
+    ARSKURS == "Gy 2",
+    Kön %in% c("Pojke", "Flicka")
+  ) %>%
+  mutate(across(itemsANDTSdebut, ~ recode(.x, "0=11;1=12;2=13;3=14;4=15;5=16;6=17;7=18"))) %>%
+  select(all_of(c(itemsANDTSdebut, "ARSKURS", "ar", "Kön"))) %>%
+  pivot_longer(itemsANDTSdebut) %>%
+  rename(
+    Item = name,
+    Ålder = value,
+    Årskurs = ARSKURS
+  ) %>%
+  filter(!is.na(Ålder)) %>%
+  mutate(År = factor(ar)) %>%
+  group_by(År, Kön, Item) %>%
+  summarise(
+    Medelvärde = mean(Ålder),
+    SD = sd(Ålder)
+  ) %>%
+  
+  ggplot(aes(x = År, y = Medelvärde, group = Item, color = Item)) +
+  geom_point(size = 3) +
+  geom_line(linewidth = 1.1) +
+  geom_ribbon(aes(ymin = Medelvärde - SD, ymax = Medelvärde + SD, fill = Item, color = NULL), alpha = 0.05) +
+  # scale_color_viridis_d(begin = 0.1) +
+  scale_x_discrete(
+    breaks = årtal,
+    guide = guide_axis(n.dodge = 2)
+  ) +
+  scale_y_continuous(breaks = c(12:17)) +
+  labs(
+    title = "Genomsnittslig debutålder per substans över tid",
+    subtitle = fokusKommun,
+    caption = "Skuggat fält indikerar standardavvikelse.",
+    y = "Medelvärde debutålder",
+    x = ""
+  ) +
+  facet_grid(~Kön) +
+  scale_color_brewer(
+    type = "qual", palette = "Dark2",
+    name = "Typ av substans",
+    breaks = itemsANDTSdebut,
+    labels = c("rökning", "snus", "alkohol", "sniffning", "narkotika"),
+    aesthetics = c("fill", "color")
+  ) +
+  theme_rise()
+```
+:::

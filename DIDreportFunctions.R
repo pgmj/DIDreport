@@ -42,12 +42,10 @@ theme_rise <- function(fontfamily = "Lato", axissize = 13, titlesize = 15,
     strip.text = element_text(size = stripsize),
     strip.background = element_rect(color = "lightgrey"),
     panel.spacing = unit(panelDist, "cm", data = NULL)
-  ) +
+  )
     # these rows are for geom_text() and geom_text_repel() to match font family
-    update_geom_defaults("text", list(family = fontfamily)) +
-    update_geom_defaults("text_repel", list(family = fontfamily)) +
-    update_geom_defaults("textpath", list(family = fontfamily)) +
-    update_geom_defaults("texthline", list(family = fontfamily))
+    #update_geom_defaults("textpath", list(family = fontfamily)) +
+    #update_geom_defaults("texthline", list(family = fontfamily))
 }
 
 gender_colors <- c("Pojke" = "#F5A127", "Flicka" = "#009CA6")
@@ -410,11 +408,11 @@ DIDmedelSDg <- function(data,faktor, xlim = c(-2,2.5)) {
 }
 
 # font settings for interactive plots with library(ggiraph)
-set_girafe_defaults(
-  fonts = list(sans = "Lato",
-               serif = "Lato",
-               mono = "Lato"))
-init_girafe_defaults()
+# set_girafe_defaults(
+#   fonts = list(sans = "Lato",
+#                serif = "Lato",
+#                mono = "Lato"))
+# init_girafe_defaults()
 
 DIDline90 <- function(faktor){
 
@@ -458,9 +456,9 @@ DIDline90åk <- function(faktor){
     drop_na(Årskurs) %>%
 
     ggplot(aes(x = År, y = Andel, group = Kön, color = Kön)) +
-    geom_line(linewidth = 1.2) +
-    geom_point(size = 3) +
-    geom_text(aes(label = n), color = "white", size = 2) +
+    geom_line(linewidth = 1.3) +
+    geom_point(size = 6.8) +
+    geom_text(aes(label = n), color = "white", size = 3.4) +
     scale_y_continuous(limits = c(0, 30)) +
     scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
     scale_color_manual(values = RISEpalette1[c(1,5)]) +
@@ -471,9 +469,7 @@ DIDline90åk <- function(faktor){
          subtitle = "Antal elever visas i vit text i punkterna",
          caption = "Datakälla: Stockholmsenkäten.") +
     facet_grid(Årskurs~Kommun, labeller = labeller(Kommun = label_wrap_gen(12))) +
-    theme_minimal() +
     theme_rise()
-
 }
 
 # DIDline90åkOLD <- function(faktor){
@@ -688,7 +684,7 @@ DIDmobbadAllaOLD <- function(year) {
     theme_minimal() +
     theme_rise() +
     labs(title = "Har du känt dig mobbad eller trakasserad i skolan det här läsåret?",
-         subtitle = glue("{year}, både åk 9 och gy 2."),
+         subtitle = paste0(year, ", både åk 9 och gy 2."),
          caption = "Datakälla: Stockholmsenkäten") +
     ylab("Andel i %") +
     xlab("") +
@@ -727,7 +723,7 @@ DIDmobbadAlla <- function(year) {
     theme_minimal() +
     theme_rise() +
     labs(title = str_wrap("Har du känt dig mobbad eller trakasserad i skolan det här läsåret?", 50),
-         subtitle = glue("{year}, både åk 9 och gy 2."),
+         subtitle = paste0(year, ", både åk 9 och gy 2."),
          caption = "Datakälla: Stockholmsenkäten") +
     ylab("Andel i %") +
     xlab("") +
@@ -760,7 +756,7 @@ DIDmobbadÅK <- function(year, årskurs) {
     theme_minimal() +
     theme_rise() +
     labs(title = str_wrap("Har du känt dig mobbad eller trakasserad i skolan det här läsåret?", 50),
-         subtitle = glue("{year}, endast svar från {årskurs}."),
+         subtitle = paste0(year,", endast svar från ",årskurs,"."),
          caption = "Datakälla: Stockholmsenkäten") +
     ylab("Andel i %") +
     xlab("") +
@@ -813,7 +809,7 @@ DIDmobbadÅKold <- function(year, årskurs) {
     theme_minimal() +
     theme_rise() +
     labs(title = "Har du känt dig mobbad eller trakasserad i skolan det här läsåret?",
-         subtitle = glue("{year}, endast svar från {årskurs}."),
+         subtitle = paste0(year,", endast svar från ",årskurs,"."),
          caption = "Medelvärde inkluderar alla svar, oavsett angivet kön. Datakälla: Stockholmsenkäten") +
     ylab("Andel i %") +
     xlab("") +
@@ -835,240 +831,240 @@ DIDmobbadÅKold <- function(year, årskurs) {
 
 # RSrapportfigurer --------------------------------------------------------
 
-RSfigur <- function(kontext, rs = "Riskfaktor") {
-  lst.kontext <- subset(lst.data, Kontext == kontext & RSfaktor == rs)
-  # koden nedan är lånad från nedanstående källor, och modifierad:
-  # https://www.r-graph-gallery.com/322-custom-colours-in-sankey-diagram
-  # https://medium.com/@emtiazahmed.cs/sankey-diagram-step-by-step-using-r-b3e7bea53224
-  # https://christophergandrud.github.io/networkD3/
-
-  # extrahera vektorer med unika Spetsar & RS-faktorer
-  spetsar <- lst.kontext %>%
-    distinct(Spets) %>%
-    dplyr::rename(label = Spets)
-  faktorer <- lst.kontext %>%
-    distinct(Faktor) %>%
-    dplyr::rename(label = Faktor)
-
-  # sammanfoga dem
-  rsfaktorer <- full_join(faktorer, spetsar, by = "label")
-  rsfaktorer <- rsfaktorer %>% rowid_to_column("id")
-
-  # skapa table som visar hur många gånger varje rsfaktor kopplas till en spets
-  per_route <- lst.kontext %>%
-    group_by(Faktor, Spets) %>%
-    dplyr::summarise(count = n()) %>%
-    ungroup()
-
-  # ta fram variabler för nätverksmodeller och liknande visualisering
-  edges <- per_route %>%
-    left_join(rsfaktorer, by = c("Faktor" = "label")) %>%
-    dplyr::rename(from = id)
-  edges <- edges %>%
-    left_join(rsfaktorer, by = c("Spets" = "label")) %>%
-    dplyr::rename(to = id)
-
-  edges <- select(edges, from, to, count)
-  edges <- mutate(edges, width = count + 1)
-  nodes_d3 <- mutate(rsfaktorer, id = id - 1)
-  edges_d3 <- mutate(edges, from = from - 1, to = to - 1)
-  edges_d3$group <- per_route$Spets
-  nodes_d3$nodecolor <- c("allsamecolor")
-
-  # färgsättning av flöden (edges) utifrån spetsarna och rätblocken intill faktorer & spetsar i diagrammet
-  # kulörer lånade bl.a. från http://opencolor.tools/palettes/wesanderson/
-  my_color <- 'd3.scaleOrdinal() .domain(["Psyk. ohälsa","Utanförskap","Våld","Kriminalitet","Missbruk/ANDTS", "allsamecolor"])
-              .range(["lightblue", "#F5CDB6", "#F7B0AA", "#FDDDA4", "#76A08A", "#FCD16B"])'
-  # färgkod #FCD16B för skyddsfaktorer (förvalt i koden ovanför) och #D8A49B för riskfaktorer
-  # ändra "#FCD16B" på rad 91 till "#D8A49B" för att byta färg på rätblocken
-
-  # skapa ett interaktivt Sankey-diagram där spetsarna i preventionsstjärnan finns till höger.
-  sankeyNetwork(
-    Links = edges_d3, Nodes = nodes_d3, Source = "from", Target = "to",
-    NodeID = "label", Value = "count", fontSize = 20, unit = "Antal",
-    fontFamily = "sans-serif", LinkGroup = "group", colourScale = my_color,
-    nodeWidth = 13, NodeGroup = "nodecolor", nodePadding = 18
-  )
-
-}
-
-RSfigurUtfall <- function(utfall, rs = "Riskfaktor") {
-  lst.kontext <- subset(lst.data, Spets == utfall & RSfaktor == rs)
-  #lst.kontext <- subset(lst.data, Spets == "Psyk. ohälsa" & RSfaktor == "Riskfaktor")
-
-  # koden nedan är lånad från nedanstående källor, och modifierad:
-  # https://www.r-graph-gallery.com/322-custom-colours-in-sankey-diagram
-  # https://medium.com/@emtiazahmed.cs/sankey-diagram-step-by-step-using-r-b3e7bea53224
-  # https://christophergandrud.github.io/networkD3/
-
-  # extrahera vektorer med unika Spetsar & RS-faktorer
-  spetsar <- lst.kontext %>%
-    distinct(Spets) %>%
-    dplyr::rename(label = Spets)
-  faktorer <- lst.kontext %>%
-    distinct(Faktor) %>%
-    dplyr::rename(label = Faktor)
-
-  faktor_kontext <- lst.kontext %>% distinct(Faktor,Kontext)
-
-  # sammanfoga dem
-  rsfaktorer <- full_join(faktorer, spetsar, by = "label")
-  rsfaktorer <- rsfaktorer %>% rowid_to_column("id")
-
-  # skapa table som visar hur många gånger varje rsfaktor kopplas till en spets
-  per_route <- lst.kontext %>%
-    group_by(Faktor, Spets) %>%
-    dplyr::summarise(count = n()) %>%
-    ungroup()
-
-  # ta fram variabler för nätverksmodeller och liknande visualisering
-  edges <- per_route %>%
-    left_join(rsfaktorer, by = c("Faktor" = "label")) %>%
-    dplyr::rename(from = id)
-  edges <- edges %>%
-    left_join(rsfaktorer, by = c("Spets" = "label")) %>%
-    dplyr::rename(to = id)
-
-  edges <- faktor_kontext %>%
-    rename(group = Kontext) %>%
-    left_join(edges,., by = "Faktor")
-
-  edges <- select(edges, from, to, count,group)
-  edges <- mutate(edges, width = count + 1)
-  nodes_d3 <- mutate(rsfaktorer, id = id - 1)
-  edges_d3 <- mutate(edges, from = from - 1, to = to - 1)
-  #edges_d3$group <- per_route$Spets
-  nodes_d3$nodecolor <- c("allsamecolor")
-  nodes_d3 <- faktor_kontext %>%
-    rename(label = Faktor,
-           group = Kontext) %>%
-    left_join(nodes_d3,., by = "label")
-
-  # färgsättning av flöden (edges) utifrån spetsarna och rätblocken intill faktorer & spetsar i diagrammet
-  # kulörer lånade bl.a. från http://opencolor.tools/palettes/wesanderson/
-  my_color <- 'd3.scaleOrdinal() .domain(["allsamecolor","Individ","Familj","Kamrater och fritid","Samhälle","Skola"])
-              .range(["white","lightblue", "#F5CDB6", "#F7B0AA", "#76A08A", "#FDDDA4", "#FCD16B"])'
-  # färgkod #FCD16B för skyddsfaktorer (förvalt i koden ovanför) och #D8A49B för riskfaktorer
-  # ändra "#FCD16B" på rad 91 till "#D8A49B" för att byta färg på rätblocken
-
-  # skapa ett interaktivt Sankey-diagram där spetsarna i preventionsstjärnan finns till höger.
-  sankeyNetwork(
-    Links = edges_d3, Nodes = nodes_d3, Source = "from", Target = "to",
-    NodeID = "label", Value = "count", fontSize = 20, unit = "Antal",
-    fontFamily = "sans-serif", LinkGroup = "group", colourScale = my_color,
-    nodeWidth = 13, NodeGroup = "nodecolor", nodePadding = 18
-  )
-  #"lightblue", "#F5CDB6", "#F7B0AA", "#FDDDA4", "#76A08A", "#FCD16B", "#D8A49B","darkgrey"
-}
+# RSfigur <- function(kontext, rs = "Riskfaktor") {
+#   lst.kontext <- subset(lst.data, Kontext == kontext & RSfaktor == rs)
+#   # koden nedan är lånad från nedanstående källor, och modifierad:
+#   # https://www.r-graph-gallery.com/322-custom-colours-in-sankey-diagram
+#   # https://medium.com/@emtiazahmed.cs/sankey-diagram-step-by-step-using-r-b3e7bea53224
+#   # https://christophergandrud.github.io/networkD3/
+#
+#   # extrahera vektorer med unika Spetsar & RS-faktorer
+#   spetsar <- lst.kontext %>%
+#     distinct(Spets) %>%
+#     dplyr::rename(label = Spets)
+#   faktorer <- lst.kontext %>%
+#     distinct(Faktor) %>%
+#     dplyr::rename(label = Faktor)
+#
+#   # sammanfoga dem
+#   rsfaktorer <- full_join(faktorer, spetsar, by = "label")
+#   rsfaktorer <- rsfaktorer %>% rowid_to_column("id")
+#
+#   # skapa table som visar hur många gånger varje rsfaktor kopplas till en spets
+#   per_route <- lst.kontext %>%
+#     group_by(Faktor, Spets) %>%
+#     dplyr::summarise(count = n()) %>%
+#     ungroup()
+#
+#   # ta fram variabler för nätverksmodeller och liknande visualisering
+#   edges <- per_route %>%
+#     left_join(rsfaktorer, by = c("Faktor" = "label")) %>%
+#     dplyr::rename(from = id)
+#   edges <- edges %>%
+#     left_join(rsfaktorer, by = c("Spets" = "label")) %>%
+#     dplyr::rename(to = id)
+#
+#   edges <- select(edges, from, to, count)
+#   edges <- mutate(edges, width = count + 1)
+#   nodes_d3 <- mutate(rsfaktorer, id = id - 1)
+#   edges_d3 <- mutate(edges, from = from - 1, to = to - 1)
+#   edges_d3$group <- per_route$Spets
+#   nodes_d3$nodecolor <- c("allsamecolor")
+#
+#   # färgsättning av flöden (edges) utifrån spetsarna och rätblocken intill faktorer & spetsar i diagrammet
+#   # kulörer lånade bl.a. från http://opencolor.tools/palettes/wesanderson/
+#   my_color <- 'd3.scaleOrdinal() .domain(["Psyk. ohälsa","Utanförskap","Våld","Kriminalitet","Missbruk/ANDTS", "allsamecolor"])
+#               .range(["lightblue", "#F5CDB6", "#F7B0AA", "#FDDDA4", "#76A08A", "#FCD16B"])'
+#   # färgkod #FCD16B för skyddsfaktorer (förvalt i koden ovanför) och #D8A49B för riskfaktorer
+#   # ändra "#FCD16B" på rad 91 till "#D8A49B" för att byta färg på rätblocken
+#
+#   # skapa ett interaktivt Sankey-diagram där spetsarna i preventionsstjärnan finns till höger.
+#   sankeyNetwork(
+#     Links = edges_d3, Nodes = nodes_d3, Source = "from", Target = "to",
+#     NodeID = "label", Value = "count", fontSize = 20, unit = "Antal",
+#     fontFamily = "sans-serif", LinkGroup = "group", colourScale = my_color,
+#     nodeWidth = 13, NodeGroup = "nodecolor", nodePadding = 18
+#   )
+#
+# }
+#
+# RSfigurUtfall <- function(utfall, rs = "Riskfaktor") {
+#   lst.kontext <- subset(lst.data, Spets == utfall & RSfaktor == rs)
+#   #lst.kontext <- subset(lst.data, Spets == "Psyk. ohälsa" & RSfaktor == "Riskfaktor")
+#
+#   # koden nedan är lånad från nedanstående källor, och modifierad:
+#   # https://www.r-graph-gallery.com/322-custom-colours-in-sankey-diagram
+#   # https://medium.com/@emtiazahmed.cs/sankey-diagram-step-by-step-using-r-b3e7bea53224
+#   # https://christophergandrud.github.io/networkD3/
+#
+#   # extrahera vektorer med unika Spetsar & RS-faktorer
+#   spetsar <- lst.kontext %>%
+#     distinct(Spets) %>%
+#     dplyr::rename(label = Spets)
+#   faktorer <- lst.kontext %>%
+#     distinct(Faktor) %>%
+#     dplyr::rename(label = Faktor)
+#
+#   faktor_kontext <- lst.kontext %>% distinct(Faktor,Kontext)
+#
+#   # sammanfoga dem
+#   rsfaktorer <- full_join(faktorer, spetsar, by = "label")
+#   rsfaktorer <- rsfaktorer %>% rowid_to_column("id")
+#
+#   # skapa table som visar hur många gånger varje rsfaktor kopplas till en spets
+#   per_route <- lst.kontext %>%
+#     group_by(Faktor, Spets) %>%
+#     dplyr::summarise(count = n()) %>%
+#     ungroup()
+#
+#   # ta fram variabler för nätverksmodeller och liknande visualisering
+#   edges <- per_route %>%
+#     left_join(rsfaktorer, by = c("Faktor" = "label")) %>%
+#     dplyr::rename(from = id)
+#   edges <- edges %>%
+#     left_join(rsfaktorer, by = c("Spets" = "label")) %>%
+#     dplyr::rename(to = id)
+#
+#   edges <- faktor_kontext %>%
+#     rename(group = Kontext) %>%
+#     left_join(edges,., by = "Faktor")
+#
+#   edges <- select(edges, from, to, count,group)
+#   edges <- mutate(edges, width = count + 1)
+#   nodes_d3 <- mutate(rsfaktorer, id = id - 1)
+#   edges_d3 <- mutate(edges, from = from - 1, to = to - 1)
+#   #edges_d3$group <- per_route$Spets
+#   nodes_d3$nodecolor <- c("allsamecolor")
+#   nodes_d3 <- faktor_kontext %>%
+#     rename(label = Faktor,
+#            group = Kontext) %>%
+#     left_join(nodes_d3,., by = "label")
+#
+#   # färgsättning av flöden (edges) utifrån spetsarna och rätblocken intill faktorer & spetsar i diagrammet
+#   # kulörer lånade bl.a. från http://opencolor.tools/palettes/wesanderson/
+#   my_color <- 'd3.scaleOrdinal() .domain(["allsamecolor","Individ","Familj","Kamrater och fritid","Samhälle","Skola"])
+#               .range(["white","lightblue", "#F5CDB6", "#F7B0AA", "#76A08A", "#FDDDA4", "#FCD16B"])'
+#   # färgkod #FCD16B för skyddsfaktorer (förvalt i koden ovanför) och #D8A49B för riskfaktorer
+#   # ändra "#FCD16B" på rad 91 till "#D8A49B" för att byta färg på rätblocken
+#
+#   # skapa ett interaktivt Sankey-diagram där spetsarna i preventionsstjärnan finns till höger.
+#   sankeyNetwork(
+#     Links = edges_d3, Nodes = nodes_d3, Source = "from", Target = "to",
+#     NodeID = "label", Value = "count", fontSize = 20, unit = "Antal",
+#     fontFamily = "sans-serif", LinkGroup = "group", colourScale = my_color,
+#     nodeWidth = 13, NodeGroup = "nodecolor", nodePadding = 18
+#   )
+#   #"lightblue", "#F5CDB6", "#F7B0AA", "#FDDDA4", "#76A08A", "#FCD16B", "#D8A49B","darkgrey"
+# }
 
 
 # Skolinspektionen single item --------------------------------------------
 # other possible values of svarskategorier are: "viss", "inte", "vetinte"
 
-DIDskolinsp <- function(item, årskurs, svarskategorier = c("helt", "stor")) {
-  df.si.long %>%
-    filter(
-      item == {{item}},
-      Årskurs == {{årskurs}}
-    ) %>%
-    filter(svarskategori %in% {{svarskategorier}}) %>%
-    group_by(Kommun, Årskurs, item, Svarsfrekvens) %>%
-    summarise(Andel = sum(Andel, na.rm = T)) %>%
-    ungroup() %>%
-    mutate(Kommun = fct_reorder(Kommun, Andel)) %>%
-
-    ggplot(aes(x = Kommun, y = Andel)) +
-    geom_col(aes(fill = Kommun)) +
-    geom_col(data = . %>%
-               filter(Kommun == fokusKommun),
-             color = "black",
-             fill = "darkgrey") +
-    geom_col(data = . %>%
-               filter(Kommun %in% jmfKommun),
-             color = "darkgrey",
-             fill = "lightgrey") +
-    geom_hline(aes(yintercept = mean(Andel, na.rm = T)),
-               linetype = 3,
-               color = "#D55E00",
-               linewidth = 0.9,
-               alpha = 0.7
-    ) +
-    geom_text(aes(label = paste0(round(mean(Andel, na.rm = T),1),"%"),
-                  y = mean(Andel, na.rm = T)+3),
-              x = 1,
-              color = "#D55E00",
-              alpha = 0.7) +
-    geom_text(aes(label = paste0(round(Andel,1),"%")),
-              position = position_dodge(width = 0.9),
-              hjust = 0, vjust = -0.35, angle = 45, size = 2.9,
-              color = "black") +
-    geom_text(aes(label = paste0(Svarsfrekvens,"%"),
-                  y = 1,
-                  angle = 0),
-              position = position_dodge(width = 1),
-              hjust = 0.5,
-              vjust = 0,
-              size = 2.4,
-              color = "white"
-    ) +
-    scale_fill_viridis_d(aesthetics = c("color","fill"),
-                         guide = "none") +
-    theme_rise() +
-    scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
-    scale_y_continuous(limits = c(0,100), breaks = c(0,20,40,60,80,100)) +
-    labs(title = paste0("Skolinspektionen - ",årskurs," - 2022"),
-         subtitle = glue("Andel respondenter som svarat positivt på frågan om '{item}'"),
-         caption = "Siffror längst ner i kolumnen indikerar svarsfrekvensen.\nKälla: Skolinspektionens skolenkät") +
-    coord_cartesian(clip = "off")
-}
+# DIDskolinsp <- function(item, årskurs, svarskategorier = c("helt", "stor")) {
+#   df.si.long %>%
+#     filter(
+#       item == {{item}},
+#       Årskurs == {{årskurs}}
+#     ) %>%
+#     filter(svarskategori %in% {{svarskategorier}}) %>%
+#     group_by(Kommun, Årskurs, item, Svarsfrekvens) %>%
+#     summarise(Andel = sum(Andel, na.rm = T)) %>%
+#     ungroup() %>%
+#     mutate(Kommun = fct_reorder(Kommun, Andel)) %>%
+#
+#     ggplot(aes(x = Kommun, y = Andel)) +
+#     geom_col(aes(fill = Kommun)) +
+#     geom_col(data = . %>%
+#                filter(Kommun == fokusKommun),
+#              color = "black",
+#              fill = "darkgrey") +
+#     geom_col(data = . %>%
+#                filter(Kommun %in% jmfKommun),
+#              color = "darkgrey",
+#              fill = "lightgrey") +
+#     geom_hline(aes(yintercept = mean(Andel, na.rm = T)),
+#                linetype = 3,
+#                color = "#D55E00",
+#                linewidth = 0.9,
+#                alpha = 0.7
+#     ) +
+#     geom_text(aes(label = paste0(round(mean(Andel, na.rm = T),1),"%"),
+#                   y = mean(Andel, na.rm = T)+3),
+#               x = 1,
+#               color = "#D55E00",
+#               alpha = 0.7) +
+#     geom_text(aes(label = paste0(round(Andel,1),"%")),
+#               position = position_dodge(width = 0.9),
+#               hjust = 0, vjust = -0.35, angle = 45, size = 2.9,
+#               color = "black") +
+#     geom_text(aes(label = paste0(Svarsfrekvens,"%"),
+#                   y = 1,
+#                   angle = 0),
+#               position = position_dodge(width = 1),
+#               hjust = 0.5,
+#               vjust = 0,
+#               size = 2.4,
+#               color = "white"
+#     ) +
+#     scale_fill_viridis_d(aesthetics = c("color","fill"),
+#                          guide = "none") +
+#     theme_rise() +
+#     scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
+#     scale_y_continuous(limits = c(0,100), breaks = c(0,20,40,60,80,100)) +
+#     labs(title = paste0("Skolinspektionen - ",årskurs," - 2022"),
+#          subtitle = glue("Andel respondenter som svarat positivt på frågan om '{item}'"),
+#          caption = "Siffror längst ner i kolumnen indikerar svarsfrekvensen.\nKälla: Skolinspektionens skolenkät") +
+#     coord_cartesian(clip = "off")
+# }
 
 # DIDskolinsp("trygghet","Åk 8", c("viss","inte")) + labs(subtitle = glue("Andel respondenter som svarat negativt på frågan om trygghet"))
 
 
-DIDskolinspG <- function(KPI,kön) {
-  df.si.kolada %>%
-    filter(
-      KPI == {{KPI}},
-      Kön == kön
-    ) %>%
-    drop_na(Andel) %>%
-    mutate(Kommun = fct_reorder(Kommun, Andel)) %>%
-
-    ggplot(aes(x = Kommun, y = Andel)) +
-    geom_col(aes(fill = Kommun)) +
-    geom_col(data = . %>%
-               filter(Kommun == fokusKommun),
-             color = "black",
-             fill = "darkgrey") +
-    geom_col(data = . %>%
-               filter(Kommun %in% jmfKommun),
-             color = "darkgrey",
-             fill = "lightgrey") +
-    geom_hline(aes(yintercept = mean(Andel, na.rm = T)),
-               linetype = 3,
-               color = "#D55E00",
-               linewidth = 0.9,
-               alpha = 0.7
-    ) +
-    geom_text(aes(label = paste0(round(mean(Andel, na.rm = T),1),"%"),
-                  y = mean(Andel, na.rm = T)+3),
-              x = 1,
-              color = "#D55E00",
-              alpha = 0.7) +
-    geom_text(aes(label = paste0(round(Andel,1),"%")),
-              position = position_dodge(width = 0.9),
-              hjust = 0, vjust = -0.35, angle = 45, size = 2.9,
-              color = "black") +
-    scale_fill_viridis_d(aesthetics = c("color","fill"),
-                         guide = "none") +
-    theme_rise() +
-    scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
-    scale_y_continuous(limits = c(0,100), breaks = c(0,20,40,60,80,100)) +
-    labs(title = str_wrap(KPI,60),
-         subtitle = paste0(kön,", År 2022"),
-         caption = "Källa: Skolinspektionens skolenkät") +
-    coord_cartesian(clip = "off")
-} # Kön recoded to either "Flickor" or "Pojkar".
+# DIDskolinspG <- function(KPI,kön) {
+#   df.si.kolada %>%
+#     filter(
+#       KPI == {{KPI}},
+#       Kön == kön
+#     ) %>%
+#     drop_na(Andel) %>%
+#     mutate(Kommun = fct_reorder(Kommun, Andel)) %>%
+#
+#     ggplot(aes(x = Kommun, y = Andel)) +
+#     geom_col(aes(fill = Kommun)) +
+#     geom_col(data = . %>%
+#                filter(Kommun == fokusKommun),
+#              color = "black",
+#              fill = "darkgrey") +
+#     geom_col(data = . %>%
+#                filter(Kommun %in% jmfKommun),
+#              color = "darkgrey",
+#              fill = "lightgrey") +
+#     geom_hline(aes(yintercept = mean(Andel, na.rm = T)),
+#                linetype = 3,
+#                color = "#D55E00",
+#                linewidth = 0.9,
+#                alpha = 0.7
+#     ) +
+#     geom_text(aes(label = paste0(round(mean(Andel, na.rm = T),1),"%"),
+#                   y = mean(Andel, na.rm = T)+3),
+#               x = 1,
+#               color = "#D55E00",
+#               alpha = 0.7) +
+#     geom_text(aes(label = paste0(round(Andel,1),"%")),
+#               position = position_dodge(width = 0.9),
+#               hjust = 0, vjust = -0.35, angle = 45, size = 2.9,
+#               color = "black") +
+#     scale_fill_viridis_d(aesthetics = c("color","fill"),
+#                          guide = "none") +
+#     theme_rise() +
+#     scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
+#     scale_y_continuous(limits = c(0,100), breaks = c(0,20,40,60,80,100)) +
+#     labs(title = str_wrap(KPI,60),
+#          subtitle = paste0(kön,", År 2022"),
+#          caption = "Källa: Skolinspektionens skolenkät") +
+#     coord_cartesian(clip = "off")
+# } # Kön recoded to either "Flickor" or "Pojkar".
 
 # Skolverket databas ------------------------------------------------------
 

@@ -65,7 +65,7 @@ jmfKommun <- factor(c(fokusKommun,"Botkyrka", "Huddinge", "Södertälje"),
 # Sigtuna	 Järfälla,Upplands Väsby,Botkyrka
 # years of interest
 #yearsIn <- params$years
-yearsIn <- c(2016,2018,2020,2022,2024)
+yearsIn <- c(2018,2020,2022,2024)
 
 # setup -------------------------------------------------------------------
 
@@ -76,15 +76,15 @@ library(colorspace) # for modifying color palettes
 library(formattable)
 #library(geomtextpath)
 library(readxl)
-library(visNetwork)
-library(networkD3)
-library(vctrs)
+#library(visNetwork)
+#library(networkD3)
+#library(vctrs)
 #library(ggiraph)
-library(gt)
-library(gtExtras)
+#library(gt)
+#library(gtExtras)
 library(janitor)
 #library(RISEkbmRasch)
-library(ggh4x)
+#library(ggh4x)
 library(ggrepel)
 library(kableExtra)
 library(glue)
@@ -148,12 +148,10 @@ source("DIDreportFunctions.R")
 
 ## Demografi Stockholmsenkäten
 
-För att se exakta antal i figurerna går det att använda muspekaren på respektive punkt.
 
 ::: panel-tabset
 ### Fördelat på kön
 ```{r}
-#responsesGender <- 
 df %>% 
   filter(Kommun == fokusKommun,
          !Kön == "<NA>") %>% 
@@ -163,8 +161,6 @@ df %>%
   summarise(Antal = n()) %>% 
   ggplot(aes(x = År, y = Antal, color = Kön)) + 
   geom_line(linewidth = 1) +
-  # geom_point_interactive(aes(tooltip = Antal),
-  #                        size = 3) +
   geom_point(size = 3) +
   #scale_color_brewer(type = "qual", palette = "Dark2") +
   scale_color_gender() +
@@ -172,15 +168,14 @@ df %>%
   scale_y_continuous(limits = c(0,NA)) +
   labs(title = "Antal respondenter per år",
        subtitle = "Fördelat på kön") +
-  theme_minimal() +
   theme_rise() +
-  theme(text = element_text(family = "Lato"))
+    # only run once to set defaults for rest of file
+  update_geom_defaults("text", list(family = "Lato")) +
+  update_geom_defaults("text_repel", list(family = "Lato"))
 
-#girafe(ggobj = responsesGender)
 ```
 ### Fördelat på årskurs
 ```{r}
-#responsesARSKURS <- 
   df %>% 
   filter(Kommun == fokusKommun,
          !Kön == "<NA>",
@@ -191,19 +186,13 @@ df %>%
   summarise(Antal = n()) %>% 
   ggplot(aes(x = År, y = Antal, color = Årskurs)) + 
   geom_line(linewidth = 1) +
-  # geom_point_interactive(aes(tooltip = Antal),
-  #                        size = 3) +
   geom_point(size = 3) +
   scale_color_brewer(type = "qual", palette = "Set1") +
   scale_x_continuous(guide = guide_axis(n.dodge = 1), breaks = årtal) +
   scale_y_continuous(limits = c(0,NA)) +
   labs(title = "Antal respondenter per år",
        subtitle = "Fördelat på årskurs") +
-  theme_minimal() +
-  theme_rise() +
-  theme(text = element_text(family = "Lato"))
-
-#girafe(ggobj = responsesARSKURS)
+  theme_rise()
 
 ```
 ### Otillräckliga svar
@@ -979,10 +968,6 @@ viz.gr.skolverket %>%
 ::::
 
 
-### Skolinspektionen - trygghet & nöjdhet
-
-{{< include _skolinsp.qmd >}}
-
 ## Kamrater och fritid
 
 ### KOLADA
@@ -1571,94 +1556,3 @@ df %>%
 ```
 :::
 
-## Riskfaktorer preventionsstjärnan
-
-Samlade riskfaktorer fördelat på spetsar i preventionsstjärnan. Alla kontexter är sammanslagna. Dessa figurer finns inte med i kunskapssammanställningen om risk- och skyddsfaktorer, men är skapade utifrån samma underlag.
-
-Några figurer blir konstiga, riskfaktorer hamnar på fel sida i figuren. Felsökning pågår.
-
-::: panel-tabset
-### Kriminalitet
-```{r}
-#| fig-height: 7
-RSfigurUtfall("Kriminalitet")
-```
-### Psyk. ohälsa
-```{r}
-#| fig-height: 7
-RSfigurUtfall("Psyk. ohälsa")
-```
-### Utanförskap
-```{r}
-#| fig-height: 7
-RSfigurUtfall("Utanförskap")
-```
-### Missbruk/ANDTS
-```{r}
-#| fig-height: 7
-RSfigurUtfall("Missbruk/ANDTS")
-```
-### Våld
-```{r}
-#| fig-height: 7
-RSfigurUtfall("Våld")
-```
-:::
-
-## Risk- och skyddsfaktorer per kontext
-
-::: panel-tabset
-### Riskfaktorer familj
-
-```{r}
-#| fig-width: 6
-#| fig-cap: "För mera information om figuren och forskningen bakom den, se kunskapssammanställningen [Risk- och skyddsfaktorer – vad vet vi och vad kan göras med kunskapen?](http://ri.diva-portal.org/smash/record.jsf?pid=diva2%3A1656234&dswid=3419) (Johansson, 2021)."
-RSfigur("Familj")
-```
-
-### Skyddsfaktorer familj
-```{r}
-#| fig-width: 6
-#| fig-cap: "För mera information om figuren och forskningen bakom den, se kunskapssammanställningen [Risk- och skyddsfaktorer – vad vet vi och vad kan göras med kunskapen?](http://ri.diva-portal.org/smash/record.jsf?pid=diva2%3A1656234&dswid=3419) (Johansson, 2021)."
-RSfigur("Familj", rs = "Skyddsfaktor")
-```
-### Riskfaktorer skola
-
-```{r}
-#| fig-width: 6
-#| fig-cap: "För mera information om figuren och forskningen bakom den, se kunskapssammanställningen [Risk- och skyddsfaktorer – vad vet vi och vad kan göras med kunskapen?](http://ri.diva-portal.org/smash/record.jsf?pid=diva2%3A1656234&dswid=3419) (Johansson, 2021)."
-RSfigur("Skola")
-```
-### Skyddsfaktorer skola
-
-```{r}
-#| fig-width: 6
-#| fig-cap: "För mera information om figuren och forskningen bakom den, se kunskapssammanställningen [Risk- och skyddsfaktorer – vad vet vi och vad kan göras med kunskapen?](http://ri.diva-portal.org/smash/record.jsf?pid=diva2%3A1656234&dswid=3419) (Johansson, 2021)."
-
-RSfigur("Skola", rs = "Skyddsfaktor")
-```
-### Riskfaktorer kamrater & fritid
-
-```{r}
-#| fig-width: 6
-#| fig-cap: "För mera information om figuren och forskningen bakom den, se kunskapssammanställningen [Risk- och skyddsfaktorer – vad vet vi och vad kan göras med kunskapen?](http://ri.diva-portal.org/smash/record.jsf?pid=diva2%3A1656234&dswid=3419) (Johansson, 2021)."
-
-RSfigur("Kamrater och fritid")
-```
-### Skyddsfaktorer kamrater & fritid
-
-```{r}
-#| fig-width: 6
-#| fig-cap: "För mera information om figuren och forskningen bakom den, se kunskapssammanställningen [Risk- och skyddsfaktorer – vad vet vi och vad kan göras med kunskapen?](http://ri.diva-portal.org/smash/record.jsf?pid=diva2%3A1656234&dswid=3419) (Johansson, 2021)."
-
-RSfigur("Kamrater och fritid", rs = "Skyddsfaktor")
-```
-### Skyddsfaktorer närsamhälle
-
-```{r}
-#| fig-width: 6
-#| fig-cap: "För mera information om figuren och forskningen bakom den, se kunskapssammanställningen [Risk- och skyddsfaktorer – vad vet vi och vad kan göras med kunskapen?](http://ri.diva-portal.org/smash/record.jsf?pid=diva2%3A1656234&dswid=3419) (Johansson, 2021)."
-RSfigur("Samhälle", rs = "Skyddsfaktor")
-```
-
-:::

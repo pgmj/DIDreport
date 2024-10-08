@@ -5,6 +5,7 @@
 # to estimate person locations for each index
 
 library(foreign)
+#library(haven)
 library(tidyverse)
 library(arrow)
 library(readxl)
@@ -15,6 +16,8 @@ count <- dplyr::count
 recode <- car::recode
 rename <- dplyr::rename
 filter <- dplyr::filter
+
+datafolder <- "~/Library/CloudStorage/OneDrive-SharedLibraries-RISE/SHIC - Data i Dialog - Data i Dialog/data/"
 
 # Import data -------------------------------------------------------------
 
@@ -37,8 +40,6 @@ allAnalyzedItems <- rbind(allAnalyzedItems,allAnalyzedItemsADD)
 
 ## Stockholm stad ----------------------------------------------------------
 
-datafolder <- "~/Library/CloudStorage/OneDrive-SharedLibraries-RISE/SHIC - Data i Dialog - Data i Dialog/data/"
-
 # read and combine data
 df.1420 <- read.spss(paste0(datafolder,"Stockholm Stad/SE 2014-2020 KI Leifman.sav"),
                             to.data.frame = TRUE)
@@ -55,6 +56,67 @@ df.sthlm <- df.sthlm %>%
 df.sthlm <- df.sthlm %>%
   add_column(SkolID_gammal = NA, .before = "SkolSDO") %>%
   add_column(DIDkommun = 'Stockholm')
+
+# Sthlm 2022 och 2024
+s2224 <- read.spss(paste0(datafolder,"Stockholm Stad/2024/Stockholmsenkäten 2002-2024 Stockholm.sav"),
+                   to.data.frame = TRUE)
+#s2224 %>% count(ar)
+#glimpse(s2224)
+s2224f <-
+  s2224 %>%
+  mutate(ar = str_squish(ar)) %>%
+  filter(ar %in% c("2022","2024"))
+
+#
+# names(df.sthlm)
+# names(s2224f)
+# # looks like these are missing from the new data: "F14"           "FNY12020"      "F18"
+# missing <- c("F14"       ,    "FNY12020"      ,"F18" )
+# recode_map <- read_csv("Sthlmsenk/origo2024_recode_map.csv")
+# recode_map %>%
+#   filter(itemnr_old %in% missing)
+# ## F14a och F14b angår cigaretter m tobak och e-cigaretter, d.v.s:
+# # F14a = F14, och F14b = FNY12020
+# ## F18a och F18b angår vitt snus och snus med tobak (OBS omvänt från F14)
+# s2224 %>%
+#   count(ar,F14b) %>% # F14b och F18a har varit med sedan 2022
+#   as.data.frame()
+
+# rename and recode... then go to Järfälla to do similar work for the new snus variables
+s2224f <-
+  s2224f %>%
+  rename(F14 = F14a,
+         FNY12020 = F14b) %>%
+  mutate(across(c(F18a,F18b), ~ recode(.x,"'Nej, jag har aldrig snusat'=0;
+                 'Nej, bara provat hur det smakar'=1;
+                 'Nej, jag har snusat men slutat'=2;
+                 'Nej, jag har slutat'=3;
+                 'Ja, ibland men inte varje dag'=4;
+                 'Ja, dagligen'=5;
+                 '<NA>'=NA",
+                                       as.factor = F))) %>%
+  #mutate(across(c(F19a,F19b), ~ factor(.x, ordered = TRUE))) %>%
+  mutate(F18 = pmax(F18a,F18b)) %>%
+  # recode back to character categories for later recoding to work
+  mutate(F18 = recode(F18,"0='Nej, jag har aldrig snusat';
+                 1='Nej, bara provat hur det smakar';
+                 2='Nej, jag har snusat men slutat';
+                 3='Nej, jag har slutat';
+                 4='Ja, ibland men inte varje dag';
+                 5='Ja, dagligen'"))
+
+s2224f <- s2224f %>%
+  select(any_of(c(demogr.vars,allAnalyzedItems$itemnr,"SkolID_gammal","SkolSDO"))) %>%
+  add_column(SkolID_gammal = NA, .before = "SkolSDO") %>%
+  add_column(DIDkommun = 'Stockholm')
+
+# names(df.sthlm)
+# names(s2224f)
+#write_parquet(s2224f,paste0(datafolder,"DID_klart/2024-09-12_DataPreRecode_Sthlm2024.parquet"))
+#df <- s2224f
+df.sthlm <- rbind(df.sthlm,s2224f)
+
+
 
 ## Vallentuna ----------------------------------------------------------
 df.vtuna1618 <- read.spss(paste0(datafolder,"Vallentuna/Sthlmsenk/Stockholmsenkäten 2018 Vallentuna 2016-2018.sav"),
@@ -105,6 +167,61 @@ df.vtuna <- df.vtuna %>%
   add_column(SkolID_gammal = NA, SkolSDO = NA) %>%
   add_column(DIDkommun = 'Vallentuna')
 
+### vtuna 2024 ----------------------
+df.vtuna24 <- read.spss(paste0(datafolder,"Vallentuna/Sthlmsenk/Stockholmsenkäten 2024 Vallentuna (1).sav"),
+                                                 to.data.frame = TRUE)
+
+#names(df.vtuna24)
+# looks like vtuna24 suffers from the same issues as Järfälla 2024 maybe?
+
+recode_map <- read_csv("Sthlmsenk/origo2024_recode_map.csv")
+#glimpse(recode_map)
+#recode_vec <- setNames(recode_map$itemnr_old, recode_map$itemnr_new)
+
+all_vars_old <- c(demogr.vars,allAnalyzedItems$itemnr)
+all_vars_old[7] <- "F2"
+
+rmap <- recode_map %>%
+  mutate(itemnr_old = factor(itemnr_old, levels=unique(all_vars_old))) %>%
+  arrange(itemnr_old)
+
+### before renaming the new variable names to the old ones to enable comparisons, we need to deal with some new items
+# F19a Snusar du så kallat vitt snus/nikotinpåse (tobaksfritt snus med nikotin)?
+# F19b Snusar du snus med tobak?
+# we want the "higher" response from either item
+df.vtuna24 <- df.vtuna24 %>%
+  mutate(across(c(F19a,F19b), ~ recode(.x,"'Nej, jag har aldrig snusat'=0;
+                 'Nej, bara provat hur det smakar'=1;
+                 'Nej, jag har snusat men slutat'=2;
+                 'Nej, jag har slutat'=3;
+                 'Ja, ibland men inte varje dag'=4;
+                 'Ja, dagligen'=5;
+                 '<NA>'=NA",
+                                       as.factor = T))) %>%
+  mutate(across(c(F19a,F19b), ~ factor(.x, ordered = TRUE))) %>%
+  mutate(F18 = pmax(F19a,F19b)) %>%
+  # recode back to character categories for later recoding to work
+  mutate(F18 = recode(F18,"0='Nej, jag har aldrig snusat';
+                 1='Nej, bara provat hur det smakar';
+                 2='Nej, jag har snusat men slutat';
+                 3='Nej, jag har slutat';
+                 4='Ja, ibland men inte varje dag';
+                 5='Ja, dagligen'"))
+
+df.vtuna24 <- df.vtuna24 %>%
+  select(all_of(rmap$itemnr_new)) %>%
+  rename(Kön = F2) %>%
+  add_column(SkolID_gammal = NA,
+             SkolSDO = NA,
+             DIDkommun = 'Vallentuna')
+
+names(df.vtuna24) <- names(df.vtuna)
+
+df.vtuna <- rbind(df.vtuna,df.vtuna24)
+
+#write_parquet(df.vtuna24,paste0(datafolder,"DID_klart/2024-10-08_DataPreRecode_Vallentuna2024.parquet"))
+
+#df <- df.vtuna24
 
 ## Vaxholm ----------------------------------------------------------
 
@@ -201,7 +318,7 @@ rmap <- recode_map %>%
 # F19a Snusar du så kallat vitt snus/nikotinpåse (tobaksfritt snus med nikotin)?
 # F19b Snusar du snus med tobak?
 # we want the "higher" response from either item
-df.jfl3 %>%
+df.jfl3 <- df.jfl3 %>%
   mutate(across(c(F19a,F19b), ~ recode(.x,"'Nej, jag har aldrig snusat'=0;
                  'Nej, bara provat hur det smakar'=1;
                  'Nej, jag har snusat men slutat'=2;
@@ -220,10 +337,8 @@ df.jfl3 %>%
                  4='Ja, ibland men inte varje dag';
                  5='Ja, dagligen'"))
 
-#df$F18 <- recode(df$F18,"2=1;3:4=2")
-
-df.jfl3 %>%
-  distinct(F19b)
+# df.jfl3 %>%
+#   distinct(F19b)
 
 df.jfl3r <- df.jfl3 %>%
   select(all_of(rmap$itemnr_new)) %>%
@@ -511,7 +626,7 @@ df <- rbind(df.sthlm,
             df.haninge,
             df.sundbyberg)
 
-#write_parquet(df,paste0(datafolder,"DID_klart/2024-04-17_DataPreRecode.parquet"))
+#write_parquet(df,paste0(datafolder,"DID_klart/2024-09-12_DataPreRecode.parquet"))
 #write_parquet(df.jfl3r,paste0(datafolder,"DID_klart/2024-08-22_DataPreRecode_Järfälla2024.parquet"))
 
 # create data frame with 0 rows and named variables as a template

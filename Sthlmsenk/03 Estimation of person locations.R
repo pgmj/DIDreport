@@ -83,7 +83,7 @@ df$Wellbeing <- df$Wellbeing*-1
 
 # Save to file ------------------------------------------------------------
 
-#write_parquet(df, sink = glue("../DIDreport/Sthlmsenk/{Sys.Date()}_ScoredRev_Järfälla2024.parquet"))
+#write_parquet(df, sink = paste0(datafolder,"DID_klart/2024-09-12_ScoredRev.parquet"))
 
 # df.old <- read_parquet("../DIDapp/data/2023-05-07_ScoredRev.parquet")
 # df.new <- rbind(df.old,df)

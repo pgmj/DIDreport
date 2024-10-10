@@ -10,7 +10,7 @@ author:
   orcid: 0000-0003-1669-592X
 date: last-modified
 params:
-  fokusKommun: "Järfälla"
+  fokusKommun: "Stockholm"
   jmfKommun: "Danderyd"
   years: 2020
 format: 
@@ -56,9 +56,9 @@ editor_options:
 #                    levels = c(fokusKommun,params$jmfKommun))
 
 ## for testing/dev replace rows above with these (comment out/in):
-fokusKommun <- "Järfälla"
-jmfKommun <- factor(c(fokusKommun,"Botkyrka", "Huddinge", "Södertälje"),
-                   levels = c(fokusKommun,"Botkyrka", "Huddinge", "Södertälje"))
+fokusKommun <- "Stockholm"
+jmfKommun <- factor(c(fokusKommun,"Järfälla"),
+                   levels = c(fokusKommun,"Järfälla"))
 
 # Järfälla	Botkyrka,Huddinge,Södertälje
 # Vallentuna  Österåker,Danderyd,Täby
@@ -407,6 +407,7 @@ DIDareaPlot2("Föräldraskap") +
 
 #### Förhöjd risk
 ```{r}
+#| fig-height: 7
 DIDline90åk("Föräldraskap")
 ```
 
@@ -465,6 +466,7 @@ DIDareaPlot2("Vantrivsel i skolan")  +
 
 #### Förhöjd risk
 ```{r}
+#| fig-height: 7
 DIDline90åk("Vantrivsel i skolan")
 ```
 
@@ -566,11 +568,12 @@ DIDmobbadÅK(2018,"Gy 2")
 #### Mobbat andra i skolan
 
 ```{r}
+#| fig-height: 7
 df.raw %>% 
   filter(DIDkommun == fokusKommun,
          ARSKURS %in% c("Åk 9","Gy 2"),
          Kön %in% c("Pojke","Flicka","Annan könstillhörighet"),
-         ar > 2006) %>%
+         ar > 2010) %>%
   mutate(ARSKURS = droplevels(ARSKURS),
          Kön = droplevels(Kön)) %>% 
   mutate(F62 = car::recode(F62,"'Ja ungefär en gång i veckan'='Ja, ungefär en gång i veckan';
@@ -602,11 +605,12 @@ df.raw %>%
 #### Mobbat andra via internet/SMS
 
 ```{r}
+#| fig-height: 7
 df.raw %>% 
   filter(DIDkommun == fokusKommun,
          ARSKURS %in% c("Åk 9","Gy 2"),
          Kön %in% c("Pojke","Flicka","Annan könstillhörighet"),
-         ar > 2006) %>%
+         ar > 2010) %>%
   mutate(ARSKURS = droplevels(ARSKURS),
          Kön = droplevels(Kön)) %>% 
   group_by(ar,ARSKURS,Kön) %>% 
@@ -962,6 +966,7 @@ DIDareaPlot2("Närsamhälle") +
 
 #### Förhöjd risk
 ```{r}
+#| fig-height: 7
 DIDline90åk("Närsamhälle") +
   labs(subtitle = "Närsamhälle")
 ```
@@ -1053,6 +1058,7 @@ DIDareaPlot2("Utagerande") +
 
 ### Förhöjd risk
 ```{r}
+#| fig-height: 7
 DIDline90åk("Utagerande")
 ```
 
@@ -1076,6 +1082,7 @@ DIDareaPlot2("Psykiska/ psykosomatiska besvär") +
 ```
 ### Förhöjd risk
 ```{r}
+#| fig-height: 7
 DIDline90åk("Psykiska/ psykosomatiska besvär")
 ```
 ### Enkätfrågor i indexet
@@ -1420,26 +1427,31 @@ df %>%
 ### Rökning
 
 ```{r}
+#| fig-height: 6
 andtsUseShare("F14r")
 ```
 
 ### Snus    
 ```{r}
+#| fig-height: 6
 andtsUseShare("F18r")
 ```
 
 ### Alkohol
 
 ```{r}
+#| fig-height: 6
 andtsUseShare2("F36new")
 ```
 
 ### Narkotika (inkl. cannabis)
 ```{r}
+#| fig-height: 6
 andtsUseShare2("F49new")
 ```
 ### Debutålder ANDT
 ```{r}
+#| fig-height: 6
 itemsANDTSdebut <- c("F16","F20","F37","F44","F51")
 
 df %>%

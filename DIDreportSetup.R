@@ -39,9 +39,11 @@ datafolder <- "~/Library/CloudStorage/OneDrive-SharedLibraries-RISE/SHIC - Data 
 #                 df.2024 %>% select(!all_of(c("F62","F64")))
 #                 )
 # write_parquet(df.all,paste0(datafolder,"DID_klart/2024-10-08_ScoredRev.parquet"))
-df.all <- read_parquet(paste0(datafolder,"DID_klart/2024-11-01_ScoredRev.parquet"))
-df.all_add <- read_parquet(paste0(datafolder,"DID_klart/2024-11-01_ScoredRev_Sigtuna2024.parquet"))
-df.all <- rbind(df.all, df.all_add)
+df.all <- read_parquet(paste0(datafolder,"DID_klart/2024-11-01v2_ScoredRev.parquet"))
+#df.all_add <- read_parquet(paste0(datafolder,"DID_klart/2024-11-01_ScoredRev_Sigtuna2024.parquet"))
+#df.all <- rbind(df.all, df.all_add)
+#write_parquet(df.all,paste0(datafolder,"DID_klart/2024-11-01v2_ScoredRev.parquet"))
+#df %>% filter(Kommun == "Stockholm") %>% count(ar)
 
 df <- df.all %>%
   rename(Kommun = DIDkommun)
@@ -57,9 +59,10 @@ df.allaK <- df %>%
 #                 df.raw.2024)
 # write_parquet(df.raw,paste0(datafolder,"DID_klart/2024-10-08_DataPreRecode.parquet"))
 
-df.raw <- read_parquet(paste0(datafolder,"DID_klart/2024-11-01_DataPreRecode.parquet"))
-df.raw_add <- read_parquet(paste0(datafolder,"DID_klart/2024-11-01_DataPreRecode_Sigtuna2024.parquet"))
-df.raw <- rbind(df.raw,df.raw_add)
+df.raw <- read_parquet(paste0(datafolder,"DID_klart/2024-11-01v2_DataPreRecode.parquet"))
+#df.raw_add <- read_parquet(paste0(datafolder,"DID_klart/2024-11-01_DataPreRecode_Sigtuna2024.parquet"))
+#df.raw <- rbind(df.raw,df.raw_add)
+#write_parquet(df.raw,paste0(datafolder,"DID_klart/2024-11-01v2_DataPreRecode.parquet"))
 
 allaKommuner <- df %>%
   distinct(Kommun) %>%
@@ -70,6 +73,8 @@ allaKommuner <- df %>%
 df <-
   df %>%
   mutate(SkolSDOnew = case_when(
+    SkolSDO == "Norra Innerstaden" ~ "Norra innerstaden", # note the capital I introduced in 2022-2024
+    SkolSDO == "Järva" ~ "Järva",
     SkolSDO == "Bromma" ~ "Bromma",
     SkolSDO == "Enskede-Årsta-Vantör" ~ "Enskede-Årsta-Vantör",
     SkolSDO == "Farsta" ~ "Farsta",
@@ -92,6 +97,30 @@ df <-
 # df %>% count(SkolSDOnew)
 # df %>% filter(is.na(SkolSDOnew)) %>% count(SkolSDO)
 
+# same for raw data df
+df.raw <-
+  df.raw %>%
+  mutate(SkolSDOnew = case_when(
+    SkolSDO == "Bromma" ~ "Bromma",
+    SkolSDO == "Enskede-Årsta-Vantör" ~ "Enskede-Årsta-Vantör",
+    SkolSDO == "Farsta" ~ "Farsta",
+    SkolSDO == "Hägersten-Liljeholmen" ~ "Hägersten-Älvsjö",
+    SkolSDO == "Hässelby-Vällingby" ~ "Hässelby-Vällingby",
+    SkolSDO == "Kungsholmen" ~ "Kungsholmen",
+    SkolSDO == "Norrmalm" ~ "Norra innerstaden",
+    SkolSDO == "Rinkeby-Kista" ~ "Järva",
+    SkolSDO == "Skarpnäck" ~ "Skarpnäck",
+    SkolSDO == "Skärholmen" ~ "Skärholmen",
+    SkolSDO == "Spånga-Tensta" ~ "Järva",
+    SkolSDO == "Södermalm" ~ "Södermalm",
+    SkolSDO == "Älvsjö" ~ "Hägersten-Älvsjö",
+    SkolSDO == "Hägersten-Älvsjö" ~ "Hägersten-Älvsjö",
+    SkolSDO == "Östermalm" ~ "Norra innerstaden",
+    SkolSDO == "Norra innerstaden" ~ "Norra innerstaden",
+    SkolSDO == "Järva" ~ "Järva",
+    TRUE ~ NA_character_
+  ))
+
 # store names of stadsdelsförvaltningar in vector variable
 sthlmStadsdelar <- df %>%
   distinct(SkolSDOnew) %>%
@@ -104,6 +133,11 @@ if (fokusKommun %in% sthlmStadsdelar) {
     mutate(Kommun = case_when(Kommun == "Stockholm" ~ SkolSDOnew,
                               TRUE ~ Kommun)
            )
+
+  df.raw <- df.raw %>%
+    mutate(DIDkommun = case_when(DIDkommun == "Stockholm" ~ SkolSDOnew,
+                              TRUE ~ DIDkommun)
+    )
 }
 
 if (fokusKommun == "Alla") {

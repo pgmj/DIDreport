@@ -588,6 +588,64 @@ df.sundbyberg <- sundbyberg %>%
 #setdiff(names(df.lid3),names(df))
 
 
+## Värmdö ------------------------------------------------------------------
+
+varmdo <- read.spss(paste0(datafolder,"Värmdö/Stockholmsenkäten 2014-2024 Värmdö.sav"), to.data.frame = TRUE)
+# looks like same issue with variable names as others from 2024
+df.varmdo <- varmdo %>%
+  select(any_of(c(demogr.vars,allAnalyzedItems$itemnr,"SkolID_gammal","SkolSDO"))) %>%
+  add_column(DIDkommun = "Värmdö")
+
+
+recode_map <- read_csv("Sthlmsenk/origo2024_recode_map.csv")
+#glimpse(recode_map)
+#recode_vec <- setNames(recode_map$itemnr_old, recode_map$itemnr_new)
+
+all_vars_old <- c(demogr.vars,allAnalyzedItems$itemnr)
+all_vars_old[7] <- "F2"
+
+rmap <- recode_map %>%
+  mutate(itemnr_old = factor(itemnr_old, levels=unique(all_vars_old))) %>%
+  arrange(itemnr_old)
+
+### before renaming the new variable names to the old ones to enable comparisons, we need to deal with some new items
+# F19a Snusar du så kallat vitt snus/nikotinpåse (tobaksfritt snus med nikotin)?
+# F19b Snusar du snus med tobak?
+# we want the "higher" response from either item
+df.varmdo <- varmdo %>%
+  mutate(across(c(F19a,F19b), ~ recode(.x,"'Nej, jag har aldrig snusat'=0;
+                 'Nej, bara provat hur det smakar'=1;
+                 'Nej, jag har snusat men slutat'=2;
+                 'Nej, jag har slutat'=3;
+                 'Ja, ibland men inte varje dag'=4;
+                 'Ja, dagligen'=5;
+                 '<NA>'=NA",
+                                       as.factor = T))) %>%
+  mutate(across(c(F19a,F19b), ~ factor(.x, ordered = TRUE))) %>%
+  mutate(F18 = pmax(F19a,F19b)) %>%
+  # recode back to character categories for later recoding to work
+  mutate(F18 = recode(F18,"0='Nej, jag har aldrig snusat';
+                 1='Nej, bara provat hur det smakar';
+                 2='Nej, jag har snusat men slutat';
+                 3='Nej, jag har slutat';
+                 4='Ja, ibland men inte varje dag';
+                 5='Ja, dagligen'"))
+
+df.varmdo <- df.varmdo %>%
+  select(all_of(rmap$itemnr_new)) %>%
+  rename(Kön = F2) %>%
+  add_column(SkolID_gammal = NA,
+             SkolSDO = NA,
+             DIDkommun = 'Värmdö')
+
+#df.jfl3r %>%
+#  rename(any_of(recode_vec))
+
+names(df.varmdo) <- names(df.sthlm)
+#write_parquet(df.varmdo,paste0(datafolder,"DID_klart/2024-10-31_DataPreRecode_Värmdö.parquet"))
+
+#df <- df.varmdo
+
 # df <- df %>%
 #   rename(`Hur länge har du bott i Sverige?` = F5,
 #          `Vilken högsta utbildning har din mamma?` = f6a,
@@ -624,9 +682,10 @@ df <- rbind(df.sthlm,
             df.lidingö,
             df.botkyrka,
             df.haninge,
-            df.sundbyberg)
+            df.sundbyberg,
+            df.varmdo)
 
-#write_parquet(df,paste0(datafolder,"DID_klart/2024-09-12_DataPreRecode.parquet"))
+#write_parquet(df,paste0(datafolder,"DID_klart/2024-11-01_DataPreRecode.parquet"))
 #write_parquet(df.jfl3r,paste0(datafolder,"DID_klart/2024-08-22_DataPreRecode_Järfälla2024.parquet"))
 
 # create data frame with 0 rows and named variables as a template

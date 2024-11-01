@@ -39,7 +39,7 @@ datafolder <- "~/Library/CloudStorage/OneDrive-SharedLibraries-RISE/SHIC - Data 
 #                 df.2024 %>% select(!all_of(c("F62","F64")))
 #                 )
 # write_parquet(df.all,paste0(datafolder,"DID_klart/2024-10-08_ScoredRev.parquet"))
-df.all <- read_parquet(paste0(datafolder,"DID_klart/2024-10-08_ScoredRev.parquet"))
+df.all <- read_parquet(paste0(datafolder,"DID_klart/2024-11-01_ScoredRev.parquet"))
 
 df <- df.all %>%
   rename(Kommun = DIDkommun)
@@ -55,7 +55,7 @@ df.allaK <- df %>%
 #                 df.raw.2024)
 # write_parquet(df.raw,paste0(datafolder,"DID_klart/2024-10-08_DataPreRecode.parquet"))
 
-df.raw <- read_parquet(paste0(datafolder,"DID_klart/2024-10-08_DataPreRecode.parquet"))
+df.raw <- read_parquet(paste0(datafolder,"DID_klart/2024-11-01_DataPreRecode.parquet"))
 
 # df$F70raw <- df.raw$F70
 

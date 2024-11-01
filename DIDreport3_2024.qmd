@@ -10,7 +10,7 @@ author:
   orcid: 0000-0003-1669-592X
 date: last-modified
 params:
-  fokusKommun: "Stockholm"
+  fokusKommun: "Värmdö"
   jmfKommun: "Danderyd"
   years: 2020
 format: 
@@ -56,9 +56,9 @@ editor_options:
 #                    levels = c(fokusKommun,params$jmfKommun))
 
 ## for testing/dev replace rows above with these (comment out/in):
-fokusKommun <- "Stockholm"
-jmfKommun <- factor(c(fokusKommun,"Järfälla"),
-                   levels = c(fokusKommun,"Järfälla"))
+fokusKommun <- "Värmdö"
+jmfKommun <- factor(c(fokusKommun,"Tyresö","Nacka"),
+                   levels = c(fokusKommun,"Tyresö","Nacka"))
 
 # Järfälla	Botkyrka,Huddinge,Södertälje
 # Vallentuna  Österåker,Danderyd,Täby

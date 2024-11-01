@@ -418,6 +418,8 @@ df$F47 <- recode(df$F47,"'Ingen gång'=0;
                  '11-20 gånger'=4;
                  '21-50 gånger'=5;
                  'Mer än 50 gånger'=6;
+                 'mer än 50 gånger'=6;
+                 'Ska ej besvaras'=NA;
                  '<NA>'=NA",
                  as.factor = F)
 
@@ -428,6 +430,8 @@ df$F48 <- recode(df$F48,"'Ingen gång'=0;
                  '11-20 gånger'=4;
                  '21-50 gånger'=5;
                  'Mer än 50 gånger'=6;
+                 'mer än 50 gånger'=6;
+                 'Ska ej besvaras'=NA;
                  '<NA>'=NA",
                  as.factor = F)
 
@@ -446,11 +450,13 @@ df <- df %>%
 
 df$F73 <- recode(df$F73,"'Har inte spelat de senaste 30 dagarna'=0;
                  'Mindre än 50 kronor'=1;
+                 '50-90 kronor'=2;
                  '50-99 kronor'=2;
                  '100-199 kronor'=3;
                  '200-299 kronor'=4;
                  '300-399 kronor'=5;
                  '400 kronor eller mer'=6;
+                 'Ska ej besvaras'=NA;
                  '<NA>'=NA",
                  as.factor = F)
 

@@ -83,8 +83,13 @@ df$Wellbeing <- df$Wellbeing*-1
 
 # Save to file ------------------------------------------------------------
 
-#write_parquet(df, sink = paste0(datafolder,"DID_klart/2024-09-12_ScoredRev.parquet"))
+#write_parquet(df, sink = paste0(datafolder,"DID_klart/2024-11-01_ScoredRev.parquet"))
+#
+# df.old <- read_parquet(paste0(datafolder,"DID_klart/2024-10-08_ScoredRev.parquet"))
+# janitor::compare_df_cols(df %>% select(!c(F62,F64)),
+#                          df.old,
+#                          return = "mismatch")
+# df.new <- df.old %>%
+#   bind_rows(df %>% select(!c(F62,F64)))
 
-# df.old <- read_parquet("../DIDapp/data/2023-05-07_ScoredRev.parquet")
-# df.new <- rbind(df.old,df)
 # write_parquet(df.new, sink = glue("../data/{Sys.Date()}_ScoredRev.parquet"))

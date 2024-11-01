@@ -10,7 +10,7 @@ author:
   orcid: 0000-0003-1669-592X
 date: last-modified
 params:
-  fokusKommun: "Värmdö"
+  fokusKommun: "Sigtuna"
   jmfKommun: "Danderyd"
   years: 2020
 format: 
@@ -56,13 +56,19 @@ editor_options:
 #                    levels = c(fokusKommun,params$jmfKommun))
 
 ## for testing/dev replace rows above with these (comment out/in):
-fokusKommun <- "Värmdö"
-jmfKommun <- factor(c(fokusKommun,"Tyresö","Nacka"),
-                   levels = c(fokusKommun,"Tyresö","Nacka"))
+# fokusKommun <- "Värmdö"
+# jmfKommun <- factor(c(fokusKommun,"Tyresö","Nacka"),
+#                    levels = c(fokusKommun,"Tyresö","Nacka"))
+
+fokusKommun <- "Sigtuna"
+jmfKommun <- factor(c(fokusKommun,"Järfälla","Upplands Väsby","Botkyrka"),
+                   levels = c(fokusKommun,"Järfälla","Upplands Väsby","Botkyrka"))
 
 # Järfälla	Botkyrka,Huddinge,Södertälje
 # Vallentuna  Österåker,Danderyd,Täby
 # Sigtuna	 Järfälla,Upplands Väsby,Botkyrka
+# Värmdö  Tyresö,Nacka
+
 # years of interest
 #yearsIn <- params$years
 yearsIn <- c(2018,2020,2022,2024)
@@ -906,6 +912,64 @@ viz.gr.skolverket %>%
 
 
 ## Kamrater och fritid
+
+### Ledarledd aktivitet
+
+```{r}
+df.raw %>% 
+  filter(DIDkommun == fokusKommun) %>%
+  filter(Kön %in% c("Pojke","Flicka"),
+         ARSKURS %in% c("Åk 9","Gy 2")) %>% 
+  mutate(ar = as.numeric(ar)) %>% 
+  drop_na(Kön,ARSKURS,ar) %>% 
+  count(F70,Kön,ARSKURS,ar) %>% 
+  group_by(Kön,ARSKURS,ar) %>% 
+  mutate(Procent = 100*n/sum(n)) %>% 
+  ungroup() %>% 
+  mutate(År = factor(ar),
+         Årskurs = droplevels(ARSKURS),
+         Kön = droplevels(Kön)
+         ) %>% 
+  
+  ggplot(aes(x = År, y = Procent, fill = F70)) +
+  geom_col() +
+  facet_grid(Årskurs~Kön) +
+  theme_rise() +
+  scale_fill_viridis_d('Svarskategori',direction = -1) +
+  labs(caption = "NA = svar saknas. Datakälla: Stockholmsenkäten.",
+       title = "Brukar du delta i någon ledarledd fritidsaktivitet eller träning?",
+       subtitle = paste0(fokusKommun))
+```
+
+
+```{r}
+df %>% 
+  filter(Kommun == fokusKommun) %>% 
+  drop_na(Kön,ARSKURS) %>% 
+  mutate(F70 = recode(F70,"1=1;0=2")) %>% 
+  mutate(F70 = factor(F70, 
+                      levels = c(1,2),
+                      labels = c("Sällan/aldrig","Ibland/ofta"))) %>% 
+  count(F70,Kön,ARSKURS,ar, .drop = FALSE) %>% 
+  group_by(Kön,ARSKURS,ar) %>% 
+  mutate(Procent = 100*n/sum(n)) %>% 
+  ungroup() %>% 
+  filter(F70 == "Ibland/ofta") %>% 
+  mutate(År = factor(ar),
+         Årskurs = ARSKURS) %>% 
+  
+  ggplot(aes(x = År, y = Procent, color = Kön, group = Kön)) +
+  geom_line(linewidth = 1.3) +
+  geom_point(size = 6.8) +
+  geom_text(aes(label = n), color = "white", size = 3.4) +
+  facet_wrap(~Årskurs) +
+  theme_rise() +
+  scale_color_gender() +
+  labs(caption = "Datakälla: Stockholmsenkäten.",
+       title = "Brukar du delta i någon ledarledd fritidsaktivitet eller träning?",
+       subtitle = paste0(fokusKommun," - enbart svarskategorier 'Ibland' och 'Ofta'")) +
+  scale_y_continuous(limits = c(0,50))
+```
 
 ### KOLADA
 

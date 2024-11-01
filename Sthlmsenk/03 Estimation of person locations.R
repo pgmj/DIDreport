@@ -2,7 +2,7 @@ library(catR) # for thetaEst()
 library(arrow)
 library(tidyverse)
 library(furrr)
-library(RISEkbmRasch) # devtools::install_github("pgmj/RISEkbmRasch", dependencies = TRUE)
+library(easyRasch) # devtools::install_github("pgmj/easyRasch", dependencies = TRUE)
 
 ### some commands exist in multiple packages, here we define preferred ones that are frequently used
 select <- dplyr::select

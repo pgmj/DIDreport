@@ -40,6 +40,8 @@ datafolder <- "~/Library/CloudStorage/OneDrive-SharedLibraries-RISE/SHIC - Data 
 #                 )
 # write_parquet(df.all,paste0(datafolder,"DID_klart/2024-10-08_ScoredRev.parquet"))
 df.all <- read_parquet(paste0(datafolder,"DID_klart/2024-11-01_ScoredRev.parquet"))
+df.all_add <- read_parquet(paste0(datafolder,"DID_klart/2024-11-01_ScoredRev_Sigtuna2024.parquet"))
+df.all <- rbind(df.all, df.all_add)
 
 df <- df.all %>%
   rename(Kommun = DIDkommun)
@@ -56,8 +58,8 @@ df.allaK <- df %>%
 # write_parquet(df.raw,paste0(datafolder,"DID_klart/2024-10-08_DataPreRecode.parquet"))
 
 df.raw <- read_parquet(paste0(datafolder,"DID_klart/2024-11-01_DataPreRecode.parquet"))
-
-# df$F70raw <- df.raw$F70
+df.raw_add <- read_parquet(paste0(datafolder,"DID_klart/2024-11-01_DataPreRecode_Sigtuna2024.parquet"))
+df.raw <- rbind(df.raw,df.raw_add)
 
 allaKommuner <- df %>%
   distinct(Kommun) %>%

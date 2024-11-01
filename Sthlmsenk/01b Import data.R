@@ -276,7 +276,60 @@ df.sigtuna <- df.sigtuna %>%
   select(any_of(c(demogr.vars,allAnalyzedItems$itemnr,"SkolID_gammal","SkolSDO"))) %>%
   add_column(DIDkommun = 'Sigtuna')
 
+sigtuna24 <- read.spss(paste0(datafolder,"Sigtuna/2024/Stockholmsenkäten 2024 Sigtuna.sav"),
+                       to.data.frame = TRUE)
 
+#names(sigtuna24)
+
+recode_map <- read_csv("Sthlmsenk/origo2024_recode_map.csv")
+#glimpse(recode_map)
+#recode_vec <- setNames(recode_map$itemnr_old, recode_map$itemnr_new)
+
+all_vars_old <- c(demogr.vars,allAnalyzedItems$itemnr)
+all_vars_old[7] <- "F2"
+
+rmap <- recode_map %>%
+  mutate(itemnr_old = factor(itemnr_old, levels=unique(all_vars_old))) %>%
+  arrange(itemnr_old)
+
+### before renaming the new variable names to the old ones to enable comparisons, we need to deal with some new items
+# F19a Snusar du så kallat vitt snus/nikotinpåse (tobaksfritt snus med nikotin)?
+# F19b Snusar du snus med tobak?
+# we want the "higher" response from either item
+sigtuna24 <- sigtuna24 %>%
+  mutate(across(c(F19a,F19b), ~ recode(.x,"'Nej, jag har aldrig snusat'=0;
+                 'Nej, bara provat hur det smakar'=1;
+                 'Nej, jag har snusat men slutat'=2;
+                 'Nej, jag har slutat'=3;
+                 'Ja, ibland men inte varje dag'=4;
+                 'Ja, dagligen'=5;
+                 '<NA>'=NA",
+                                       as.factor = T))) %>%
+  mutate(across(c(F19a,F19b), ~ factor(.x, ordered = TRUE))) %>%
+  mutate(F18 = pmax(F19a,F19b)) %>%
+  # recode back to character categories for later recoding to work
+  mutate(F18 = recode(F18,"0='Nej, jag har aldrig snusat';
+                 1='Nej, bara provat hur det smakar';
+                 2='Nej, jag har snusat men slutat';
+                 3='Nej, jag har slutat';
+                 4='Ja, ibland men inte varje dag';
+                 5='Ja, dagligen'"))
+
+sigtuna24 <- sigtuna24 %>%
+  select(all_of(rmap$itemnr_new)) %>%
+  rename(Kön = F2) %>%
+  add_column(SkolID_gammal = NA,
+             SkolSDO = NA,
+             DIDkommun = 'Sigtuna')
+
+#df.jfl3r %>%
+#  rename(any_of(recode_vec))
+
+names(sigtuna24) <- names(df.sigtuna)
+#df <- sigtuna24
+#write_parquet(df,paste0(datafolder,"DID_klart/2024-11-01_DataPreRecode_Sigtuna2024.parquet"))
+
+df.sigtuna <- rbind(df.sigtuna,sigtuna24)
 
 ## Järfälla ----------------------------------------------------------------
 

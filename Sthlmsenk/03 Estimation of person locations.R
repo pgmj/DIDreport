@@ -64,7 +64,7 @@ for (i in sthlm.index) {
     pull(order) %>%
     as.numeric()
   # estimate person scores using RIestThetas2, which uses parallel processing
-  thetas <- as.data.frame(RIestThetasOLD2(df.if, itemParams = itemParams[[x]], cpu = 8))
+  thetas <- as.data.frame(RIestThetasCATr(df.if, itemParams = itemParams[[x]], cpu = 8))
   thetas$individ <- df.if.id # insert id variable to new df
   names(thetas) <- c(i, "individ")
   thetas[1] <- round(thetas[1], 3)
@@ -83,7 +83,7 @@ df$Wellbeing <- df$Wellbeing*-1
 
 # Save to file ------------------------------------------------------------
 
-#write_parquet(df, sink = paste0(datafolder,"DID_klart/2024-12-10_ScoredRev.parquet"))
+write_parquet(df, sink = paste0(datafolder,"DID_klart/2024-12-10_ScoredRev.parquet"))
 #
 # df.old <- read_parquet(paste0(datafolder,"DID_klart/2024-10-08_ScoredRev.parquet"))
 # janitor::compare_df_cols(df %>% select(!c(F62,F64)),

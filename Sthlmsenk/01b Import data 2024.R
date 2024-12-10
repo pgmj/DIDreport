@@ -593,7 +593,7 @@ solna2 <- solna %>%
 df.solna <- solna2 %>%
   add_column(SkolID_gammal = NA,
              SkolSDO = NA,
-             DIDkommun = 'Upplands-Bro') %>%
+             DIDkommun = 'Solna') %>%
   select(all_of(recode_map$itemnr_new))
 
 names(df.solna) <- recode_map$itemnr_old

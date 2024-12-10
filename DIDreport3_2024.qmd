@@ -10,7 +10,7 @@ author:
   orcid: 0000-0003-1669-592X
 date: last-modified
 params:
-  fokusKommun: "Sigtuna"
+  fokusKommun: "Upplands-Bro"
   jmfKommun: "Danderyd"
   years: 2020
 format: 
@@ -60,9 +60,20 @@ editor_options:
 # jmfKommun <- factor(c(fokusKommun,"Tyresö","Nacka"),
 #                    levels = c(fokusKommun,"Tyresö","Nacka"))
 
-fokusKommun <- "Sigtuna"
-jmfKommun <- factor(c(fokusKommun,"Järfälla","Upplands Väsby","Botkyrka"),
-                   levels = c(fokusKommun,"Järfälla","Upplands Väsby","Botkyrka"))
+# fokusKommun <- "Sigtuna"
+# jmfKommun <- factor(c(fokusKommun,"Järfälla","Upplands Väsby","Botkyrka"),
+#                    levels = c(fokusKommun,"Järfälla","Upplands Väsby","Botkyrka"))
+
+# fokusKommun <- "Solna"
+# jmfKommun <- factor(c(fokusKommun,"Sollentuna","Sundbyberg"),
+#                    levels = c(fokusKommun,"Sollentuna","Sundbyberg"))
+
+fokusKommun <- "Upplands-Bro"
+jmfKommun <- factor(c(fokusKommun,"Upplands Väsby","Vallentuna"),
+                   levels = c(fokusKommun,"Upplands Väsby","Vallentuna"))
+
+#  Upplands Väsby eller Vallentuna och sedan kanske Järfälla
+
 
 # Järfälla	Botkyrka,Huddinge,Södertälje
 # Vallentuna  Österåker,Danderyd,Täby

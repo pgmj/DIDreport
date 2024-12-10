@@ -29,10 +29,11 @@ demogr.vars <- demogr.vars$demogr.vars
 
 # all analyzed items
 allAnalyzedItems <- read.csv("Sthlmsenk/allitems.csv")
-allAnalyzedItemsADD <- data.frame(itemnr = c("F62","F64"),
+allAnalyzedItemsADD <- data.frame(itemnr = c("F62","F64","F69"),
                                   item = c("Har du varit med om att mobba eller trakassera andra elever i skolan det här läsåret?",
-                                           "Har du varit med om att mobba eller trakassera andra elever via internet eller SMS/MMS det här läsåret?"),
-                                  Index = c(NA,NA))
+                                           "Har du varit med om att mobba eller trakassera andra elever via internet eller SMS/MMS det här läsåret?",
+                                           "Brukar du vara på fritidsgård eller 'träffpunkt'?"),
+                                  Index = c(NA,NA,NA))
 allAnalyzedItems <- rbind(allAnalyzedItems,allAnalyzedItemsADD)
 ##### NOTE:
 ### when comparing datafiles in order to enable binding them together, the function
@@ -67,14 +68,20 @@ s2224f <-
   mutate(ar = str_squish(ar)) %>%
   filter(ar %in% c("2022","2024"))
 
-#
+
 # names(df.sthlm)
 # names(s2224f)
 # # looks like these are missing from the new data: "F14"           "FNY12020"      "F18"
 # missing <- c("F14"       ,    "FNY12020"      ,"F18" )
-# recode_map <- read_csv("Sthlmsenk/origo2024_recode_map.csv")
-# recode_map %>%
-#   filter(itemnr_old %in% missing)
+
+### This is a lookup table for the variable names used in our analyses
+recode_map <- read_csv("Sthlmsenk/origo2024_recode_map2.csv")
+
+### We need to change variable names in the new data to match the old data, since all other scripts rely on the old variable names
+
+
+### We also have new variables about tobacco use that need handling.
+
 # ## F14a och F14b angår cigaretter m tobak och e-cigaretter, d.v.s:
 # # F14a = F14, och F14b = FNY12020
 # ## F18a och F18b angår vitt snus och snus med tobak (OBS omvänt från F14)
@@ -82,7 +89,6 @@ s2224f <-
 #   count(ar,F14b) %>% # F14b och F18a har varit med sedan 2022
 #   as.data.frame()
 
-# rename and recode... then go to Järfälla to do similar work for the new snus variables
 s2224f <-
   s2224f %>%
   rename(F14 = F14a,
@@ -105,10 +111,25 @@ s2224f <-
                  4='Ja, ibland men inte varje dag';
                  5='Ja, dagligen'"))
 
-s2224f <- s2224f %>%
+# ### we want to recode the new names to become the old names
+# recode_vec <- setNames(recode_map$itemnr_new, recode_map$itemnr_old)
+#
+# s2224f %>%
+#   dplyr::rename(any_of(recode_vec)) %>%
+#   glimpse() # for better printing
+#
+# recode_map %>%
+#   count(itemnr_old) %>%
+#   filter(n > 1)
+
+s2224f <-
+  s2224f %>%
   select(any_of(c(demogr.vars,allAnalyzedItems$itemnr,"SkolID_gammal","SkolSDO"))) %>%
   add_column(SkolID_gammal = NA, .before = "SkolSDO") %>%
   add_column(DIDkommun = 'Stockholm')
+
+
+
 
 # names(df.sthlm)
 # names(s2224f)
@@ -116,7 +137,12 @@ s2224f <- s2224f %>%
 #df <- s2224f
 df.sthlm <- rbind(df.sthlm,s2224f)
 
+# TEST reordering variables with arrange to simplify dealing with Origos change in variable names from 2022-2024.
+ref_vars <- data.frame(ref = names(df.sthlm)) %>%
+  arrange(ref)
 
+df.sthlm <- df.sthlm %>%
+  select(all_of(ref_vars$ref))
 
 ## Vallentuna ----------------------------------------------------------
 df.vtuna1618 <- read.spss(paste0(datafolder,"Vallentuna/Sthlmsenk/Stockholmsenkäten 2018 Vallentuna 2016-2018.sav"),
@@ -167,23 +193,32 @@ df.vtuna <- df.vtuna %>%
   add_column(SkolID_gammal = NA, SkolSDO = NA) %>%
   add_column(DIDkommun = 'Vallentuna')
 
+# TEST reorder vars
+
+df.vtuna <- df.vtuna %>%
+  select(all_of(ref_vars$ref))
+
 ### vtuna 2024 ----------------------
 df.vtuna24 <- read.spss(paste0(datafolder,"Vallentuna/Sthlmsenk/Stockholmsenkäten 2024 Vallentuna (1).sav"),
                                                  to.data.frame = TRUE)
 
 #names(df.vtuna24)
-# looks like vtuna24 suffers from the same issues as Järfälla 2024 maybe?
+## looks like vtuna24 suffers from the same issues as Järfälla 2024 maybe?
 
-recode_map <- read_csv("Sthlmsenk/origo2024_recode_map.csv")
-#glimpse(recode_map)
-#recode_vec <- setNames(recode_map$itemnr_old, recode_map$itemnr_new)
-
-all_vars_old <- c(demogr.vars,allAnalyzedItems$itemnr)
-all_vars_old[7] <- "F2"
-
-rmap <- recode_map %>%
-  mutate(itemnr_old = factor(itemnr_old, levels=unique(all_vars_old))) %>%
+recode_map <- read_csv("Sthlmsenk/origo2024_recode_map2.csv") %>%
   arrange(itemnr_old)
+
+#setdiff(ref_vars$ref,recode_map$itemnr_old)
+
+# #glimpse(recode_map)
+# #recode_vec <- setNames(recode_map$itemnr_old, recode_map$itemnr_new)
+#
+# all_vars_old <- c(demogr.vars,allAnalyzedItems$itemnr)
+# all_vars_old[7] <- "F2"
+#
+# rmap <- recode_map %>%
+#   mutate(itemnr_old = factor(itemnr_old, levels=unique(all_vars_old))) %>%
+#   arrange(itemnr_old)
 
 ### before renaming the new variable names to the old ones to enable comparisons, we need to deal with some new items
 # F19a Snusar du så kallat vitt snus/nikotinpåse (tobaksfritt snus med nikotin)?

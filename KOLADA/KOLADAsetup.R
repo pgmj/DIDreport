@@ -64,7 +64,7 @@ df.values <- get_values(
     "N09811"
   ),
   municipality = munic$id,
-  period = 2010:2023, simplify = TRUE
+  period = 2010:2024, simplify = TRUE
 )
 write_parquet(df.values, glue("KOLADA/{Sys.Date()}_KOLADA_data_raw.parquet"))
 
@@ -111,6 +111,6 @@ df.values$Kön <- recode_factor(df.values$Kön, T = "Alla",
 # check that things look good
 df.values %>%
   distinct(kpi,KPI) %>%
-  kbl()
+  knitr::kable()
 
 write_parquet(df.values, glue("KOLADA/{Sys.Date()}_KOLADA_data_ready.parquet"))

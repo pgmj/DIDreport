@@ -13,7 +13,7 @@ library(glue)
 
 # Add the municipalities we are interested in (municipalities in Stockholm and Uppsala regions).
 
-municipalities <- read_parquet("../KOLADA/2023-03-28_KOLADA_Municipality_list.parquet") %>%
+municipalities <- read_parquet("Skolverket/2023-03-28_KOLADA_Municipality_list.parquet") %>%
   filter(str_detect(id, "^01|^03")) %>%
   select(!type)
 

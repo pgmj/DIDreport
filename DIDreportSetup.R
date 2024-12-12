@@ -176,7 +176,7 @@ sthlm.index <- itemlabels.final %>%
   pull()
 
 ## Skolverket data --------------------------------------------------------
-skolverket <- read_parquet("Skolverket/2023-08-21_SkolverketData-all_municipalities_in_Stockholm_and_Uppsala.parquet") %>%
+skolverket <- read_parquet("Skolverket/2024-12-12_SkolverketData-all_municipalities_in_Stockholm_and_Uppsala.parquet") %>%
   filter(str_detect(Kommunkod,"^01"))
 
 # item labels
@@ -227,7 +227,7 @@ viz.gr.skolverket <- gr.skolverket %>%
             Antal_skolor = n())
 
 # demographic data from manual download (not available in database/API)
-demogr.skolverket <- read_parquet("Skolverket/skolverketDemografi.parquet") %>%
+demogr.skolverket <- read_parquet("Skolverket/2024-12-12_skolverketDemografi.parquet") %>%
   filter(str_detect(kommun_kod,"^01"))
 # get summary data for school years 7 and 9
 demogr.skolverket.long <- demogr.skolverket %>%
@@ -657,7 +657,7 @@ df <- df %>%
 # KOLADA new --------------------------------------------------------------
 
 #KOLADA <- read_parquet("KOLADA/2023-09-12_KOLADA_data_ready.parquet")
-KOLADA <- read_parquet("KOLADA/2024-01-30_KOLADA_data_ready.parquet")
+KOLADA <- read_parquet("KOLADA/2024-12-12_KOLADA_data_ready.parquet")
 
 kpi_mean <- KOLADA %>%
   group_by(KPI, kpi, År) %>%

@@ -1,6 +1,6 @@
 library(tidyverse)
 library(janitor)
-
+library(glue)
 # manual download of data from https://www.skolverket.se/skolutveckling/statistik/sok-statistik-om-forskola-skola-och-vuxenutbildning
 # file naming is based on the fall term, meaning that 2022 indicates the school year 2022/2023.
 test <- read_delim("Skolverket/Grundskolan - Antal elever per årskurs 2022 Skolenhet.csv",
@@ -14,7 +14,7 @@ test <- read_delim("Skolverket/Grundskolan - Antal elever per årskurs 2022 Skol
 glimpse(test)
 
 # get all filenames in the folder
-fileList <- list.files(path = "Skolverket/", full.names=TRUE)
+fileList <- list.files(path = "Skolverket/", full.names=TRUE, pattern = "Grundskolan")
 # since Stockholmsenkäten collects data during the spring term, we'll adapt the year variable to fit their structure and use the latter half of the school year
 years <- c(2010:2023)
 # create an empty list to store data in
@@ -40,4 +40,4 @@ for (i in c(1:length(fileList))) {
 df <- map_dfr(c(1:14), ~ do.call(bind_rows, data[[.x]]))
 
 library(arrow)
-write_parquet(df,"skolverketDemografi.parquet")
+write_parquet(df,glue("{Sys.Date()}_skolverketDemografi.parquet"))

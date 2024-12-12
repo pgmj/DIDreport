@@ -10,7 +10,7 @@ legend.size <- 10
 stript.size <- 10
 
 årtal <- c(2006,2008,2010,2012,2014,2016,2018,2020,2022,2024)
-årtalKOLADA <- c(2010:2023)
+årtalKOLADA <- c(2010:2024)
 
 theme_rise <- function(fontfamily = "Lato", axissize = 13, titlesize = 15,
                        margins = 12, axisface = "plain", stripsize = 12,

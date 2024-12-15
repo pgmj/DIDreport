@@ -10,7 +10,7 @@ author:
   orcid: 0000-0003-1669-592X
 date: last-modified
 params:
-  fokusKommun: "Upplands-Bro"
+  fokusKommun: "Solna"
   jmfKommun: "Danderyd"
   years: 2020
 format: 
@@ -64,13 +64,13 @@ editor_options:
 # jmfKommun <- factor(c(fokusKommun,"Järfälla","Upplands Väsby","Botkyrka"),
 #                    levels = c(fokusKommun,"Järfälla","Upplands Väsby","Botkyrka"))
 
-# fokusKommun <- "Solna"
-# jmfKommun <- factor(c(fokusKommun,"Sollentuna","Sundbyberg"),
-#                    levels = c(fokusKommun,"Sollentuna","Sundbyberg"))
+fokusKommun <- "Solna"
+jmfKommun <- factor(c(fokusKommun,"Sollentuna","Sundbyberg"),
+                   levels = c(fokusKommun,"Sollentuna","Sundbyberg"))
 
-fokusKommun <- "Upplands-Bro"
-jmfKommun <- factor(c(fokusKommun,"Upplands Väsby","Vallentuna"),
-                   levels = c(fokusKommun,"Upplands Väsby","Vallentuna"))
+# fokusKommun <- "Upplands-Bro"
+# jmfKommun <- factor(c(fokusKommun,"Upplands Väsby","Vallentuna"),
+#                    levels = c(fokusKommun,"Upplands Väsby","Vallentuna"))
 
 #  Upplands Väsby eller Vallentuna och sedan kanske Järfälla
 
@@ -1451,7 +1451,7 @@ KOLADA %>%
                     "Anmälda stöld- och tillgreppsbrott, antal/1000 inv")
   ) %>% 
   DIDkoladaPlot() +
-  scale_y_continuous(limits = c(0, 100))
+  scale_y_continuous(limits = c(0, NA))
 ```
 ### KOLADA inzoomad
 ```{r}

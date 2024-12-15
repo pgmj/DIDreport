@@ -39,6 +39,11 @@ allAnalyzedItems <- rbind(allAnalyzedItems,allAnalyzedItemsADD)
 ### when comparing datafiles in order to enable binding them together, the function
 ### janitor::compared_df_cols() will be very useful and is not (yet) used in the code below
 
+### This is a lookup table for the variable names used in our analyses
+recode_map <- read_csv("Sthlmsenk/recmap_sorted.csv")
+# reference variables in order
+ref_vars <- read_csv("Sthlmsenk/ref_vars.csv")
+
 ## Stockholm stad ----------------------------------------------------------
 
 # read and combine data
@@ -64,33 +69,11 @@ df.sthlm <- df.sthlm %>%
 # Sthlm 2022 och 2024
 s2224 <- read.spss(paste0(datafolder,"Stockholm Stad/2024/Stockholmsenkäten 2002-2024 Stockholm.sav"),
                    to.data.frame = TRUE)
-#s2224 %>% count(ar)
-#glimpse(s2224)
+
 s2224f <-
   s2224 %>%
   mutate(ar = str_squish(ar)) %>%
   filter(ar %in% c("2022","2024"))
-
-
-# names(df.sthlm)
-# names(s2224f)
-# # looks like these are missing from the new data: "F14"           "FNY12020"      "F18"
-# missing <- c("F14"       ,    "FNY12020"      ,"F18" )
-
-### This is a lookup table for the variable names used in our analyses
-recode_map <- read_csv("Sthlmsenk/recmap_sorted.csv")
-
-### We need to change variable names in the new data to match the old data, since all other scripts rely on the old variable names
-
-
-### We also have new variables about tobacco use that need handling.
-
-# ## F14a och F14b angår cigaretter m tobak och e-cigaretter, d.v.s:
-# # F14a = F14, och F14b = FNY12020
-# ## F18a och F18b angår vitt snus och snus med tobak (OBS omvänt från F14)
-# s2224 %>%
-#   count(ar,F14b) %>% # F14b och F18a har varit med sedan 2022
-#   as.data.frame()
 
 s2224f <-
   s2224f %>%
@@ -114,35 +97,19 @@ s2224f <-
                  4='Ja, ibland men inte varje dag';
                  5='Ja, dagligen'"))
 
-# ### we want to recode the new names to become the old names
-# recode_vec <- setNames(recode_map$itemnr_new, recode_map$itemnr_old)
-#
-# s2224f %>%
-#   dplyr::rename(any_of(recode_vec)) %>%
-#   glimpse() # for better printing
-#
-# recode_map %>%
-#   count(itemnr_old) %>%
-#   filter(n > 1)
-
 s2224f <-
   s2224f %>%
   select(any_of(c(demogr.vars,allAnalyzedItems$itemnr,"SkolID_gammal","SkolSDO"))) %>%
   add_column(SkolID_gammal = NA, .before = "SkolSDO") %>%
   add_column(DIDkommun = 'Stockholm')
 
-
-
-
-# names(df.sthlm)
-# names(s2224f)
-#write_parquet(s2224f,paste0(datafolder,"DID_klart/2024-09-12_DataPreRecode_Sthlm2024.parquet"))
-#df <- s2224f
 df.sthlm <- rbind(df.sthlm,s2224f)
 
-# TEST reordering variables with arrange to simplify dealing with Origos change in variable names from 2022-2024.
-ref_vars <- data.frame(ref = names(df.sthlm)) %>%
-  arrange(ref)
+# reordering variables with arrange to simplify dealing with Origos change in variable names from 2022-2024.
+#ref_vars <- data.frame(ref = names(df.sthlm)) %>%
+#  arrange(ref)
+
+#write_csv(ref_vars,"Sthlmsenk/ref_vars.csv")
 
 #setdiff(recode_map$itemnr_old,ref_vars$ref)
 
@@ -569,7 +536,7 @@ names(df.varmdo) <- recode_map$itemnr_old
 
 # Sundbyberg och Sollentuna jmf
 
-solna <- read.spss(paste0(datafolder,"Solna/Stockholmsenkäten 2024 Solna (1).sav"), to.data.frame = TRUE)
+solna <- read.spss(paste0(datafolder,"Solna/Stockholmsenkäten 2002-2024 Solna.sav"), to.data.frame = TRUE)
 
 solna2 <- solna %>%
   mutate(across(c(F19a,F19b), ~ recode(.x,"'Nej, jag har aldrig snusat'=0;
@@ -597,6 +564,8 @@ df.solna <- solna2 %>%
   select(all_of(recode_map$itemnr_new))
 
 names(df.solna) <- recode_map$itemnr_old
+#df <- df.solna %>%
+#  filter(!ar == 2024)
 
 ## Upplands-Bro 2024 -------------------------------------------------------
 
@@ -647,7 +616,7 @@ df <- rbind(df.sthlm,
             df.solna,
             df.uppbro)
 
-write_parquet(df,paste0(datafolder,"DID_klart/2024-12-10_DataPreRecode.parquet"))
+#write_parquet(df,paste0(datafolder,"DID_klart/2024-12-15_Solna_DataPreRecode.parquet"))
 #write_parquet(df.jfl3r,paste0(datafolder,"DID_klart/2024-08-22_DataPreRecode_Järfälla2024.parquet"))
 
 # create data frame with 0 rows and named variables as a template

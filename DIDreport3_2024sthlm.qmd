@@ -50,15 +50,15 @@ editor_options:
 # These are read by the script render.R, which in turn generates one report for each line in the first sheet of the xls-file.
 
 # which municipality to focus this report on?
-fokusKommun <- params$fokusKommun
-# which municipalities should be included in comparisons?
-jmfKommun <- factor(c(fokusKommun,params$jmfKommun),
-                   levels = c(fokusKommun,params$jmfKommun))
+# fokusKommun <- params$fokusKommun
+# # which municipalities should be included in comparisons?
+# jmfKommun <- factor(c(fokusKommun,params$jmfKommun),
+#                    levels = c(fokusKommun,params$jmfKommun))
 
-## for testing/dev replace rows above with these (comment out/in):
-# fokusKommun <- "Värmdö"
-# jmfKommun <- factor(c(fokusKommun,"Tyresö","Nacka"),
-#                    levels = c(fokusKommun,"Tyresö","Nacka"))
+## for testing/dev replace rows above with these (comment out/in):Skärholmen	,Danderyd,Upplands Väsby
+fokusKommun <- "Skärholmen"
+jmfKommun <- factor(c(fokusKommun,"Botkyrka","Danderyd","Upplands Väsby"),
+                   levels = c(fokusKommun,"Botkyrka","Danderyd","Upplands Väsby"))
 
 # fokusKommun <- "Järva"
 # jmfKommun <- factor(c(fokusKommun,"Järfälla","Upplands Väsby","Botkyrka"),
@@ -361,7 +361,7 @@ Kategoriseringen bygger på en statistisk fördelningsmodell och är inte valide
 #| fig-height: 7
 df.risk.gender.arskurs %>% 
   filter(!is.na(Årskurs),
-         Kommun == fokusKommun) %>% 
+         Kommun == fokusKommun) %>% filter(År == "2024")
   DIDstapel("2024", tpathsize = 2.7) +
   facet_grid(Årskurs~Kön) +
   theme(legend.justification = c(0.0, 1.0))
@@ -1128,6 +1128,7 @@ df %>%
   group_by(ar, Kön, ARSKURS) %>%
   count(Senaste4v, .drop = FALSE) %>%
   mutate(Andel = (100 * n / sum(n)) %>% round(digits = 1)) %>%
+  
   ggplot(aes(x = ar, y = Andel)) +
   geom_area(aes(fill = Senaste4v),
             position = "stack",

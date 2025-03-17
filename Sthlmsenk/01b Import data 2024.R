@@ -66,6 +66,23 @@ df.sthlm <- df.sthlm %>%
 
 ### 2024 --------------------------------------------------------------------
 
+## temp test för stadsdelarna
+# df.sthlm <- read.spss(paste0(datafolder,"Stockholm Stad/2024/Stockholmsenkäten 2002-2024 Stockholm.sav"),
+#           to.data.frame = TRUE)
+#
+# df2 <- df.sthlm %>%
+#   rename(F14 = F14a,
+#          FNY12020 = F14b,
+#          F18 = F18a) %>%
+#   select(all_of(c(demogr.vars,allAnalyzedItems$itemnr,"SkolSDO"))) %>%
+#   add_column(SkolID_gammal = NA, .before = "SkolSDO") %>%
+#   add_column(DIDkommun = 'Stockholm') %>%
+#   mutate(ar = str_squish(ar),
+#          Skolnamn = str_squish(Skolnamn)) %>%
+#   mutate(ar = as.numeric(ar)) %>%
+#   filter(ar > 2005)
+# df <- df2
+
 # Sthlm 2022 och 2024
 s2224 <- read.spss(paste0(datafolder,"Stockholm Stad/2024/Stockholmsenkäten 2002-2024 Stockholm.sav"),
                    to.data.frame = TRUE)
@@ -462,6 +479,50 @@ df.lidingö <- rbind(df.lid1,
                     df.lid4)
 
 
+### 2024 --------------------------------------------------------------------
+
+lid24 <- read.spss(paste0(datafolder,"Lidingö/Stockholmsenkäten 2024 Lidingö.sav"),
+          to.data.frame = TRUE)
+
+### before renaming the new variable names to the old ones to enable comparisons, we need to deal with some new items
+# F19a Snusar du så kallat vitt snus/nikotinpåse (tobaksfritt snus med nikotin)?
+# F19b Snusar du snus med tobak?
+# we want the "higher" response from either item
+lid24 <- lid24 %>%
+  mutate(across(c(F19a,F19b), ~ recode(.x,"'Nej, jag har aldrig snusat'=0;
+                 'Nej, bara provat hur det smakar'=1;
+                 'Nej, jag har snusat men slutat'=2;
+                 'Nej, jag har slutat'=3;
+                 'Ja, ibland men inte varje dag'=4;
+                 'Ja, dagligen'=5;
+                 '<NA>'=NA",
+                                       as.factor = T))) %>%
+  mutate(across(c(F19a,F19b), ~ factor(.x, ordered = TRUE))) %>%
+  mutate(F19 = pmax(F19a,F19b, na.rm = T)) %>%
+  # recode back to character categories for later recoding to work
+  mutate(F19 = recode(F19,"0='Nej, jag har aldrig snusat';
+                 1='Nej, bara provat hur det smakar';
+                 2='Nej, jag har snusat men slutat';
+                 3='Nej, jag har slutat';
+                 4='Ja, ibland men inte varje dag';
+                 5='Ja, dagligen'"))
+
+lid24r <- lid24 %>%
+  add_column(SkolID_gammal = NA,
+             SkolSDO = NA,
+             DIDkommun = 'Lidingö') %>%
+  select(all_of(recode_map$itemnr_new))
+
+# data.frame(old = recode_map$itemnr_old,
+#            new = names(lid24r)) %>%
+#   View()
+
+names(lid24r) <- recode_map$itemnr_old
+
+#df <- lid24r
+
+df.lidingö <- rbind(df.lidingö,lid24r)
+
 ## Botkyrka ----------------------------------------------------------------
 
 df.botkyrka <- read.spss(paste0(datafolder,"Botkyrka/Stockholmsenkäten 2004-2022 Botkyrka (4).sav"),
@@ -616,8 +677,8 @@ df <- rbind(df.sthlm,
             df.solna,
             df.uppbro)
 
-#write_parquet(df,paste0(datafolder,"DID_klart/2024-12-15_Solna_DataPreRecode.parquet"))
-#write_parquet(df.jfl3r,paste0(datafolder,"DID_klart/2024-08-22_DataPreRecode_Järfälla2024.parquet"))
+#write_parquet(df2,paste0(datafolder,"DID_klart/2025-02-13_SthlmStad_DataPreRecode.parquet"))
+#write_parquet(df,paste0(datafolder,"DID_klart/2025-03-17_DataPreRecode_Lidingö2024.parquet"))
 
 # create data frame with 0 rows and named variables as a template
 #names <- data.frame(matrix(ncol = length(names(df)), nrow = 0))

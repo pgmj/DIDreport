@@ -39,9 +39,17 @@ datafolder <- "~/Library/CloudStorage/OneDrive-SharedLibraries-RISE/SHIC - Data 
 #                 df.2024 %>% select(!all_of(c("F62","F64")))
 #                 )
 # write_parquet(df.all,paste0(datafolder,"DID_klart/2024-10-08_ScoredRev.parquet"))
+
+### LATEST
 df.all <- read_parquet(paste0(datafolder,"DID_klart/2024-12-15_ScoredRev.parquet"))
-#df.all_add <- read_parquet(paste0(datafolder,"DID_klart/2024-12-15_Solna_ScoredRev.parquet"))
-#df.all <- rbind(df.all, df.all_add)
+###
+
+# SthlmStad temporary
+#df.all <- read_parquet(paste0(datafolder,"DID_klart/2025-02-13_SthlmStad_ScoredRev.parquet"))
+
+
+df.all_add <- read_parquet(paste0(datafolder,"DID_klart/2025-03-17_Lidingö24_ScoredRev.parquet"))
+df.all <- rbind(df.all, df.all_add)
 #write_parquet(df.all,paste0(datafolder,"DID_klart/2024-12-15_ScoredRev.parquet"))
 #df %>% filter(DIDkommun == "Solna") %>% count(ar)
 
@@ -52,14 +60,22 @@ df.allaK <- df %>%
   select(!Kommun) %>%
   add_column(Kommun = "Alla")
 
+### LATEST pre-recode data
+df.raw <- read_parquet(paste0(datafolder,"DID_klart/2024-12-10_DataPreRecode.parquet"))
+###
+
 # df.raw <- read_parquet(paste0(datafolder,"DID_klart/2024-04-17_DataPreRecode.parquet"))
-# df.raw.2024 <- read_parquet(paste0(datafolder,"DID_klart/2024-09-12_DataPreRecode_Sthlm2024.parquet"))
+df.raw.2024 <- read_parquet(paste0(datafolder,"DID_klart/2025-03-17_DataPreRecode_Lidingö2024.parquet"))
 #
-# df.raw <- rbind(df.raw,
-#                 df.raw.2024)
+df.raw <- rbind(df.raw,
+                df.raw.2024)
 # write_parquet(df.raw,paste0(datafolder,"DID_klart/2024-10-08_DataPreRecode.parquet"))
 
-df.raw <- read_parquet(paste0(datafolder,"DID_klart/2024-12-10_DataPreRecode.parquet"))
+
+
+# SthlmStad temporary
+#df.raw <- read_parquet(paste0(datafolder,"DID_klart/2025-02-13_SthlmStad_DataPreRecode.parquet"))
+
 #df.raw_add <- read_parquet(paste0(datafolder,"DID_klart/2024-12-15_Solna_DataPreRecode.parquet"))
 #df.raw <- rbind(df.raw,df.raw_add)
 #write_parquet(df.raw,paste0(datafolder,"DID_klart/2024-12-15_DataPreRecode.parquet"))

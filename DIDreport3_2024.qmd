@@ -10,7 +10,7 @@ author:
   orcid: 0000-0003-1669-592X
 date: last-modified
 params:
-  fokusKommun: "Solna"
+  fokusKommun: "Lidingö"
   jmfKommun: "Danderyd"
   years: 2020
 format: 
@@ -49,13 +49,17 @@ editor_options:
 ### Parameters are defined externally in the file DIDparameters.xls
 # These are read by the script render.R, which in turn generates one report for each line in the first sheet of the xls-file.
 
-# which municipality to focus this report on?
+# # which municipality to focus this report on?
 # fokusKommun <- params$fokusKommun
 # # which municipalities should be included in comparisons?
 # jmfKommun <- factor(c(fokusKommun,params$jmfKommun),
 #                    levels = c(fokusKommun,params$jmfKommun))
 
 ## for testing/dev replace rows above with these (comment out/in):
+fokusKommun <- "Lidingö"
+jmfKommun <- factor(c(fokusKommun,"Danderyd","Täby","Stockholm"),
+                   levels = c(fokusKommun,"Danderyd","Täby","Stockholm"))
+
 # fokusKommun <- "Värmdö"
 # jmfKommun <- factor(c(fokusKommun,"Tyresö","Nacka"),
 #                    levels = c(fokusKommun,"Tyresö","Nacka"))
@@ -64,9 +68,9 @@ editor_options:
 # jmfKommun <- factor(c(fokusKommun,"Järfälla","Upplands Väsby","Botkyrka"),
 #                    levels = c(fokusKommun,"Järfälla","Upplands Väsby","Botkyrka"))
 
-fokusKommun <- "Solna"
-jmfKommun <- factor(c(fokusKommun,"Sollentuna","Sundbyberg"),
-                   levels = c(fokusKommun,"Sollentuna","Sundbyberg"))
+# fokusKommun <- "Solna"
+# jmfKommun <- factor(c(fokusKommun,"Sollentuna","Sundbyberg"),
+#                    levels = c(fokusKommun,"Sollentuna","Sundbyberg"))
 
 # fokusKommun <- "Upplands-Bro"
 # jmfKommun <- factor(c(fokusKommun,"Upplands Väsby","Vallentuna"),

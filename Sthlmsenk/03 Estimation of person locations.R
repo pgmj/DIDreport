@@ -83,7 +83,7 @@ df$Wellbeing <- df$Wellbeing*-1
 
 # Save to file ------------------------------------------------------------
 
-#write_parquet(df, sink = paste0(datafolder,"DID_klart/2024-12-15_Solna_ScoredRev.parquet"))
+#write_parquet(df, sink = paste0(datafolder,"DID_klart/2025-03-17_Lidingö24_ScoredRev.parquet"))
 #
 # df.old <- read_parquet(paste0(datafolder,"DID_klart/2024-10-08_ScoredRev.parquet"))
 # janitor::compare_df_cols(df %>% select(!c(F62,F64)),
